@@ -41,32 +41,50 @@
 ## Architecture
 
 - Keep the agreed stack: Vue 3, `<script setup lang="ts">`, Vite, TypeScript, Tailwind CSS, Pinia, and Vue Router. Do not add Vue I18n.
+- Keep one project on one understandable stack. Do not introduce React, jQuery, a second state manager, or competing UI/component libraries unless an approved migration or a documented technical requirement makes it necessary.
+- Keep predictable top-level boundaries under `src`: `pages`, `components`, `features`, `services/api`, `stores`, `types`, `utils`, and `assets`. Do not create empty directories or duplicate the same responsibility across several locations.
+- Put route-level screens in `pages`; broadly reused UI in `components`; domain-specific UI, logic, and tests in `features/<feature>`; HTTP clients and DTO mapping in `services/api`; cross-screen Pinia modules in `stores`; shared stable contracts in `types`; pure general helpers in `utils`; and static resources in `assets`.
 - Follow official Vue and TypeScript conventions: PascalCase components, `useX` composables, camelCase functions and variables, explicit domain types, and one clear responsibility per module.
-- Organize application code by feature and domain. Keep feature-specific views, components, store code, services, types, and tests close to the feature; move code to `shared` only after multiple real consumers share a stable contract.
+- Keep components small and focused on one UI job. Split a component when it owns unrelated layout, state, or interaction responsibilities; reuse an existing component or variant before creating another implementation.
+- Organize application code by feature and domain. Keep feature-specific views, components, store code, services, types, and tests close to the feature; move code to a shared boundary only after multiple real consumers share a stable contract.
 - Keep dependency direction explicit: Vue UI → Pinia orchestration → pure domain engines → repository interfaces. Infrastructure implementations must not leak into components.
-- Define typed contracts for props and emits, store boundaries, engine inputs and outputs, repository methods, persistence payloads, and API DTOs.
-- Keep TypeScript strict. Use `unknown` at external boundaries and narrow it safely; do not use `any` without a documented reason.
+- UI components must never call `fetch`, Axios, SDK clients, or API endpoints directly. Put requests, response validation, DTO mapping, transport errors, and retries in `services/api` or repository implementations.
+- Define typed contracts for props and emits, store boundaries, engine inputs and outputs, repository methods, persistence payloads, API requests, API responses, and DTO mappings.
+- Keep TypeScript strict and do not use `any`. Accept `unknown` at external boundaries, validate and narrow it, then convert it to an explicit domain type.
+- Use descriptive English code names such as `createOrder`, `getUserProfile`, and `OrderStatus`; do not use vague names such as `func1`, `data2`, `item`, or `handleData` when the domain meaning is known.
+- Give each function one clear responsibility, explicit inputs and outputs, and the fewest possible side effects. Prefer pure functions for calculations and isolate unavoidable effects at service, repository, or store boundaries.
+- Store repeated domain and UI values in typed sources of truth: statuses and transitions, route names, error codes and messages, configuration keys, and design tokens. Do not scatter magic strings, numbers, or colors through components.
 - Prevent circular dependencies and unrelated deep imports across features. Expose a small public feature API only where cross-feature access is required.
 - Vue components render UI and emit user intent. They must not own business calculations, direct `localStorage` access, or API-specific rules.
 - Put cross-screen state and orchestration in Pinia stores.
 - Put deterministic calculations in small named pure functions such as `quizEngine.ts`, `dailyPlanEngine.ts`, `reviewScheduler.ts`, `forecastEngine.ts`, `analyticsEngine.ts`, `streakEngine.ts`, and `leagueEngine.ts`.
 - Use composables only for genuinely reusable reactive or lifecycle-dependent behavior, never as wrappers around pure calculations.
-- Do not create generic base components, composables, services, or factories for hypothetical future reuse. Extract an abstraction only when real consumers share a stable responsibility.
+- When the same real logic or UI pattern appears two or three times, extract the smallest stable function, composable, component, or variant that expresses the shared responsibility. Do not copy and modify parallel implementations.
+- Do not create generic base components, composables, services, factories, or abstractions for hypothetical future reuse.
 - Access persistence only through `PersistenceService`. Access session data through repository interfaces so mock/local repositories can later be replaced by API repositories.
 - Keep correct trial-test answers unavailable to the client until completion in the future production API.
 - Reuse design tokens and shared component variants. Do not duplicate long Tailwind class combinations when an existing stable component or variant expresses the same behavior.
 - Unit-test each business engine for normal cases, boundaries, insufficient data, invalid input, and idempotency where applicable. Add focused store or component tests for behavior that crosses module boundaries.
 
+## Engineering quality
+
+- ESLint and Prettier are mandatory and must have committed configuration plus package scripts. Use one consistent style; do not mix manual formatting conventions across files.
+- Keep secrets, passwords, tokens, private URLs, and API keys out of source code, fixtures, commits, logs, and client bundles. Read runtime values from environment variables, commit only a safe `.env.example`, and ignore real `.env` files.
+- Record important business rules and state transitions in `docs/qadam-ent-logic-spec.md` or the relevant README before or together with their implementation. Code must not become the only description of allowed states and transitions.
+- Add dependencies only when they remove more complexity than they create. Reuse the existing stack and browser/platform capabilities first.
+- Deliver the smallest useful MVP flow before optional features, speculative abstractions, animations, dashboards, or secondary settings.
+
 ## Implementation workflow
 
 1. Inspect the relevant route, view, components, data flow, and product rules before editing.
-2. State the user job and the smallest coherent end-to-end flow being implemented.
+2. State the user job and the smallest coherent end-to-end MVP flow being implemented.
 3. Implement real interactions and state transitions, not static screenshots.
 4. Cover relevant loading, empty, insufficient-data, offline, error, disabled, and resume states.
 5. Keep unrelated files and behavior unchanged.
-6. Run the narrowest relevant tests first, then `npm run type-check`, `npm test`, and `npm run build` after meaningful changes. Run `npm run lint` when that script exists.
+6. Run the narrowest relevant tests first, then `npm run lint`, `npm run format:check`, `npm run type-check`, `npm test`, and `npm run build` after meaningful changes. If a required script is missing, establish it in a dedicated setup change instead of silently skipping the check.
 7. Visually inspect affected screens at 390 px and at least one wider viewport when browser tooling is available.
-8. Remove unused code, dependencies, styles, assets, and temporary output before finishing.
+8. Before every merge or release, require clean formatting, lint, type-check, tests, production build, and a manual pass through the affected primary user scenarios.
+9. Remove unused code, dependencies, styles, assets, debug output, and temporary files before finishing.
 
 Do not leave TODOs, dead buttons, fake success paths, placeholder content, duplicate implementations, unreachable states, or “coming soon” labels in a flow presented as complete.
 
