@@ -97,17 +97,17 @@ function startReview(topic?: ReviewTopic) {
           <h2 class="text-[17px] font-[900] tracking-[-.02em]">Бүгін қайталау</h2>
           <p class="text-[11px] text-[#536178]">7 белсенді қате</p>
         </div>
-        <button class="primary-button w-auto min-w-[100px] px-4" type="button" @click="startReview()">
+        <button
+          class="primary-button w-auto min-w-[100px] px-4"
+          type="button"
+          @click="startReview()"
+        >
           Бәрін бастау
         </button>
       </div>
 
       <div class="mt-3 space-y-2">
-        <article
-          v-for="topic in topics"
-          :key="topic.id"
-          class="card p-3.5"
-        >
+        <article v-for="topic in topics" :key="topic.id" class="card p-3.5">
           <div class="flex items-start justify-between gap-2">
             <span class="rounded-lg px-2 py-1 text-[10px] font-[850]" :class="topic.chip">
               {{ topic.subject }}

@@ -39,7 +39,9 @@ function moveQuestion(direction: -1 | 1) {
   <section class="screen-page flex min-h-[844px] flex-col bg-[#f8faff]">
     <AppHeader title="Сынақ ҰБТ" close>
       <template #actions>
-        <div class="flex items-center gap-2 rounded-xl bg-[#f0f3f8] px-3 py-2 text-[14px] font-[850]">
+        <div
+          class="flex items-center gap-2 rounded-xl bg-[#f0f3f8] px-3 py-2 text-[14px] font-[850]"
+        >
           <Clock3 :size="18" />
           <span class="metric-value">01:42:18</span>
         </div>
@@ -80,7 +82,9 @@ function moveQuestion(direction: -1 | 1) {
       <h2 class="mt-4 text-[19px] font-[850] leading-[1.25] tracking-[-.025em]">
         Теңдеу түбірлерінің қосындысын табыңыз:
       </h2>
-      <div class="mt-3 rounded-2xl bg-[#f0f3f8] px-4 py-3 text-center font-serif text-[24px] font-[700]">
+      <div
+        class="mt-3 rounded-2xl bg-[#f0f3f8] px-4 py-3 text-center font-serif text-[24px] font-[700]"
+      >
         2x² − 7x + 3 = 0
       </div>
 

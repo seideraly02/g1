@@ -26,3 +26,4 @@ Review the relevant rules, including:
 Return exactly one verdict: `PASS`, `BLOCKED`, or `NOT_APPLICABLE`.
 For `BLOCKED`, report at most five findings ordered P0 to P2. Each finding must cite the governing specification section, file or symbol, a concrete failing scenario, user or data impact, and the smallest acceptance test that proves the fix. Treat correctness, data loss, duplicated state, false progress, and privacy failures as merge blockers. Do not comment on visual style or implement fixes.
 """
+

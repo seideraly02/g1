@@ -120,3 +120,4 @@ Do not leave TODOs, dead buttons, fake success paths, placeholder content, dupli
 
 - For a focused product-design plus implementation task, use the project custom agent named `qadam_product`.
 - Keep one owner for overlapping UI and logic changes. Use additional agents only when the user explicitly asks for parallel work and the subtasks do not edit the same files.
+

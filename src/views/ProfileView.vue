@@ -36,7 +36,12 @@ function showSettings() {
   <section class="screen-page min-h-[844px] bg-[#f8faff]">
     <AppHeader title="Профиль">
       <template #actions>
-        <button class="icon-button border-[#dfe6ef]" type="button" aria-label="Параметрлер" @click="showSettings">
+        <button
+          class="icon-button border-[#dfe6ef]"
+          type="button"
+          aria-label="Параметрлер"
+          @click="showSettings"
+        >
           <Settings :size="21" />
         </button>
       </template>
@@ -51,7 +56,9 @@ function showSettings() {
       </div>
 
       <div class="card flex items-center gap-3 p-4">
-        <div class="grid size-[74px] shrink-0 place-items-center rounded-[24px] bg-gradient-to-br from-[#a9ccff] to-[#c2a8fb] text-[26px] font-[900] text-[#2458d0]">
+        <div
+          class="grid size-[74px] shrink-0 place-items-center rounded-[24px] bg-gradient-to-br from-[#a9ccff] to-[#c2a8fb] text-[26px] font-[900] text-[#2458d0]"
+        >
           С
         </div>
         <div class="min-w-0 flex-1">
@@ -122,7 +129,9 @@ function showSettings() {
             type="button"
             @click="router.push({ name: 'notifications' })"
           >
-            <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ecfbf3] text-[#19a658]">
+            <span
+              class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ecfbf3] text-[#19a658]"
+            >
               <Bell :size="21" />
             </span>
             <strong class="text-[13px]">Хабарландырулар</strong>

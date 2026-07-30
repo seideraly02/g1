@@ -33,7 +33,12 @@ async function shareResult() {
   <section class="screen-page flex min-h-[844px] flex-col bg-white">
     <AppHeader title="Жаттығу аяқталды" close>
       <template #actions>
-        <button class="icon-button" type="button" aria-label="Нәтижемен бөлісу" @click="shareResult">
+        <button
+          class="icon-button"
+          type="button"
+          aria-label="Нәтижемен бөлісу"
+          @click="shareResult"
+        >
           <Share2 :size="20" :stroke-width="2.2" />
         </button>
       </template>
@@ -47,7 +52,9 @@ async function shareResult() {
       <div class="flex justify-center py-3">
         <ProgressRing :value="80" :size="140" :stroke="11" color="#8bc8ff">
           <div class="text-center">
-            <div class="metric-value text-[34px] font-[850] leading-none tracking-[-.04em]">16/20</div>
+            <div class="metric-value text-[34px] font-[850] leading-none tracking-[-.04em]">
+              16/20
+            </div>
             <div class="mt-2 text-[11px] text-[#536178]">дұрыс жауап</div>
           </div>
         </ProgressRing>
@@ -72,7 +79,9 @@ async function shareResult() {
         <div class="flex items-center gap-2">
           <TrendingUp :size="20" :stroke-width="2.3" />
           <span class="flex-1 text-[13px] font-[800]">Тарих бойынша ілгерілеу</span>
-          <span class="rounded-lg bg-[#d9f8e6] px-2 py-1 text-[11px] font-[850] text-[#148649]">+6%</span>
+          <span class="rounded-lg bg-[#d9f8e6] px-2 py-1 text-[11px] font-[850] text-[#148649]"
+            >+6%</span
+          >
         </div>
         <div class="mt-2.5 h-2 overflow-hidden rounded-full bg-[#dfe7f1]">
           <div class="h-full w-[70%] rounded-full bg-gradient-to-r from-[#17a754] to-[#4ddc85]" />
@@ -96,7 +105,9 @@ async function shareResult() {
         </div>
       </div>
 
-      <div class="mt-3 flex items-center gap-3 rounded-[18px] border border-[#b9dcff] bg-[#eff6ff] p-3">
+      <div
+        class="mt-3 flex items-center gap-3 rounded-[18px] border border-[#b9dcff] bg-[#eff6ff] p-3"
+      >
         <Sparkles :size="23" :stroke-width="2" />
         <div class="min-w-0">
           <div class="text-[13px] font-[800]">Келесі қадам:</div>

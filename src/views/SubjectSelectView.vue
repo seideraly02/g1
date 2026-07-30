@@ -135,7 +135,9 @@ function continueToDiagnostic() {
       >
         <ArrowLeft :size="21" :stroke-width="2" />
       </button>
-      <h1 class="ml-3 flex-1 text-[21px] font-[900] tracking-[-.025em] text-[#111b34]">Пәнді таңда</h1>
+      <h1 class="ml-3 flex-1 text-[21px] font-[900] tracking-[-.025em] text-[#111b34]">
+        Пәнді таңда
+      </h1>
       <span class="pr-1 text-[13px] text-[#536178]">1/2</span>
     </header>
 

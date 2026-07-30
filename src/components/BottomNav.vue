@@ -55,12 +55,7 @@ function isActive(item: (typeof items)[number]) {
       >
         <component :is="item.icon" :size="21" :stroke-width="2" fill="currentColor" />
       </span>
-      <component
-        :is="item.icon"
-        v-else
-        :size="19"
-        :stroke-width="isActive(item) ? 2.4 : 1.9"
-      />
+      <component :is="item.icon" v-else :size="19" :stroke-width="isActive(item) ? 2.4 : 1.9" />
       <span :class="{ 'mt-[34px]': item.key === 'training' }">{{ item.label }}</span>
     </button>
   </nav>

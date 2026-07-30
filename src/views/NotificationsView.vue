@@ -132,10 +132,16 @@ function openNotification(id: number) {
         </span>
         <span class="min-w-0">
           <strong class="block text-[12px] leading-[1.35]">{{ item.title }}</strong>
-          <span class="mt-1 block text-[10px] leading-4 text-[#536178]">{{ item.description }}</span>
+          <span class="mt-1 block text-[10px] leading-4 text-[#536178]">{{
+            item.description
+          }}</span>
           <span class="metric-value mt-1.5 block text-[10px] text-[#9aabc0]">{{ item.time }}</span>
         </span>
-        <span v-if="item.unread" class="mt-1 size-2 rounded-full bg-[#2869df]" aria-label="Оқылмаған" />
+        <span
+          v-if="item.unread"
+          class="mt-1 size-2 rounded-full bg-[#2869df]"
+          aria-label="Оқылмаған"
+        />
       </button>
 
       <div class="flex items-center gap-3 pb-1 pt-4">
@@ -155,13 +161,21 @@ function openNotification(id: number) {
         </span>
         <span class="min-w-0">
           <strong class="block text-[12px] leading-[1.35]">{{ item.title }}</strong>
-          <span class="mt-1 block text-[10px] leading-4 text-[#536178]">{{ item.description }}</span>
+          <span class="mt-1 block text-[10px] leading-4 text-[#536178]">{{
+            item.description
+          }}</span>
           <span class="metric-value mt-1.5 block text-[10px] text-[#9aabc0]">{{ item.time }}</span>
         </span>
-        <span v-if="item.unread" class="mt-1 size-2 rounded-full bg-[#2869df]" aria-label="Оқылмаған" />
+        <span
+          v-if="item.unread"
+          class="mt-1 size-2 rounded-full bg-[#2869df]"
+          aria-label="Оқылмаған"
+        />
       </button>
 
-      <div class="mt-3 flex items-center gap-3 rounded-[18px] border border-[#b9dcff] bg-[#eff6ff] p-3">
+      <div
+        class="mt-3 flex items-center gap-3 rounded-[18px] border border-[#b9dcff] bg-[#eff6ff] p-3"
+      >
         <ShieldCheck class="shrink-0" :size="21" />
         <span class="text-[11px] leading-5 text-[#536178]">
           Қысым жоқ: хабарландырулардың түрі мен уақытын өзгертуге болады.

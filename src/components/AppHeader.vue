@@ -42,7 +42,9 @@ function goBack() {
       <X v-if="close" :size="20" :stroke-width="2" />
       <ArrowLeft v-else :size="20" :stroke-width="2" />
     </button>
-    <h1 class="min-w-0 flex-1 truncate pb-2 text-[18px] font-[700] tracking-[-.02em]">{{ title }}</h1>
+    <h1 class="min-w-0 flex-1 truncate pb-2 text-[18px] font-[700] tracking-[-.02em]">
+      {{ title }}
+    </h1>
     <div class="flex min-w-[38px] items-center justify-end gap-1">
       <slot name="actions" />
     </div>

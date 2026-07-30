@@ -14,14 +14,25 @@ withDefaults(
 </script>
 
 <template>
-  <svg viewBox="0 0 150 44" preserveAspectRatio="none" class="block h-full w-full" aria-label="Өсу динамикасы" role="img">
+  <svg
+    viewBox="0 0 150 44"
+    preserveAspectRatio="none"
+    class="block h-full w-full"
+    aria-label="Өсу динамикасы"
+    role="img"
+  >
     <defs>
       <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" :stop-color="color" stop-opacity=".22" />
         <stop offset="1" :stop-color="color" stop-opacity="0" />
       </linearGradient>
     </defs>
-    <path d="M1 11.5H149M1 22H149M1 32.5H149" stroke="#e9edf4" stroke-width=".7" stroke-dasharray="2 3" />
+    <path
+      d="M1 11.5H149M1 22H149M1 32.5H149"
+      stroke="#e9edf4"
+      stroke-width=".7"
+      stroke-dasharray="2 3"
+    />
     <path v-if="fill" :d="`M ${points} L147 44 L3 44 Z`" fill="url(#chartFill)" />
     <polyline
       :points="points"

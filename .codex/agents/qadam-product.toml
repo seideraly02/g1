@@ -82,3 +82,4 @@ Commit discipline:
 
 When a request is ambiguous but a reversible, low-risk product choice is available, choose the simplest option consistent with the specification and continue. Ask the user only when the missing choice would materially change the product or data model.
 """
+

@@ -147,7 +147,9 @@ function selectMode(mode: TrainingMode) {
     </div>
 
     <div class="screen-content pt-1">
-      <div class="rounded-[22px] border border-[#b9dcff] bg-gradient-to-br from-[#eef6ff] to-[#f2f4ff] p-4">
+      <div
+        class="rounded-[22px] border border-[#b9dcff] bg-gradient-to-br from-[#eef6ff] to-[#f2f4ff] p-4"
+      >
         <div class="flex items-center justify-between">
           <span class="rounded-lg bg-[#dceaff] px-2 py-1 text-[10px] font-[850] text-[#235ec9]">
             {{ plan.label }}
@@ -162,15 +164,21 @@ function selectMode(mode: TrainingMode) {
         <p class="mt-1 text-[11px] leading-5 text-[#536178]">{{ plan.description }}</p>
 
         <div class="mt-3 flex gap-2">
-          <span class="rounded-full border border-[#b9dcff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#235ec9]">
+          <span
+            class="rounded-full border border-[#b9dcff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#235ec9]"
+          >
             {{ plan.questions }} сұрақ
           </span>
-          <span class="rounded-full border border-[#ddcaff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#7434dc]">
+          <span
+            class="rounded-full border border-[#ddcaff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#7434dc]"
+          >
             {{ plan.topics }} тақырып
           </span>
         </div>
 
-        <div class="mt-3 flex items-center gap-3 rounded-[17px] border border-[#dce4ef] bg-white/80 p-3">
+        <div
+          class="mt-3 flex items-center gap-3 rounded-[17px] border border-[#dce4ef] bg-white/80 p-3"
+        >
           <WandSparkles class="shrink-0" :size="22" />
           <p class="text-[11px] leading-5 text-[#536178]">
             <strong class="text-[#111b34]">Күтілетін нәтиже:</strong>
@@ -178,7 +186,11 @@ function selectMode(mode: TrainingMode) {
           </p>
         </div>
 
-        <button class="primary-button mt-3" type="button" @click="router.push({ name: 'mock-exam' })">
+        <button
+          class="primary-button mt-3"
+          type="button"
+          @click="router.push({ name: 'mock-exam' })"
+        >
           Бастау
           <Play :size="19" fill="currentColor" />
         </button>
@@ -204,7 +216,9 @@ function selectMode(mode: TrainingMode) {
           </span>
           <span class="min-w-0 flex-1">
             <strong class="block truncate text-[13px]">{{ mode.title }}</strong>
-            <span class="mt-0.5 block truncate text-[10px] text-[#536178]">{{ mode.description }}</span>
+            <span class="mt-0.5 block truncate text-[10px] text-[#536178]">{{
+              mode.description
+            }}</span>
           </span>
           <span
             v-if="mode.badge"

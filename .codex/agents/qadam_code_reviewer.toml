@@ -26,3 +26,4 @@ Block the change when relevant:
 Return exactly one verdict: `PASS`, `BLOCKED`, or `NOT_APPLICABLE`.
 For `BLOCKED`, report at most five findings ordered P0 to P2. Each finding must include the file or symbol, concrete evidence, maintenance or correctness impact, and the smallest acceptance criterion. Treat runtime risk, unsafe typing, secret exposure, architectural leakage, missing critical tests, and unrelated commit scope as merge blockers. Do not suggest broad rewrites or cosmetic preferences.
 """
+

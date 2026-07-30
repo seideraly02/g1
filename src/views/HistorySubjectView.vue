@@ -53,6 +53,16 @@ const visibleTopics = computed(() => (showAll.value ? topics : topics.slice(0, 3
 function startTraining() {
   void router.push({ name: 'training' })
 }
+
+function openMistakes() {
+  void router.push({ name: 'mistakes' })
+  showMenu.value = false
+}
+
+function showAllTopics() {
+  showAll.value = true
+  showMenu.value = false
+}
 </script>
 
 <template>
@@ -73,18 +83,20 @@ function startTraining() {
 
     <div class="screen-content px-4 pt-1">
       <div v-if="showMenu" class="relative z-10">
-        <div class="absolute right-0 top-0 w-40 rounded-xl border border-[#e0e7f0] bg-white p-1.5 text-[11px] shadow-lg">
+        <div
+          class="absolute right-0 top-0 w-40 rounded-xl border border-[#e0e7f0] bg-white p-1.5 text-[11px] shadow-lg"
+        >
           <button
             type="button"
             class="w-full rounded-lg border-0 bg-transparent px-3 py-2 text-left font-[700] hover:bg-[#f4f7fb]"
-            @click="router.push({ name: 'mistakes' }); showMenu = false"
+            @click="openMistakes"
           >
             Қателерді ашу
           </button>
           <button
             type="button"
             class="w-full rounded-lg border-0 bg-transparent px-3 py-2 text-left font-[700] hover:bg-[#f4f7fb]"
-            @click="showAll = true; showMenu = false"
+            @click="showAllTopics"
           >
             Барлық тақырып
           </button>
@@ -93,7 +105,9 @@ function startTraining() {
 
       <article class="rounded-[20px] border border-[#b9d4ff] bg-[#edf5ff] p-4">
         <div class="flex items-start gap-3">
-          <span class="grid size-12 shrink-0 place-items-center rounded-[14px] bg-white/75 text-[#2468f2]">
+          <span
+            class="grid size-12 shrink-0 place-items-center rounded-[14px] bg-white/75 text-[#2468f2]"
+          >
             <Landmark :size="24" />
           </span>
           <div class="min-w-0 flex-1">

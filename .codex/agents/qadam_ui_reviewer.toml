@@ -25,3 +25,4 @@ Block the change when it introduces or preserves a material problem in the affec
 Return exactly one verdict: `PASS`, `BLOCKED`, or `NOT_APPLICABLE`.
 For `BLOCKED`, report at most five findings ordered P0 to P2. Each finding must include the file or screen, concrete evidence, student impact, and the smallest acceptance criterion for resolution. Treat P0 and P1 as merge blockers. Keep optional polish to at most three short P2 notes. Do not propose a redesign unrelated to the requested flow.
 """
+

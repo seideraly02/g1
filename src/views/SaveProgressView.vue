@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowLeft,
-  ArrowRight,
-  BatteryMedium,
-  Cloud,
-  ShieldCheck,
-  Wifi,
-} from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, BatteryMedium, Cloud, ShieldCheck, Wifi } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -44,17 +37,23 @@ const steps = [
       >
         <ArrowLeft :size="21" :stroke-width="2" />
       </button>
-      <h1 class="ml-3 text-[21px] font-[900] tracking-[-.025em] text-[#111b34]">Ілгерілеуді сақтау</h1>
+      <h1 class="ml-3 text-[21px] font-[900] tracking-[-.025em] text-[#111b34]">
+        Ілгерілеуді сақтау
+      </h1>
     </header>
 
     <main class="min-h-0 flex-1 overflow-y-auto pb-3">
       <div class="mt-10 flex justify-center">
-        <span class="grid size-[78px] place-items-center rounded-[27px] bg-[#edfbf3] text-[#16a757]">
+        <span
+          class="grid size-[78px] place-items-center rounded-[27px] bg-[#edfbf3] text-[#16a757]"
+        >
           <Cloud :size="39" :stroke-width="2.1" aria-hidden="true" />
         </span>
       </div>
 
-      <h2 class="mt-5 text-center text-[22px] font-[900] tracking-[-.02em] text-[#111b34]">Нәтиже сақталды</h2>
+      <h2 class="mt-5 text-center text-[22px] font-[900] tracking-[-.02em] text-[#111b34]">
+        Нәтиже сақталды
+      </h2>
       <p class="mt-1 text-center text-[15px] text-[#536178]">Сол жерден жалғастырамыз</p>
 
       <div class="mt-5 rounded-[19px] border border-[#dce3ec] bg-white px-5 py-4">
@@ -78,18 +77,32 @@ const steps = [
               "
               aria-hidden="true"
             >
-              <span class="size-[15px] rounded-full" :class="step[2] ? 'bg-[#16a757]' : 'bg-[#2468f2]'" />
+              <span
+                class="size-[15px] rounded-full"
+                :class="step[2] ? 'bg-[#16a757]' : 'bg-[#2468f2]'"
+              />
             </span>
             <span class="ml-3 min-w-0">
-              <strong class="block text-[14px] font-[850] leading-[1.25] text-[#111b34]">{{ step[0] }}</strong>
-              <span class="mt-1 block text-[12px] leading-[1.25] text-[#536178]">{{ step[1] }}</span>
+              <strong class="block text-[14px] font-[850] leading-[1.25] text-[#111b34]">{{
+                step[0]
+              }}</strong>
+              <span class="mt-1 block text-[12px] leading-[1.25] text-[#536178]">{{
+                step[1]
+              }}</span>
             </span>
           </li>
         </ol>
       </div>
 
-      <div class="mt-5 flex items-center rounded-[18px] border border-[#aed5ff] bg-[#edf5ff] px-6 py-5">
-        <ShieldCheck :size="22" :stroke-width="2.1" class="shrink-0 text-[#2468f2]" aria-hidden="true" />
+      <div
+        class="mt-5 flex items-center rounded-[18px] border border-[#aed5ff] bg-[#edf5ff] px-6 py-5"
+      >
+        <ShieldCheck
+          :size="22"
+          :stroke-width="2.1"
+          class="shrink-0 text-[#2468f2]"
+          aria-hidden="true"
+        />
         <div class="ml-5">
           <strong class="block text-[13px] font-[850] text-[#111b34]">Ештеңе жоғалмайды</strong>
           <p class="mt-1 text-[12px] leading-[1.4] text-[#536178]">
