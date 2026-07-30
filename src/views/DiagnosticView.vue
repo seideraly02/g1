@@ -1,14 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowRight,
-  BatteryMedium,
-  Bookmark,
-  Check,
-  Flag,
-  Save,
-  Wifi,
-  X,
-} from 'lucide-vue-next'
+import { ArrowRight, BatteryMedium, Bookmark, Check, Flag, Save, Wifi, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -41,14 +32,16 @@ const questions: DiagnosticQuestion[] = [
     prompt: 'Қазақ хандығы алғаш құрылған өңірді белгіле.',
     options: ['Сарыарқа', 'Батыс Жетісу', 'Маңғыстау', 'Ертіс бойы'],
     correct: 1,
-    explanation: 'Хандықтың алғашқы аумағы Шу мен Талас өзендері аралығындағы Батыс Жетісуда болды.',
+    explanation:
+      'Хандықтың алғашқы аумағы Шу мен Талас өзендері аралығындағы Батыс Жетісуда болды.',
   },
   {
     topic: 'XX ғасыр',
     prompt: 'Алаш автономиясы қай жылы жарияланды?',
     options: ['1905 жылы', '1916 жылы', '1917 жылы', '1920 жылы'],
     correct: 2,
-    explanation: 'Алаш автономиясы 1917 жылғы желтоқсанда өткен Екінші жалпықазақ съезінде жарияланды.',
+    explanation:
+      'Алаш автономиясы 1917 жылғы желтоқсанда өткен Екінші жалпықазақ съезінде жарияланды.',
   },
   {
     topic: 'XX ғасыр',
@@ -165,7 +158,9 @@ function nextQuestion() {
               : answered && index === selectedAnswer && index !== question.correct
                 ? 'border-[#ff9299] bg-[#fff2f2]'
                 : 'border-[#dfe5ee] bg-white',
-            answered && index !== question.correct && index !== selectedAnswer ? 'text-[#6f7a90]' : 'text-[#111b34]',
+            answered && index !== question.correct && index !== selectedAnswer
+              ? 'text-[#6f7a90]'
+              : 'text-[#111b34]',
           ]"
           :disabled="answered"
           @click="selectAnswer(index)"

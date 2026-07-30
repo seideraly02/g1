@@ -27,7 +27,9 @@ const showDetails = ref(false)
     </AppHeader>
 
     <div class="screen-content px-4 pt-1">
-      <article class="rounded-[22px] border border-[#d9d2ff] bg-[linear-gradient(145deg,#f5f3ff,#f1edff)] p-[18px]">
+      <article
+        class="rounded-[22px] border border-[#d9d2ff] bg-[linear-gradient(145deg,#f5f3ff,#f1edff)] p-[18px]"
+      >
         <div class="flex items-start justify-between gap-3">
           <p class="eyebrow mt-1">АҒЫМДАҒЫ АРАЛЫҚ</p>
           <span class="chip chip--green h-8 border-0 px-3">
@@ -36,7 +38,9 @@ const showDetails = ref(false)
           </span>
         </div>
 
-        <p class="metric-value mb-0 mt-3 text-[35px] font-[850] leading-none tracking-[-0.04em]">75–85 балл</p>
+        <p class="metric-value mb-0 mt-3 text-[35px] font-[850] leading-none tracking-[-0.04em]">
+          75–85 балл
+        </p>
 
         <div class="mt-4 flex items-center gap-2 text-[11px] font-[750] text-[#7946df]">
           <ShieldCheck :size="18" />
@@ -75,7 +79,9 @@ const showDetails = ref(false)
           class="flex w-full items-center gap-3 border-0 border-b border-[#edf0f5] bg-transparent px-0 py-3 text-left"
           @click="router.push({ name: 'subjects' })"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#f1edff] text-[#7a4bea]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#f1edff] text-[#7a4bea]"
+          >
             <ArrowUpRight :size="20" />
           </span>
           <span class="min-w-0 flex-1">
@@ -90,7 +96,9 @@ const showDetails = ref(false)
           class="flex w-full items-center gap-3 border-0 bg-transparent px-0 py-3 text-left"
           @click="router.push({ name: 'history-subject' })"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#fff8e7] text-[#dd8508]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#fff8e7] text-[#dd8508]"
+          >
             <Landmark :size="20" />
           </span>
           <span class="min-w-0 flex-1">

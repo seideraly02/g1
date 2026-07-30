@@ -66,12 +66,20 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
     </div>
 
     <div class="screen-content space-y-2.5 pt-4">
-      <div class="grid grid-cols-3 rounded-2xl bg-[#dfe6f0] p-1" role="tablist" aria-label="Рейтинг санаты">
+      <div
+        class="grid grid-cols-3 rounded-2xl bg-[#dfe6f0] p-1"
+        role="tablist"
+        aria-label="Рейтинг санаты"
+      >
         <button
           v-for="tab in tabs"
           :key="tab.key"
           class="h-10 rounded-xl border-0 text-[12px] font-[800]"
-          :class="activeTab === tab.key ? 'bg-white text-[#111b34] shadow-sm' : 'bg-transparent text-[#536178]'"
+          :class="
+            activeTab === tab.key
+              ? 'bg-white text-[#111b34] shadow-sm'
+              : 'bg-transparent text-[#536178]'
+          "
           type="button"
           role="tab"
           :aria-selected="activeTab === tab.key"
@@ -138,10 +146,14 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
             {{ row.initials }}
           </span>
           <div class="min-w-0">
-            <div class="truncate text-[12px]" :class="{ 'font-[850]': row.current }">{{ row.name }}</div>
+            <div class="truncate text-[12px]" :class="{ 'font-[850]': row.current }">
+              {{ row.name }}
+            </div>
             <div v-if="row.current" class="text-[10px] text-[#536178]">тағы +54 ұпай</div>
           </div>
-          <span class="metric-value text-[12px] font-[850]">{{ row.score.toLocaleString('kk-KZ') }}</span>
+          <span class="metric-value text-[12px] font-[850]">{{
+            row.score.toLocaleString('kk-KZ')
+          }}</span>
         </div>
 
         <div class="flex items-center justify-between px-2 pt-2">

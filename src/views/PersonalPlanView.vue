@@ -85,7 +85,9 @@ const settings: PlanSetting[] = [
       >
         <ArrowLeft :size="21" :stroke-width="2" />
       </button>
-      <h1 class="ml-3 mt-1 flex-1 text-[21px] font-[900] leading-[1.25] tracking-[-.025em] text-[#111b34]">
+      <h1
+        class="ml-3 mt-1 flex-1 text-[21px] font-[900] leading-[1.25] tracking-[-.025em] text-[#111b34]"
+      >
         Жеке<br />жоспар
       </h1>
       <button
@@ -98,7 +100,12 @@ const settings: PlanSetting[] = [
     </header>
 
     <div class="mt-1 grid h-1.5 shrink-0 grid-cols-5 gap-1.5" aria-label="5 қадамның 4-қадамы">
-      <span v-for="step in 5" :key="step" class="rounded-full" :class="step <= 4 ? 'bg-[#2468f2]' : 'bg-[#dfe6ef]'" />
+      <span
+        v-for="step in 5"
+        :key="step"
+        class="rounded-full"
+        :class="step <= 4 ? 'bg-[#2468f2]' : 'bg-[#dfe6ef]'"
+      />
     </div>
 
     <main class="min-h-0 flex-1 overflow-y-auto pb-3">
@@ -136,14 +143,25 @@ const settings: PlanSetting[] = [
           >
             {{ goal.value }}
           </strong>
-          <span class="mt-2 block whitespace-nowrap text-[10px] text-[#536178]">≈ {{ goal.minutes }} минут</span>
+          <span class="mt-2 block whitespace-nowrap text-[10px] text-[#536178]"
+            >≈ {{ goal.minutes }} минут</span
+          >
         </button>
       </div>
 
-      <div class="mt-4 flex items-center rounded-[18px] border border-[#add4ff] bg-[#edf5ff] px-6 py-5">
-        <WandSparkles :size="23" :stroke-width="2.1" class="shrink-0 text-[#2468f2]" aria-hidden="true" />
+      <div
+        class="mt-4 flex items-center rounded-[18px] border border-[#add4ff] bg-[#edf5ff] px-6 py-5"
+      >
+        <WandSparkles
+          :size="23"
+          :stroke-width="2.1"
+          class="shrink-0 text-[#2468f2]"
+          aria-hidden="true"
+        />
         <div class="ml-5">
-          <strong class="block text-[13px] font-[850] text-[#111b34]">Оңтайлы бастау: {{ dailyGoal }}</strong>
+          <strong class="block text-[13px] font-[850] text-[#111b34]"
+            >Оңтайлы бастау: {{ dailyGoal }}</strong
+          >
           <p class="mt-1 text-[12px] leading-[1.35] text-[#536178]">
             Жоспарда әлсіз тақырыптар мен алдағы қайталаулар ескеріледі.
           </p>
@@ -177,10 +195,19 @@ const settings: PlanSetting[] = [
             <component :is="setting.icon" :size="21" :stroke-width="2.1" aria-hidden="true" />
           </span>
           <span class="ml-3 min-w-0 flex-1">
-            <strong class="block truncate text-[13px] font-[850] text-[#111b34]">{{ setting.label }}</strong>
-            <span class="mt-0.5 block truncate text-[11px] text-[#536178]">{{ setting.value }}</span>
+            <strong class="block truncate text-[13px] font-[850] text-[#111b34]">{{
+              setting.label
+            }}</strong>
+            <span class="mt-0.5 block truncate text-[11px] text-[#536178]">{{
+              setting.value
+            }}</span>
           </span>
-          <ChevronRight :size="20" :stroke-width="2" class="shrink-0 text-[#91a0b3]" aria-hidden="true" />
+          <ChevronRight
+            :size="20"
+            :stroke-width="2"
+            class="shrink-0 text-[#91a0b3]"
+            aria-hidden="true"
+          />
         </button>
       </div>
     </main>

@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  BatteryMedium,
-  CircleUserRound,
-  RefreshCcw,
-  TrendingUp,
-  Wifi,
-  X,
-} from 'lucide-vue-next'
+import { BatteryMedium, CircleUserRound, RefreshCcw, TrendingUp, Wifi, X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import ProgressRing from '../components/ProgressRing.vue'
 
@@ -48,7 +41,10 @@ const router = useRouter()
       <div class="mt-5 flex justify-center">
         <ProgressRing :value="80" :size="124" :stroke="16" color="#2468f2">
           <div class="text-center">
-            <strong class="block text-[31px] font-[900] leading-none tracking-[-.03em] text-[#111b34]">4/5</strong>
+            <strong
+              class="block text-[31px] font-[900] leading-none tracking-[-.03em] text-[#111b34]"
+              >4/5</strong
+            >
             <span class="mt-2 block text-[11px] text-[#536178]">дұрыс</span>
           </div>
         </ProgressRing>
@@ -75,16 +71,30 @@ const router = useRouter()
       </div>
 
       <div class="mt-1 space-y-1">
-        <div class="flex min-h-[67px] items-center rounded-[18px] border border-[#8aebb3] bg-[#effcf5] px-5">
-          <TrendingUp :size="19" :stroke-width="2.2" class="shrink-0 text-[#16a757]" aria-hidden="true" />
+        <div
+          class="flex min-h-[67px] items-center rounded-[18px] border border-[#8aebb3] bg-[#effcf5] px-5"
+        >
+          <TrendingUp
+            :size="19"
+            :stroke-width="2.2"
+            class="shrink-0 text-[#16a757]"
+            aria-hidden="true"
+          />
           <div class="ml-5">
             <strong class="block text-[13px] font-[850] text-[#111b34]">Күшті тақырып</strong>
             <span class="mt-0.5 block text-[12px] text-[#536178]">Қазақ хандығы</span>
           </div>
         </div>
 
-        <div class="flex min-h-[67px] items-center rounded-[18px] border border-[#f4db6b] bg-[#fffbed] px-5">
-          <RefreshCcw :size="19" :stroke-width="2.2" class="shrink-0 text-[#d17a00]" aria-hidden="true" />
+        <div
+          class="flex min-h-[67px] items-center rounded-[18px] border border-[#f4db6b] bg-[#fffbed] px-5"
+        >
+          <RefreshCcw
+            :size="19"
+            :stroke-width="2.2"
+            class="shrink-0 text-[#d17a00]"
+            aria-hidden="true"
+          />
           <div class="ml-5">
             <strong class="block text-[13px] font-[850] text-[#111b34]">Тағы тексерген жөн</strong>
             <span class="mt-0.5 block text-[12px] text-[#536178]">XX ғасыр оқиғалары</span>
@@ -92,12 +102,16 @@ const router = useRouter()
         </div>
       </div>
 
-      <p class="mt-1 rounded-[14px] bg-[#f0f3f8] px-3 py-2.5 text-[11px] leading-[1.35] text-[#536178]">
+      <p
+        class="mt-1 rounded-[14px] bg-[#f0f3f8] px-3 py-2.5 text-[11px] leading-[1.35] text-[#536178]"
+      >
         <strong class="font-[850] text-[#111b34]">Ұсыныс:</strong>
         тағы екі қысқа жаттығудан өт — сонда болжам дәлірек болады.
       </p>
 
-      <h3 class="mx-auto mt-1 max-w-[320px] text-center text-[15px] font-[900] leading-[1.25] text-[#111b34]">
+      <h3
+        class="mx-auto mt-1 max-w-[320px] text-center text-[15px] font-[900] leading-[1.25] text-[#111b34]"
+      >
         Нәтижені сақтап, жеке дайындық жоспарын ал
       </h3>
     </main>

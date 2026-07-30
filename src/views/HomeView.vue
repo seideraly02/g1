@@ -82,9 +82,7 @@ function open(route: AppRouteName) {
         class="mt-3 overflow-hidden rounded-[22px] bg-[linear-gradient(135deg,#1556dd_0%,#344ee3_54%,#593ee7_100%)] p-[18px] text-white shadow-[0_14px_28px_rgba(45,74,218,.22)]"
       >
         <div class="flex items-center justify-between">
-          <p class="m-0 text-[11px] font-[800] tracking-[0.08em] text-[#bcd2ff]">
-            БҮГІНГІ ЖОСПАР
-          </p>
+          <p class="m-0 text-[11px] font-[800] tracking-[0.08em] text-[#bcd2ff]">БҮГІНГІ ЖОСПАР</p>
           <span class="rounded-lg bg-white/15 px-2.5 py-1 text-[10px] font-[800]">8 / 20</span>
         </div>
 
@@ -95,7 +93,10 @@ function open(route: AppRouteName) {
           Соңғы жаттығулардағы қателер мен алдағы қайталауға сүйеніп құрастырылды.
         </p>
 
-        <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/20" aria-label="Жоспардың 40 пайызы орындалды">
+        <div
+          class="mt-3 h-2 overflow-hidden rounded-full bg-white/20"
+          aria-label="Жоспардың 40 пайызы орындалды"
+        >
           <div class="h-full w-2/5 rounded-full bg-white" />
         </div>
 
@@ -117,13 +118,17 @@ function open(route: AppRouteName) {
         </button>
       </article>
 
-      <div class="-mx-4 mt-3 flex gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        class="-mx-4 mt-3 flex gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <button
           type="button"
           class="card flex min-h-[82px] min-w-[143px] items-center gap-3 p-3 text-left transition-colors hover:bg-[#f8faff]"
           @click="open('forecast')"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#f1edff] text-[#7959ed]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#f1edff] text-[#7959ed]"
+          >
             <Gauge :size="21" />
           </span>
           <span>
@@ -137,7 +142,9 @@ function open(route: AppRouteName) {
           class="card flex min-h-[82px] min-w-[143px] items-center gap-3 p-3 text-left transition-colors hover:bg-[#f8faff]"
           @click="open('mistakes')"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#fff7e6] text-[#dd8507]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#fff7e6] text-[#dd8507]"
+          >
             <RotateCcw :size="21" />
           </span>
           <span>
@@ -151,7 +158,9 @@ function open(route: AppRouteName) {
           class="card flex min-h-[82px] min-w-[143px] items-center gap-3 p-3 text-left transition-colors hover:bg-[#f8faff]"
           @click="open('rating')"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#ecfbf3] text-[#18a75a]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#ecfbf3] text-[#18a75a]"
+          >
             <Trophy :size="21" />
           </span>
           <span>
@@ -163,7 +172,9 @@ function open(route: AppRouteName) {
 
       <div class="mt-3 flex items-center justify-between">
         <h2 class="m-0 text-[14px] font-[800]">Бейіндік пәндер</h2>
-        <button type="button" class="text-button min-h-7 px-0" @click="open('subjects')">Барлығы</button>
+        <button type="button" class="text-button min-h-7 px-0" @click="open('subjects')">
+          Барлығы
+        </button>
       </div>
 
       <div class="mt-2 grid grid-cols-2 gap-2.5">
@@ -172,7 +183,9 @@ function open(route: AppRouteName) {
           class="card flex min-h-[66px] items-center gap-3 p-3 text-left transition-colors hover:bg-[#faf8ff]"
           @click="open('subjects')"
         >
-          <span class="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#f1edff] text-[#7a4bec]">
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#f1edff] text-[#7a4bec]"
+          >
             <Landmark :size="18" />
           </span>
           <span class="min-w-0">
@@ -186,7 +199,9 @@ function open(route: AppRouteName) {
           class="card flex min-h-[66px] items-center gap-3 p-3 text-left transition-colors hover:bg-[#f4fcf7]"
           @click="open('subjects')"
         >
-          <span class="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#ecfbf3] text-[#17a65a]">
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#ecfbf3] text-[#17a65a]"
+          >
             <Code2 :size="18" />
           </span>
           <span class="min-w-0">

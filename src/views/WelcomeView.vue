@@ -26,7 +26,9 @@ function start() {
       aria-hidden="true"
     />
 
-    <div class="relative z-10 flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]">
+    <div
+      class="relative z-10 flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]"
+    >
       <span class="text-[12px] font-[850] tracking-[.01em]">09:41</span>
       <div class="flex items-center gap-2">
         <svg width="14" height="13" viewBox="0 0 14 13" fill="none" aria-hidden="true">
@@ -50,14 +52,41 @@ function start() {
     >
       <svg class="h-full w-full" viewBox="0 0 358 186" fill="none">
         <defs>
-          <filter id="book-shadow" x="76" y="32" width="226" height="132" filterUnits="userSpaceOnUse">
-            <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#8fb7e5" flood-opacity=".25" />
+          <filter
+            id="book-shadow"
+            x="76"
+            y="32"
+            width="226"
+            height="132"
+            filterUnits="userSpaceOnUse"
+          >
+            <feDropShadow
+              dx="0"
+              dy="7"
+              stdDeviation="7"
+              flood-color="#8fb7e5"
+              flood-opacity=".25"
+            />
           </filter>
-          <linearGradient id="blue-dot" x1="27" y1="110" x2="89" y2="172" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="blue-dot"
+            x1="27"
+            y1="110"
+            x2="89"
+            y2="172"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stop-color="#75B6F5" />
             <stop offset="1" stop-color="#57A2EF" />
           </linearGradient>
-          <linearGradient id="violet-dot" x1="248" y1="27" x2="322" y2="104" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="violet-dot"
+            x1="248"
+            y1="27"
+            x2="322"
+            y2="104"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stop-color="#C7A6FF" />
             <stop offset="1" stop-color="#A67AF6" />
           </linearGradient>
@@ -82,7 +111,9 @@ function start() {
         </g>
         <g fill="#7B3FF2">
           <path d="M64 37 66 44 73 46 66 48 64 55 62 48 55 46 62 44 64 37Z" />
-          <path d="M58 52 59.2 56.2 63.5 57.5 59.2 58.8 58 63 56.8 58.8 52.5 57.5 56.8 56.2 58 52Z" />
+          <path
+            d="M58 52 59.2 56.2 63.5 57.5 59.2 58.8 58 63 56.8 58.8 52.5 57.5 56.8 56.2 58 52Z"
+          />
           <path d="M72 48 73 51.5 76.5 52.5 73 53.5 72 57 71 53.5 67.5 52.5 71 51.5 72 48Z" />
         </g>
         <circle cx="279" cy="145" r="10" stroke="#7B3FF2" stroke-width="2" />
@@ -95,7 +126,9 @@ function start() {
       <p class="m-0 text-[12px] font-[850] uppercase tracking-[.04em] text-[#2468f2]">
         Жылдам диагностика
       </p>
-      <h1 class="mt-2 max-w-[350px] text-[26px] font-[900] leading-[1.16] tracking-[-.025em] text-[#0d1730]">
+      <h1
+        class="mt-2 max-w-[350px] text-[26px] font-[900] leading-[1.16] tracking-[-.025em] text-[#0d1730]"
+      >
         5 сұрақ арқылы деңгейіңді тексер
       </h1>
       <p class="mt-2 text-[15px] leading-[1.42] text-[#536178]">
@@ -134,7 +167,11 @@ function start() {
     </div>
 
     <div class="relative z-10 mt-auto space-y-2 pt-5">
-      <button class="primary-button min-h-[52px] rounded-[16px] text-[16px]" type="button" @click="start">
+      <button
+        class="primary-button min-h-[52px] rounded-[16px] text-[16px]"
+        type="button"
+        @click="start"
+      >
         Тіркелмей бастау
         <ArrowRight :size="20" :stroke-width="2" aria-hidden="true" />
       </button>

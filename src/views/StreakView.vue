@@ -58,11 +58,15 @@ function toggleDetail(key: DetailKey) {
         Күн сайын кемінде бір жаттығу орындасаңыз, серияңыз жалғасады.
       </div>
 
-      <div class="rounded-[23px] border border-[#ffd29b] bg-gradient-to-br from-[#fff9ef] to-[#fffdf4] p-4">
+      <div
+        class="rounded-[23px] border border-[#ffd29b] bg-gradient-to-br from-[#fff9ef] to-[#fffdf4] p-4"
+      >
         <div class="text-[11px] font-[850] tracking-[.08em] text-[#bd3f0a]">АҒЫМДАҒЫ СЕРИЯ</div>
         <div class="mt-2 flex items-center">
           <Flame :size="29" :stroke-width="2" />
-          <span class="metric-value ml-2 text-[44px] font-[900] leading-none text-[#c94408]">8</span>
+          <span class="metric-value ml-2 text-[44px] font-[900] leading-none text-[#c94408]"
+            >8</span
+          >
           <span class="ml-2 text-[16px] font-[850]">күн қатарынан</span>
           <Award class="ml-auto text-[#d77a00]" :size="26" />
         </div>
@@ -74,7 +78,9 @@ function toggleDetail(key: DetailKey) {
       <div class="card p-4">
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-[14px] font-[850]">Осы апта</h2>
-          <span class="inline-flex items-center gap-2 rounded-full border border-[#b7d9ff] bg-[#eff6ff] px-3 py-1.5 text-[11px] font-[800] text-[#235ec9]">
+          <span
+            class="inline-flex items-center gap-2 rounded-full border border-[#b7d9ff] bg-[#eff6ff] px-3 py-1.5 text-[11px] font-[800] text-[#235ec9]"
+          >
             <Snowflake :size="18" />
             2 мұздатудың 1-еуі
           </span>
@@ -152,7 +158,10 @@ function toggleDetail(key: DetailKey) {
             :size="20"
           />
         </button>
-        <div v-if="openDetail === 'history'" class="border-t border-[#e6ebf2] px-4 py-2 text-[10px] text-[#536178]">
+        <div
+          v-if="openDetail === 'history'"
+          class="border-t border-[#e6ebf2] px-4 py-2 text-[10px] text-[#536178]"
+        >
           Сәрсенбі, 24 шілде · автоматты мұздату
         </div>
         <button
@@ -174,7 +183,10 @@ function toggleDetail(key: DetailKey) {
             :size="20"
           />
         </button>
-        <div v-if="openDetail === 'pause'" class="border-t border-[#e6ebf2] px-4 py-2 text-[10px] text-[#536178]">
+        <div
+          v-if="openDetail === 'pause'"
+          class="border-t border-[#e6ebf2] px-4 py-2 text-[10px] text-[#536178]"
+        >
           Режимді профиль параметрлерінен қосуға болады.
         </div>
       </div>

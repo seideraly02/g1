@@ -53,7 +53,9 @@ const days = [
           v-for="value in [7, 30] as const"
           :key="value"
           class="h-9 rounded-[11px] border-0 px-3 text-[12px] font-[800] transition-colors"
-          :class="period === value ? 'bg-white text-[#111b34] shadow-sm' : 'bg-transparent text-[#536178]'"
+          :class="
+            period === value ? 'bg-white text-[#111b34] shadow-sm' : 'bg-transparent text-[#536178]'
+          "
           type="button"
           :aria-pressed="period === value"
           @click="period = value"
@@ -72,9 +74,13 @@ const days = [
         <div class="flex items-center justify-between">
           <div>
             <div class="text-[11px] font-[850] tracking-[.08em] text-[#2869df]">БОЛЖАМ</div>
-            <div class="metric-value mt-1 text-[27px] font-[900] tracking-[-.03em]">{{ summary.forecast }}</div>
+            <div class="metric-value mt-1 text-[27px] font-[900] tracking-[-.03em]">
+              {{ summary.forecast }}
+            </div>
           </div>
-          <div class="flex items-center gap-2 rounded-xl bg-[#dcf8e7] px-3 py-2 text-[11px] font-[850] text-[#15894a]">
+          <div
+            class="flex items-center gap-2 rounded-xl bg-[#dcf8e7] px-3 py-2 text-[11px] font-[850] text-[#15894a]"
+          >
             <TrendingUp :size="20" />
             {{ summary.gain }}
           </div>
@@ -98,7 +104,11 @@ const days = [
           <span class="text-[10px] text-[#536178]">барлық талпыныс</span>
         </div>
         <div class="space-y-2">
-          <div v-for="subject in subjects" :key="subject.name" class="grid grid-cols-[72px_1fr_34px] items-center gap-2">
+          <div
+            v-for="subject in subjects"
+            :key="subject.name"
+            class="grid grid-cols-[72px_1fr_34px] items-center gap-2"
+          >
             <span class="text-[11px]">{{ subject.name }}</span>
             <div class="h-2 overflow-hidden rounded-full bg-[#dfe6ef]">
               <div
@@ -118,7 +128,9 @@ const days = [
             <Clock3 :size="20" />
           </div>
           <div class="metric-value mt-2 text-[21px] font-[900]">38 сек.</div>
-          <div class="mt-1 text-[10px] leading-5 text-[#536178]">орташа жауап · 4 сек. жылдамырақ</div>
+          <div class="mt-1 text-[10px] leading-5 text-[#536178]">
+            орташа жауап · 4 сек. жылдамырақ
+          </div>
         </div>
         <button
           class="card p-3 text-left transition-transform active:scale-[.99]"

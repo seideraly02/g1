@@ -71,8 +71,7 @@ const visibleSubjects = computed(() => {
       (activeFilter.value === 'profile' && subject.profile) ||
       (activeFilter.value === 'weak' && subject.weak)
     const inSearch =
-      !needle ||
-      `${subject.name} ${subject.topic}`.toLocaleLowerCase('kk-KZ').includes(needle)
+      !needle || `${subject.name} ${subject.topic}`.toLocaleLowerCase('kk-KZ').includes(needle)
     return inFilter && inSearch
   })
   return sortLowFirst.value ? [...filtered].sort((a, b) => a.accuracy - b.accuracy) : filtered
@@ -80,6 +79,16 @@ const visibleSubjects = computed(() => {
 
 function openSubject(subject: Subject) {
   void router.push({ name: subject.id === 'history' ? 'history-subject' : 'training' })
+}
+
+function toggleSortOrder() {
+  sortLowFirst.value = !sortLowFirst.value
+  showSort.value = false
+}
+
+function clearFilters() {
+  query.value = ''
+  activeFilter.value = 'all'
 }
 </script>
 
@@ -104,13 +113,15 @@ function openSubject(subject: Subject) {
         <button
           type="button"
           class="absolute right-0 top-0 rounded-xl border border-[#e2e8f1] bg-white px-3 py-2 text-[11px] font-[750] shadow-lg"
-          @click="sortLowFirst = !sortLowFirst; showSort = false"
+          @click="toggleSortOrder"
         >
           {{ sortLowFirst ? 'Бастапқы ретпен' : 'Дәлдігі төменнен' }}
         </button>
       </div>
 
-      <label class="flex h-12 items-center gap-3 rounded-[14px] border border-[#dfe6ef] bg-white px-4">
+      <label
+        class="flex h-12 items-center gap-3 rounded-[14px] border border-[#dfe6ef] bg-white px-4"
+      >
         <Search :size="20" class="shrink-0 text-[#9aa8bc]" />
         <span class="sr-only">Пәнді немесе тақырыпты іздеу</span>
         <input
@@ -182,7 +193,9 @@ function openSubject(subject: Subject) {
                   {{ subject.badge }}
                 </span>
               </span>
-              <span class="mt-1 block truncate text-[10px] text-[#68758a]">{{ subject.topic }}</span>
+              <span class="mt-1 block truncate text-[10px] text-[#68758a]">{{
+                subject.topic
+              }}</span>
             </span>
           </span>
 
@@ -212,7 +225,7 @@ function openSubject(subject: Subject) {
 
         <div v-if="visibleSubjects.length === 0" class="card px-4 py-8 text-center">
           <p class="m-0 text-[13px] font-[750]">Пән табылмады</p>
-          <button type="button" class="text-button mt-2" @click="query = ''; activeFilter = 'all'">
+          <button type="button" class="text-button mt-2" @click="clearFilters">
             Сүзгіні тазалау
           </button>
         </div>

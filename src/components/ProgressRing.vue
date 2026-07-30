@@ -17,12 +17,23 @@ const props = withDefaults(
 
 const radius = computed(() => (props.size - props.stroke) / 2)
 const circumference = computed(() => 2 * Math.PI * radius.value)
-const offset = computed(() => circumference.value * (1 - Math.min(100, Math.max(0, props.value)) / 100))
+const offset = computed(
+  () => circumference.value * (1 - Math.min(100, Math.max(0, props.value)) / 100),
+)
 </script>
 
 <template>
-  <div class="relative inline-grid place-items-center" :style="{ width: `${size}px`, height: `${size}px` }">
-    <svg class="-rotate-90" :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" aria-hidden="true">
+  <div
+    class="relative inline-grid place-items-center"
+    :style="{ width: `${size}px`, height: `${size}px` }"
+  >
+    <svg
+      class="-rotate-90"
+      :width="size"
+      :height="size"
+      :viewBox="`0 0 ${size} ${size}`"
+      aria-hidden="true"
+    >
       <circle
         :cx="size / 2"
         :cy="size / 2"
