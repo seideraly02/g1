@@ -103,6 +103,19 @@ Do not leave TODOs, dead buttons, fake success paths, placeholder content, dupli
 - Prefer `feat`, `fix`, `refactor`, `test`, `docs`, and `chore`. Write a concise imperative English subject without a trailing period.
 - Stage only reviewed files, never commit temporary or generated output, and run the relevant checks before committing.
 
+## Review agents and quality gates
+
+- `qadam_product` is the only implementation owner for changes that overlap product flow, UI, and business logic. Reviewer agents are read-only and must not edit files, create commits, or compete with that ownership.
+- After implementation and before finalizing a meaningful change, the primary agent must run only the reviewers relevant to the diff:
+  - `qadam_ui_reviewer` for screens, components, styling, copy, responsive behavior, accessibility, or user-flow changes;
+  - `qadam_logic_reviewer` for business rules, stores, engines, persistence, repositories, offline behavior, calculations, or data-model changes;
+  - `qadam_code_reviewer` for TypeScript, architecture, shared code, dependencies, tests, tooling, secrets, or non-trivial refactoring.
+- For a cross-cutting vertical slice, finish implementation first, then run the three reviewers in parallel. Never let multiple agents edit overlapping files.
+- Each reviewer reads the diff first, opens only the necessary rules and dependencies, reports at most five evidence-backed findings, and returns `PASS`, `BLOCKED`, or `NOT_APPLICABLE`.
+- Any P0 or P1 finding blocks completion. The implementation owner fixes accepted findings, then reruns only the reviewers that previously returned `BLOCKED`.
+- Do not spawn all reviewers for documentation-only edits, trivial copy corrections, or changes outside their scope. Use the smallest applicable set to limit token use and context noise.
+- Automated commands remain the implementation owner's responsibility. Reviewers verify evidence but do not duplicate successful lint, format, type-check, test, or build runs.
+
 ## Qadam product agent
 
 - For a focused product-design plus implementation task, use the project custom agent named `qadam_product`.
