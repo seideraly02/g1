@@ -371,6 +371,17 @@ export class LocalSessionRepository implements SessionRepository {
     return cloneSession(updatedSession)
   }
 
+  deleteSession(sessionId: string): boolean {
+    const sessions = this.readSessions()
+    const remainingSessions = sessions.filter((session) => session.id !== sessionId)
+    if (remainingSessions.length === sessions.length) {
+      return false
+    }
+
+    this.writeSessions(remainingSessions)
+    return true
+  }
+
   private readSessions(): readonly LearningSession[] {
     const payload = this.persistence.read(sessionsStorageKey, decodeSessionsPayload)
     if (payload) {

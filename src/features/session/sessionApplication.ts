@@ -3,7 +3,7 @@ import { createLocalSessionRepository } from './localSessionRepository'
 import type { SessionRepository } from './sessionRepository'
 import type { LearningSession, SaveSessionAnswerInput } from './types'
 
-const defaultSessionRepository = createLocalSessionRepository(new PersistenceService())
+let defaultSessionRepository = createLocalSessionRepository(new PersistenceService())
 
 function nowAsIso(): string {
   return new Date().toISOString()
@@ -44,6 +44,13 @@ function saveAnswerForSession(
 }
 
 export function getSessionRepository(): SessionRepository {
+  return defaultSessionRepository
+}
+
+export function resetDefaultSessionRepository(
+  persistence = new PersistenceService(),
+): SessionRepository {
+  defaultSessionRepository = createLocalSessionRepository(persistence)
   return defaultSessionRepository
 }
 
@@ -109,4 +116,17 @@ export function setTrialTrainingQuestion(
 
 export function completeTrialTraining(sessionId: string): LearningSession | null {
   return defaultSessionRepository.completeSession(sessionId, nowAsIso())
+}
+
+export function discardTrialSession(repository: SessionRepository, sessionId: string): boolean {
+  const session = repository.getSession(sessionId)
+  if (!session || session.type !== 'trial' || session.status === 'completed') {
+    return false
+  }
+
+  return repository.deleteSession(sessionId)
+}
+
+export function discardTrialTraining(sessionId: string): boolean {
+  return discardTrialSession(defaultSessionRepository, sessionId)
 }

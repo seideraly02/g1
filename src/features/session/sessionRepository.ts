@@ -13,4 +13,5 @@ export interface SessionRepository {
   saveAnswer(input: SaveSessionAnswerInput): LearningSession | null
   setCurrentQuestionIndex(sessionId: string, questionIndex: number): LearningSession | null
   completeSession(sessionId: string, completedAt: string): LearningSession | null
+  deleteSession(sessionId: string): boolean
 }

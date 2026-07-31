@@ -1,6 +1,7 @@
 export interface StorageAdapter {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
+  removeItem?(key: string): void
 }
 
 export type PersistenceDecoder<T> = (value: unknown) => T | null
@@ -44,6 +45,19 @@ export class PersistenceService {
 
     try {
       this.storage.setItem(key, JSON.stringify(value))
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  remove(key: string): boolean {
+    if (!this.storage?.removeItem) {
+      return false
+    }
+
+    try {
+      this.storage.removeItem(key)
       return true
     } catch {
       return false

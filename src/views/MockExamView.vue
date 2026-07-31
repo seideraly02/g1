@@ -48,7 +48,9 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = ''
 }
 
-function handlePageHide() {
+function handlePageHide(event: PageTransitionEvent) {
+  if (event.persisted) return
+
   if (shouldConfirmLeave()) {
     discardTrialTraining(trialSession.value.id)
   }
@@ -104,7 +106,7 @@ function confirmLeave() {
   canLeaveWithoutConfirmation.value = true
   leaveDialogOpen.value = false
   previouslyFocusedElement = null
-  void router.push({ name: 'profile' })
+  void router.push({ name: 'home' })
 }
 
 function handleLeaveDialogKeydown(event: KeyboardEvent) {
@@ -318,50 +320,51 @@ function continueTrial() {
         </button>
       </div>
     </div>
-  </section>
 
-  <Teleport to="body">
-    <div
-      v-if="leaveDialogOpen"
-      class="fixed inset-0 z-50 grid place-items-center bg-[#111b34]/40 p-4"
-      @click.self="cancelLeave"
-    >
-      <section
-        ref="leaveDialog"
-        class="w-full max-w-[380px] rounded-lg border border-[#dfe5ee] bg-white p-5 shadow-[0_18px_50px_rgba(17,27,52,.2)] outline-none"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="leave-dialog-title"
-        aria-describedby="leave-dialog-description"
-        tabindex="-1"
-        @keydown="handleLeaveDialogKeydown"
+    <Teleport to="body">
+      <div
+        v-if="leaveDialogOpen"
+        class="fixed inset-0 z-50 grid place-items-center bg-[#111b34]/40 p-4"
+        @click.self="cancelLeave"
       >
-        <p class="eyebrow">Аяқталмаған сынақ</p>
-        <h2 id="leave-dialog-title" class="mt-2 text-[20px] font-[850] text-[#111b34]">
-          Сынақтан шығу керек пе?
-        </h2>
-        <p id="leave-dialog-description" class="mt-2 text-[14px] leading-6 text-[#536178]">
-          Жауаптарың сақталады. Кейін сынақты осы жерден жалғастыра аласың.
-        </p>
+        <section
+          ref="leaveDialog"
+          class="w-full max-w-[380px] rounded-lg border border-[#dfe5ee] bg-white p-5 shadow-[0_18px_50px_rgba(17,27,52,.2)] outline-none"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="leave-dialog-title"
+          aria-describedby="leave-dialog-description"
+          tabindex="-1"
+          @keydown="handleLeaveDialogKeydown"
+        >
+          <p class="eyebrow">Аяқталмаған сынақ</p>
+          <h2 id="leave-dialog-title" class="mt-2 text-[20px] font-[850] text-[#111b34]">
+            Сынақтан шығу керек пе?
+          </h2>
+          <p id="leave-dialog-description" class="mt-2 text-[14px] leading-6 text-[#536178]">
+            Жауаптарың өшіріледі. Аяқталмаған сынақ нәтижелерге қосылмайды және оны жалғастыра
+            алмайсың.
+          </p>
 
-        <div class="mt-5 grid grid-cols-2 gap-2">
-          <button
-            ref="continueButton"
-            class="secondary-button min-h-11"
-            type="button"
-            @click="cancelLeave"
-          >
-            Жалғастыру
-          </button>
-          <button
-            class="inline-flex min-h-11 items-center justify-center rounded-lg border-0 bg-[#d92d38] px-4 text-[14px] font-[700] text-white hover:bg-[#b4232d]"
-            type="button"
-            @click="confirmLeave"
-          >
-            Шығу
-          </button>
-        </div>
-      </section>
-    </div>
-  </Teleport>
+          <div class="mt-5 grid grid-cols-2 gap-2">
+            <button
+              ref="continueButton"
+              class="secondary-button min-h-11"
+              type="button"
+              @click="cancelLeave"
+            >
+              Сынаққа оралу
+            </button>
+            <button
+              class="inline-flex min-h-11 items-center justify-center rounded-lg border-0 bg-[#d92d38] px-4 text-[14px] font-[700] text-white hover:bg-[#b4232d]"
+              type="button"
+              @click="confirmLeave"
+            >
+              Аяқтау
+            </button>
+          </div>
+        </section>
+      </div>
+    </Teleport>
+  </section>
 </template>

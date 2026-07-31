@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from './stores/authStore'
+import { pinia } from './stores/pinia'
 
 export type AppRouteName =
   | 'welcome'
@@ -22,7 +24,7 @@ export type AppRouteName =
   | 'notifications'
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', name: 'welcome', component: () => import('./views/WelcomeView.vue') },
+  { path: '/', name: 'welcome', component: () => import('./views/RegistrationView.vue') },
   {
     path: '/onboarding/subjects',
     name: 'subjects-onboarding',
@@ -84,4 +86,19 @@ export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior: () => ({ top: 0 }),
+})
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore(pinia)
+  await auth.ensureSession()
+
+  if (to.name === 'welcome') {
+    return auth.isAuthenticated ? { name: 'home' } : true
+  }
+
+  if (!auth.isAuthenticated) {
+    return { name: 'welcome' }
+  }
+
+  return true
 })

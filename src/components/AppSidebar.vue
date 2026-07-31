@@ -1,10 +1,20 @@
 <script setup lang="ts">
+import { LogOut } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
+import { signOutAccount } from '../features/auth/accountSession'
+import { useAuthStore } from '../stores/authStore'
 import BrandMark from './BrandMark.vue'
 import { isNavigationItemActive, primaryNavigationItems } from './navigation'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+
+async function signOut() {
+  await auth.signOut()
+  signOutAccount()
+  await router.replace({ name: 'welcome' })
+}
 </script>
 
 <template>
@@ -41,5 +51,16 @@ const router = useRouter()
         <span>{{ item.label }}</span>
       </button>
     </nav>
+
+    <div class="mt-auto border-t border-[#e5eaf1] pt-3">
+      <button
+        class="flex min-h-11 w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 text-left text-[14px] font-[650] text-[#c52835] transition-colors hover:bg-[#fff1f2] hover:text-[#a71927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c52835]"
+        type="button"
+        @click="signOut"
+      >
+        <LogOut :size="20" :stroke-width="1.9" aria-hidden="true" />
+        <span>Аккаунттан шығу</span>
+      </button>
+    </div>
   </aside>
 </template>
