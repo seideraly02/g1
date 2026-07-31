@@ -1,41 +1,30 @@
 <script setup lang="ts">
-import { BarChart3, BookOpen, Home, Play, UserRound } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
-import type { AppRouteName } from '../router'
+import {
+  isNavigationItemActive,
+  primaryNavigationItems,
+  type PrimaryNavigationKey,
+} from './navigation'
 
 const props = defineProps<{
-  active?: 'home' | 'subjects' | 'training' | 'progress' | 'profile'
+  active?: PrimaryNavigationKey
 }>()
 
 const router = useRouter()
 const route = useRoute()
 
-const items: Array<{
-  key: 'home' | 'subjects' | 'training' | 'progress' | 'profile'
-  label: string
-  route: AppRouteName
-  icon: typeof Home
-}> = [
-  { key: 'home', label: 'Басты бет', route: 'home', icon: Home },
-  { key: 'subjects', label: 'Пәндер', route: 'subjects', icon: BookOpen },
-  { key: 'training', label: 'Жаттығу', route: 'training', icon: Play },
-  { key: 'progress', label: 'Ілгерілеу', route: 'progress', icon: BarChart3 },
-  { key: 'profile', label: 'Профиль', route: 'profile', icon: UserRound },
-]
-
-function isActive(item: (typeof items)[number]) {
-  if (props.active) return props.active === item.key
-  return route.name === item.route
+function isActive(item: (typeof primaryNavigationItems)[number]) {
+  return isNavigationItemActive(item, route.name, props.active)
 }
 </script>
 
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] w-full max-w-[720px] items-end justify-around border-t border-[#e8edf5] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
+    class="bottom-navigation fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] w-full max-w-[720px] items-end justify-around border-t border-[#e8edf5] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
     aria-label="Негізгі мәзір"
   >
     <button
-      v-for="item in items"
+      v-for="item in primaryNavigationItems"
       :key="item.key"
       class="group relative flex h-[54px] w-[58px] flex-col items-center justify-end gap-1 border-0 pb-1 text-[11px] font-[650] leading-[1.1] transition-colors min-[521px]:w-[76px] min-[768px]:w-[96px]"
       :class="
