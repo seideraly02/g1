@@ -6,7 +6,14 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['coverage/**', 'dist/**', 'node_modules/**'],
+    ignores: [
+      '.pdf-visual-audit/**',
+      '.tmp-pdf-preview/**',
+      'coverage/**',
+      'dist/**',
+      'node_modules/**',
+      'qa-artifacts/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

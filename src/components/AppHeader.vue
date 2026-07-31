@@ -7,18 +7,29 @@ const props = withDefaults(
     title: string
     back?: boolean
     close?: boolean
+    managedClose?: boolean
     border?: boolean
   }>(),
   {
     back: false,
     close: false,
+    managedClose: false,
     border: false,
   },
 )
 
+const emit = defineEmits<{
+  close: []
+}>()
+
 const router = useRouter()
 
 function goBack() {
+  if (props.close && props.managedClose) {
+    emit('close')
+    return
+  }
+
   if (window.history.length > 1) {
     router.back()
   } else {
@@ -29,7 +40,7 @@ function goBack() {
 
 <template>
   <header
-    class="safe-top flex min-h-[76px] items-end gap-2 px-4 pb-2"
+    class="app-header safe-top flex min-h-[76px] items-end gap-2 px-4 pb-2"
     :class="{ 'border-b border-[#edf0f5]': props.border }"
   >
     <button

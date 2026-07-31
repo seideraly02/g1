@@ -4,16 +4,21 @@ const model = defineModel<boolean>({ required: true })
 
 <template>
   <button
-    class="relative h-[24px] w-[42px] rounded-full border-0 p-0 transition-colors"
-    :class="model ? 'bg-[#2468f2]' : 'bg-[#cbd4e3]'"
+    class="grid size-11 shrink-0 place-items-center rounded-xl border-0 bg-transparent p-0"
     type="button"
     role="switch"
     :aria-checked="model"
     @click="model = !model"
   >
     <span
-      class="absolute top-[3px] size-[18px] rounded-full bg-white shadow-sm transition-transform"
-      :class="model ? 'translate-x-[21px]' : 'translate-x-[3px]'"
-    />
+      class="relative block h-[24px] w-[42px] rounded-full transition-colors"
+      :class="model ? 'bg-[#2468f2]' : 'bg-[#cbd4e3]'"
+      aria-hidden="true"
+    >
+      <span
+        class="absolute left-[3px] top-[3px] size-[18px] rounded-full bg-white shadow-sm transition-transform"
+        :class="{ 'translate-x-[18px]': model }"
+      />
+    </span>
   </button>
 </template>

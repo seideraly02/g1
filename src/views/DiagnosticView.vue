@@ -2,8 +2,16 @@
 import { ArrowRight, BatteryMedium, Bookmark, Check, Flag, Save, Wifi, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
+import {
+  completeGuestDiagnostic,
+  getGuestDiagnosticSession,
+  saveGuestDiagnosticAnswer,
+  setGuestDiagnosticQuestion,
+} from '../features/session/sessionApplication'
 
 interface DiagnosticQuestion {
+  id: string
   topic: string
   prompt: string
   options: string[]
@@ -13,6 +21,7 @@ interface DiagnosticQuestion {
 
 const questions: DiagnosticQuestion[] = [
   {
+    id: guestDiagnosticQuestionIds[0],
     topic: 'Қазақ хандығы',
     prompt: 'Қазақ хандығының негізін қалаған хандар кімдер?',
     options: ['Керей мен Жәнібек', 'Абылай мен Әбілқайыр', 'Қасым мен Есім', 'Тәуке мен Хақназар'],
@@ -20,6 +29,7 @@ const questions: DiagnosticQuestion[] = [
     explanation: 'Керей мен Жәнібек қазақ руларының басын қосып, дербес хандықтың негізін қалады.',
   },
   {
+    id: guestDiagnosticQuestionIds[1],
     topic: 'Қазақ хандығы',
     prompt: 'Қазақ хандығы қай жылы құрылды?',
     options: ['1456 жылы', '1466 жылы', '1465 жылы', '1470 жылы'],
@@ -28,6 +38,7 @@ const questions: DiagnosticQuestion[] = [
       'Керей мен Жәнібек 1465 жылы Батыс Жетісуда хандықтың негізін қалады. Бұл дербес мемлекеттіліктің бастауына айналды.',
   },
   {
+    id: guestDiagnosticQuestionIds[2],
     topic: 'Қазақ хандығы',
     prompt: 'Қазақ хандығы алғаш құрылған өңірді белгіле.',
     options: ['Сарыарқа', 'Батыс Жетісу', 'Маңғыстау', 'Ертіс бойы'],
@@ -36,6 +47,7 @@ const questions: DiagnosticQuestion[] = [
       'Хандықтың алғашқы аумағы Шу мен Талас өзендері аралығындағы Батыс Жетісуда болды.',
   },
   {
+    id: guestDiagnosticQuestionIds[3],
     topic: 'XX ғасыр',
     prompt: 'Алаш автономиясы қай жылы жарияланды?',
     options: ['1905 жылы', '1916 жылы', '1917 жылы', '1920 жылы'],
@@ -44,6 +56,7 @@ const questions: DiagnosticQuestion[] = [
       'Алаш автономиясы 1917 жылғы желтоқсанда өткен Екінші жалпықазақ съезінде жарияланды.',
   },
   {
+    id: guestDiagnosticQuestionIds[4],
     topic: 'XX ғасыр',
     prompt: 'Қазақстан тәуелсіздігін қай жылы жариялады?',
     options: ['1986 жылы', '1990 жылы', '1991 жылы', '1993 жылы'],
@@ -53,32 +66,74 @@ const questions: DiagnosticQuestion[] = [
 ]
 
 const router = useRouter()
-const questionIndex = ref(1)
-const selectedAnswer = ref<number | null>(1)
+const diagnosticSession = ref(getGuestDiagnosticSession())
+const questionIndex = ref(diagnosticSession.value?.currentQuestionIndex ?? 0)
 const bookmarked = ref(true)
 const reported = ref(false)
 const detailsOpen = ref(false)
 
 const question = computed(() => questions[questionIndex.value])
-const answered = computed(() => selectedAnswer.value !== null)
+const savedAnswer = computed(() =>
+  diagnosticSession.value?.answers.find((answer) => answer.questionId === question.value.id),
+)
+const selectedAnswer = computed(() => {
+  const selectedOptionId = savedAnswer.value?.selectedOptionId
+  if (selectedOptionId === undefined) {
+    return null
+  }
+
+  const optionIndex = Number(selectedOptionId)
+  return Number.isInteger(optionIndex) ? optionIndex : null
+})
+const answered = computed(() => savedAnswer.value !== undefined)
+const sessionUnavailable = computed(() => diagnosticSession.value === null)
 const progress = computed(() => ((questionIndex.value + 1) / questions.length) * 100)
 
 function selectAnswer(index: number) {
-  if (!answered.value) {
-    selectedAnswer.value = index
+  if (answered.value || !diagnosticSession.value) {
+    return
+  }
+
+  const subjectId = diagnosticSession.value.selectedSubjectIds[0]
+  if (!subjectId) {
+    return
+  }
+
+  const updatedSession = saveGuestDiagnosticAnswer({
+    sessionId: diagnosticSession.value.id,
+    questionId: question.value.id,
+    subjectId,
+    selectedOptionId: String(index),
+    isCorrect: index === question.value.correct,
+    isSkipped: false,
+    answeredAt: new Date().toISOString(),
+  })
+
+  if (updatedSession) {
+    diagnosticSession.value = updatedSession
   }
 }
 
 function nextQuestion() {
-  if (!answered.value) return
+  if (!answered.value || !diagnosticSession.value) return
+
   if (questionIndex.value === questions.length - 1) {
-    router.push({ name: 'diagnostic-result' })
+    const completedSession = completeGuestDiagnostic(diagnosticSession.value.id)
+    if (completedSession) {
+      diagnosticSession.value = completedSession
+      router.push({ name: 'diagnostic-result' })
+    }
     return
   }
-  questionIndex.value += 1
-  selectedAnswer.value = null
-  detailsOpen.value = false
-  reported.value = false
+
+  const nextQuestionIndex = questionIndex.value + 1
+  const updatedSession = setGuestDiagnosticQuestion(diagnosticSession.value.id, nextQuestionIndex)
+  if (updatedSession) {
+    diagnosticSession.value = updatedSession
+    questionIndex.value = nextQuestionIndex
+    detailsOpen.value = false
+    reported.value = false
+  }
 }
 </script>
 
@@ -132,6 +187,14 @@ function nextQuestion() {
       </div>
     </header>
 
+    <p
+      v-if="sessionUnavailable"
+      class="mt-3 rounded-[12px] bg-[#fff0f1] px-3 py-2 text-[13px] leading-[1.4] text-[#b4232a]"
+      role="alert"
+    >
+      Диагностиканы бастау үшін алдымен пән таңда.
+    </p>
+
     <main class="min-h-0 flex-1 overflow-y-auto pb-3">
       <div class="mt-4 flex items-center gap-2">
         <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#2468f2]">
@@ -162,7 +225,7 @@ function nextQuestion() {
               ? 'text-[#6f7a90]'
               : 'text-[#111b34]',
           ]"
-          :disabled="answered"
+          :disabled="answered || sessionUnavailable"
           @click="selectAnswer(index)"
         >
           <span
@@ -244,7 +307,7 @@ function nextQuestion() {
     <button
       class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px]"
       type="button"
-      :disabled="!answered"
+      :disabled="!answered || sessionUnavailable"
       @click="nextQuestion"
     >
       {{ questionIndex === questions.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ' }}
