@@ -33,7 +33,7 @@ function showSettings() {
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] w-full min-w-0 bg-[#f8faff]">
     <AppHeader title="Профиль">
       <template #actions>
         <button
@@ -47,7 +47,7 @@ function showSettings() {
       </template>
     </AppHeader>
 
-    <div class="screen-content space-y-2.5 pt-3">
+    <div class="screen-content min-w-0 space-y-2.5 pt-3">
       <div
         v-if="settingsMessage"
         class="rounded-xl border border-[#b9dcff] bg-[#eff6ff] px-3 py-2 text-center text-[11px] font-[700] text-[#245ebc]"
@@ -105,25 +105,29 @@ function showSettings() {
           type="button"
           @click="router.push({ name: 'subjects' })"
         >
-          <span class="grid size-10 place-items-center rounded-xl bg-[#f5f0ff] text-[#8338e8]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f5f0ff] text-[#8338e8]"
+          >
             <BookOpen :size="21" />
           </span>
-          <strong class="flex-1 text-[13px]">Пәндер мен мақсаттар</strong>
-          <ChevronRight class="text-[#98a6b9]" :size="20" />
+          <strong class="min-w-0 flex-1 text-[13px]">Пәндер мен мақсаттар</strong>
+          <ChevronRight class="shrink-0 text-[#98a6b9]" :size="20" />
         </button>
         <button
           class="flex min-h-[52px] w-full items-center gap-3 border-x-0 border-b-0 border-t border-[#e6ebf2] bg-white px-3 text-left"
           type="button"
           @click="settingsMessage = 'Қолданба тілі: қазақша'"
         >
-          <span class="grid size-10 place-items-center rounded-xl bg-[#eef5ff] text-[#2869df]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#eef5ff] text-[#2869df]"
+          >
             <Languages :size="21" />
           </span>
-          <strong class="flex-1 text-[13px]">Тіл</strong>
-          <span class="text-[11px] text-[#536178]">Қазақша</span>
-          <ChevronRight class="text-[#98a6b9]" :size="20" />
+          <strong class="min-w-0 flex-1 text-[13px]">Тіл</strong>
+          <span class="shrink-0 text-[11px] text-[#536178]">Қазақша</span>
+          <ChevronRight class="shrink-0 text-[#98a6b9]" :size="20" />
         </button>
-        <div class="flex min-h-[52px] items-center gap-3 border-t border-[#e6ebf2] px-3">
+        <div class="flex min-h-[52px] min-w-0 items-center gap-1 border-t border-[#e6ebf2] px-3">
           <button
             class="flex min-w-0 flex-1 items-center gap-3 border-0 bg-transparent p-0 text-left"
             type="button"
@@ -134,7 +138,7 @@ function showSettings() {
             >
               <Bell :size="21" />
             </span>
-            <strong class="text-[13px]">Хабарландырулар</strong>
+            <strong class="min-w-0 text-[13px]">Хабарландырулар</strong>
           </button>
           <ToggleSwitch v-model="notificationsEnabled" aria-label="Хабарландыруларды қосу" />
         </div>
@@ -143,24 +147,30 @@ function showSettings() {
           type="button"
           @click="settingsMessage = 'Қолжетімділік параметрлері ашылды'"
         >
-          <span class="grid size-10 place-items-center rounded-xl bg-[#fff9e9] text-[#d47a00]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff9e9] text-[#d47a00]"
+          >
             <Accessibility :size="21" />
           </span>
-          <strong class="flex-1 text-[13px]">Қолжетімділік</strong>
-          <ChevronRight class="text-[#98a6b9]" :size="20" />
+          <strong class="min-w-0 flex-1 text-[13px]">Қолжетімділік</strong>
+          <ChevronRight class="shrink-0 text-[#98a6b9]" :size="20" />
         </button>
       </div>
 
       <div class="card overflow-hidden">
         <div class="flex min-h-[52px] items-center gap-3 px-3">
-          <span class="grid size-10 place-items-center rounded-xl bg-[#f5f0ff] text-[#8338e8]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f5f0ff] text-[#8338e8]"
+          >
             <Trophy :size="21" />
           </span>
           <strong class="min-w-0 flex-1 text-[13px]">Рейтингтерге қатысу</strong>
           <ToggleSwitch v-model="ratingsEnabled" aria-label="Рейтингтерге қатысу" />
         </div>
         <div class="flex min-h-[52px] items-center gap-3 border-t border-[#e6ebf2] px-3">
-          <span class="grid size-10 place-items-center rounded-xl bg-[#eef5ff] text-[#2869df]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#eef5ff] text-[#2869df]"
+          >
             <LockKeyhole :size="21" />
           </span>
           <strong class="min-w-0 flex-1 text-[13px]">Жабық профиль</strong>
@@ -171,11 +181,13 @@ function showSettings() {
           type="button"
           @click="router.push({ name: 'streak' })"
         >
-          <span class="grid size-10 place-items-center rounded-xl bg-[#ecfbf3] text-[#19a658]">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#ecfbf3] text-[#19a658]"
+          >
             <PauseCircle :size="21" />
           </span>
-          <strong class="flex-1 text-[13px]">Үзіліс режимі</strong>
-          <ChevronRight class="text-[#98a6b9]" :size="20" />
+          <strong class="min-w-0 flex-1 text-[13px]">Үзіліс режимі</strong>
+          <ChevronRight class="shrink-0 text-[#98a6b9]" :size="20" />
         </button>
       </div>
 

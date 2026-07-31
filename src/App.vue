@@ -4,12 +4,10 @@ import { RouterView } from 'vue-router'
 
 <template>
   <main class="app-stage">
-    <div class="phone-frame">
-      <RouterView v-slot="{ Component, route }">
-        <Transition name="screen" mode="out-in">
-          <component :is="Component" :key="route.fullPath" />
-        </Transition>
-      </RouterView>
-    </div>
+    <RouterView v-slot="{ Component, route }">
+      <Transition name="screen" mode="out-in">
+        <component :is="Component" :key="route.fullPath" />
+      </Transition>
+    </RouterView>
   </main>
 </template>

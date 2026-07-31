@@ -31,13 +31,13 @@ function isActive(item: (typeof items)[number]) {
 
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] max-w-[390px] items-end justify-around border-t border-[#e8edf5] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
+    class="fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] w-full max-w-[720px] items-end justify-around border-t border-[#e8edf5] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
     aria-label="Негізгі мәзір"
   >
     <button
       v-for="item in items"
       :key="item.key"
-      class="group relative flex h-[54px] w-[58px] flex-col items-center justify-end gap-1 border-0 pb-1 text-[9px] font-[650] leading-none transition-colors"
+      class="group relative flex h-[54px] w-[58px] flex-col items-center justify-end gap-1 border-0 pb-1 text-[11px] font-[650] leading-[1.1] transition-colors min-[521px]:w-[76px] min-[768px]:w-[96px]"
       :class="
         isActive(item)
           ? item.key === 'training'

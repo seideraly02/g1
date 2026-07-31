@@ -3,18 +3,18 @@ import {
   ArrowLeft,
   ArrowRight,
   Atom,
-  BatteryMedium,
   BookOpen,
   Calculator,
   Check,
   Landmark,
   Radical,
   Search,
-  Wifi,
 } from 'lucide-vue-next'
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
+import { startGuestDiagnostic } from '../features/session/sessionApplication'
 
 type SubjectTab = 'required' | 'profile'
 
@@ -105,6 +105,7 @@ function toggleSubject(id: string) {
 
 function continueToDiagnostic() {
   if (selected.value.size > 0) {
+    startGuestDiagnostic([...selected.value], guestDiagnosticQuestionIds)
     router.push({ name: 'diagnostic' })
   }
 }
@@ -112,21 +113,7 @@ function continueToDiagnostic() {
 
 <template>
   <section class="screen-page flex min-h-[844px] flex-col bg-[#f8fafc] px-4 pb-4">
-    <div class="flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]">
-      <span class="text-[12px] font-[850] tracking-[.01em]">09:41</span>
-      <div class="flex items-center gap-2">
-        <svg width="14" height="13" viewBox="0 0 14 13" fill="none" aria-hidden="true">
-          <rect x="1" y="8" width="2" height="4" rx="1" fill="currentColor" />
-          <rect x="4.3" y="6" width="2" height="6" rx="1" fill="currentColor" />
-          <rect x="7.6" y="3.5" width="2" height="8.5" rx="1" fill="currentColor" />
-          <rect x="10.9" y="1" width="2" height="11" rx="1" fill="currentColor" />
-        </svg>
-        <Wifi :size="16" :stroke-width="2.4" aria-hidden="true" />
-        <BatteryMedium :size="21" :stroke-width="2" aria-hidden="true" />
-      </div>
-    </div>
-
-    <header class="flex h-[44px] shrink-0 items-center">
+    <header class="safe-top flex min-h-[64px] shrink-0 items-end pb-2">
       <button
         class="icon-button -ml-1"
         type="button"
@@ -209,10 +196,10 @@ function continueToDiagnostic() {
           <component :is="subject.icon" :size="21" :stroke-width="2.15" aria-hidden="true" />
         </span>
         <span class="ml-3 min-w-0 flex-1">
-          <span class="block truncate text-[14px] font-[850] leading-[1.25] text-[#111b34]">
+          <span class="block text-[14px] font-[850] leading-[1.25] text-[#111b34]">
             {{ subject.name }}
           </span>
-          <span class="mt-0.5 block truncate text-[12px] leading-[1.25] text-[#536178]">
+          <span class="mt-0.5 block text-[12px] leading-[1.25] text-[#536178]">
             {{ subject.description }}
           </span>
         </span>

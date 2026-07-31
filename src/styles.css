@@ -30,6 +30,7 @@
   --orange-soft: #fff7e6;
   --red: #f04c55;
   --red-soft: #fff0f1;
+  --page-max-width: 720px;
 }
 
 * {
@@ -77,28 +78,21 @@ button {
 
 @layer components {
   .app-stage {
-    min-height: 100vh;
     display: flex;
-    align-items: flex-start;
+    min-height: 100dvh;
+    align-items: stretch;
     justify-content: center;
     padding: 24px;
   }
 
-  .phone-frame {
-    position: relative;
-    width: min(390px, 100%);
-    min-height: 844px;
-    overflow: hidden;
-    border-radius: 28px;
-    background: var(--surface);
-    box-shadow:
-      0 24px 60px rgba(29, 47, 79, 0.16),
-      0 2px 8px rgba(29, 47, 79, 0.08);
+  .app-stage > .screen-page {
+    width: min(100%, var(--page-max-width));
+    min-width: 0;
   }
 
   .screen-page {
     position: relative;
-    min-height: 844px;
+    min-height: 100dvh;
     background: var(--surface);
   }
 
@@ -348,6 +342,12 @@ button {
   font-weight: 650;
 }
 
+@media (min-width: 521px) {
+  .app-stage > .screen-page {
+    min-height: calc(100dvh - 48px);
+  }
+}
+
 @media (max-width: 520px) {
   html,
   body {
@@ -357,13 +357,6 @@ button {
   .app-stage {
     min-height: 100dvh;
     padding: 0;
-  }
-
-  .phone-frame {
-    width: 100%;
-    min-height: 100dvh;
-    border-radius: 0;
-    box-shadow: none;
   }
 
   .screen-page {

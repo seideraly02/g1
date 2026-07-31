@@ -3,10 +3,18 @@ import { ArrowLeft, ArrowRight, Clock3, Flag } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
+import {
+  completeTrialTraining,
+  saveTrialTrainingAnswer,
+  setTrialTrainingQuestion,
+  startTrialTraining,
+} from '../features/session/sessionApplication'
 
 const router = useRouter()
-const currentQuestion = ref(23)
-const selectedAnswer = ref('C')
+const trialQuestionIds = Array.from({ length: 40 }, (_, index) => `trial-math-${index + 1}`)
+const trialSession = ref(startTrialTraining(['math'], trialQuestionIds, 22))
+const currentQuestion = ref(trialSession.value.currentQuestionIndex + 1)
+const selectedAnswer = ref(getSelectedAnswer(currentQuestion.value))
 const markedQuestions = ref<number[]>([19])
 
 const options = [
@@ -23,6 +31,48 @@ const questionNumbers = computed(() => {
 
 const isMarked = computed(() => markedQuestions.value.includes(currentQuestion.value))
 
+function getQuestionId(questionNumber: number): string | null {
+  return trialQuestionIds[questionNumber - 1] ?? null
+}
+
+function getSelectedAnswer(questionNumber: number): string {
+  const questionId = getQuestionId(questionNumber)
+  return questionId
+    ? (trialSession.value.answers.find((answer) => answer.questionId === questionId)
+        ?.selectedOptionId ?? '')
+    : ''
+}
+
+function selectAnswer(optionKey: string) {
+  const questionId = getQuestionId(currentQuestion.value)
+  if (!questionId) {
+    return
+  }
+
+  const updatedSession = saveTrialTrainingAnswer({
+    sessionId: trialSession.value.id,
+    questionId,
+    subjectId: 'math',
+    selectedOptionId: optionKey,
+    isSkipped: false,
+    answeredAt: new Date().toISOString(),
+  })
+
+  if (updatedSession) {
+    trialSession.value = updatedSession
+    selectedAnswer.value = optionKey
+  }
+}
+
+function setCurrentQuestion(questionNumber: number) {
+  const updatedSession = setTrialTrainingQuestion(trialSession.value.id, questionNumber - 1)
+  if (updatedSession) {
+    trialSession.value = updatedSession
+    currentQuestion.value = questionNumber
+    selectedAnswer.value = getSelectedAnswer(questionNumber)
+  }
+}
+
 function toggleMarked() {
   markedQuestions.value = isMarked.value
     ? markedQuestions.value.filter((number) => number !== currentQuestion.value)
@@ -30,8 +80,20 @@ function toggleMarked() {
 }
 
 function moveQuestion(direction: -1 | 1) {
-  currentQuestion.value = Math.min(40, Math.max(1, currentQuestion.value + direction))
-  selectedAnswer.value = ''
+  setCurrentQuestion(Math.min(40, Math.max(1, currentQuestion.value + direction)))
+}
+
+function continueTrial() {
+  if (currentQuestion.value < 40) {
+    moveQuestion(1)
+    return
+  }
+
+  const completedSession = completeTrialTraining(trialSession.value.id)
+  if (completedSession) {
+    trialSession.value = completedSession
+    router.push({ name: 'training-result' })
+  }
 }
 </script>
 
@@ -100,7 +162,7 @@ function moveQuestion(direction: -1 | 1) {
           "
           type="button"
           :aria-pressed="selectedAnswer === option.key"
-          @click="selectedAnswer = option.key"
+          @click="selectAnswer(option.key)"
         >
           <span
             class="grid size-8 place-items-center rounded-[10px] font-[850]"
@@ -132,7 +194,7 @@ function moveQuestion(direction: -1 | 1) {
                     : 'border-[#dce4ef] bg-white'
             "
             type="button"
-            @click="currentQuestion = number"
+            @click="setCurrentQuestion(number)"
           >
             {{ number }}
           </button>
@@ -148,11 +210,7 @@ function moveQuestion(direction: -1 | 1) {
           <ArrowLeft :size="18" />
           Артқа
         </button>
-        <button
-          class="primary-button min-h-[52px]"
-          type="button"
-          @click="currentQuestion < 40 ? moveQuestion(1) : router.push({ name: 'training-result' })"
-        >
+        <button class="primary-button min-h-[52px]" type="button" @click="continueTrial">
           Әрі қарай
           <ArrowRight :size="18" />
         </button>
