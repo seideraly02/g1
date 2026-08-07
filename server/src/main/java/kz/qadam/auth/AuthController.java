@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    static final String SESSION_COOKIE = "qadam_session";
+    public static final String SESSION_COOKIE = "qadam_session";
     private final AuthService authService;
     private final QadamProperties properties;
 
