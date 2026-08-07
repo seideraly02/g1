@@ -2,6 +2,7 @@ package kz.qadam.diagnostic;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import kz.qadam.auth.AuthController;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -38,6 +39,6 @@ public class DiagnosticController {
         return diagnosticService.submit(subjectId, answers, sessionToken);
     }
 
-    public record DiagnosticSubmission(List<@Valid AnswerRequest> answers) {}
+    public record DiagnosticSubmission(@NotNull List<@Valid AnswerRequest> answers) {}
     public record AnswerRequest(@NotBlank String questionId, int selectedIndex) {}
 }
