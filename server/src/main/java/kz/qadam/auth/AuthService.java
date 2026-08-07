@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
+    public static final String SESSION_COOKIE = "qadam_session";
     private static final SecureRandom RANDOM = new SecureRandom();
     private final JdbcClient jdbc;
     private final Sha256Hasher hasher;
