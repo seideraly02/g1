@@ -62,4 +62,5 @@ jobs:
           node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('netlify-deploy.json','utf8'));console.log('url='+d.url);" >> "$GITHUB_OUTPUT"
 
       - name: Deployment URL
-        run: echo "Netlify production URL: ${{ steps.netlify.outputs.url }}"
+        run: |
+          echo "Netlify production URL: ${{ steps.netlify.outputs.url }}"
