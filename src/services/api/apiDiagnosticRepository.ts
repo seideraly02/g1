@@ -35,7 +35,8 @@ function decodeQuestion(value: unknown): DiagnosticQuestionDto | null {
     typeof value.text !== 'string' ||
     !Array.isArray(value.options) ||
     !value.options.every((option) => typeof option === 'string')
-  ) return null
+  )
+    return null
   return { id: value.id, topic: value.topic, text: value.text, options: value.options }
 }
 
@@ -50,19 +51,24 @@ export class ApiDiagnosticRepository {
       credentials: 'include',
     })
     const value: unknown = await response.json().catch(() => null)
-    if (!response.ok || !Array.isArray(value)) throw new Error('Диагностика сұрақтарын жүктеу мүмкін болмады')
+    if (!response.ok || !Array.isArray(value))
+      throw new Error('Диагностика сұрақтарын жүктеу мүмкін болмады')
     const questions = value.map(decodeQuestion)
-    if (questions.some((question) => question === null)) throw new Error('Серверден қате жауап алынды')
+    if (questions.some((question) => question === null))
+      throw new Error('Серверден қате жауап алынды')
     return questions as DiagnosticQuestionDto[]
   }
 
   async submit(subjectId: string, answers: DiagnosticAnswerInput[]): Promise<DiagnosticResultDto> {
-    const response = await this.client(`${this.url}/diagnostic/${encodeURIComponent(subjectId)}/submit`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
-    })
+    const response = await this.client(
+      `${this.url}/diagnostic/${encodeURIComponent(subjectId)}/submit`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      },
+    )
     const value: unknown = await response.json().catch(() => null)
     if (!response.ok || !isRecord(value)) throw new Error('Нәтижені сақтау мүмкін болмады')
     return value as unknown as DiagnosticResultDto
@@ -73,4 +79,6 @@ export class ApiDiagnosticRepository {
   }
 }
 
-export const diagnosticRepository = new ApiDiagnosticRepository(import.meta.env.VITE_API_BASE_URL ?? '')
+export const diagnosticRepository = new ApiDiagnosticRepository(
+  import.meta.env.VITE_API_BASE_URL ?? '',
+)
