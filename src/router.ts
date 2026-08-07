@@ -33,7 +33,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/diagnostic',
     name: 'diagnostic',
-    component: () => import('./views/DiagnosticView.vue'),
+    component: () => import('./views/ApiDiagnosticView.vue'),
   },
   {
     path: '/diagnostic/result',

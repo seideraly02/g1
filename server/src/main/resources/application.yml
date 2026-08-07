@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:3000}
+
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/qadam_ent}
+    username: ${DATABASE_USER:qadam}
+    password: ${DATABASE_PASSWORD:qadam}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+qadam:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:4173}
+  auth-mode: ${AUTH_MODE:development}
+  session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
+  telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger
