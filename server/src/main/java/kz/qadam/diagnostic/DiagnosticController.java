@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import kz.qadam.auth.AuthController;
+import kz.qadam.auth.AuthService;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +31,7 @@ public class DiagnosticController {
     DiagnosticService.DiagnosticResult submit(
         @PathVariable String subjectId,
         @Valid @RequestBody DiagnosticSubmission request,
-        @CookieValue(name = AuthController.SESSION_COOKIE, required = false) String sessionToken
+        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
     ) {
         List<DiagnosticService.AnswerInput> answers = request.answers().stream()
             .map(answer -> new DiagnosticService.AnswerInput(answer.questionId(), answer.selectedIndex()))
