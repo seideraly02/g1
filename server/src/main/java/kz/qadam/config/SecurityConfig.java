@@ -1,7 +1,6 @@
 package kz.qadam.config;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,16 +14,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
+        return http
+            .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .build();
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource(@Value("${qadam.frontend-origin}") String origin) {
+    CorsConfigurationSource corsConfigurationSource(QadamProperties properties) {
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(origin));
+        config.setAllowedOrigins(List.of(properties.frontendOrigin()));
         config.setAllowedMethods(List.of("GET", "POST", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type"));
         config.setAllowCredentials(true);
