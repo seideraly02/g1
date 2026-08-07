@@ -40,5 +40,5 @@ public class DiagnosticController {
     }
 
     public record DiagnosticSubmission(@NotNull List<@Valid AnswerRequest> answers) {}
-    public record AnswerRequest(@NotBlank String questionId, int selectedIndex) {}
+    public record AnswerRequest(@NotBlank String questionId, @NotNull Integer selectedIndex) {}
 }
