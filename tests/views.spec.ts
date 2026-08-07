@@ -4,14 +4,37 @@ import { parse } from '@vue/compiler-sfc'
 import { describe, expect, it } from 'vitest'
 
 const viewsDirectory = resolve(process.cwd(), 'src/views')
+const referenceViews = [
+  'DiagnosticResultView.vue',
+  'DiagnosticView.vue',
+  'ForecastView.vue',
+  'HistorySubjectView.vue',
+  'HomeView.vue',
+  'MistakesView.vue',
+  'MockExamView.vue',
+  'NotificationsView.vue',
+  'PersonalPlanView.vue',
+  'ProfileView.vue',
+  'ProgressView.vue',
+  'RatingView.vue',
+  'RegistrationView.vue',
+  'SaveProgressView.vue',
+  'StreakView.vue',
+  'SubjectSelectView.vue',
+  'SubjectsView.vue',
+  'TrainingResultView.vue',
+  'TrainingView.vue',
+]
 
 describe('Qadam mobile screens', () => {
-  it('contains all 19 reference screens as TypeScript script-setup components', () => {
+  it('keeps all reference screens and validates every view as a TypeScript script-setup component', () => {
     const files = readdirSync(viewsDirectory)
       .filter((file) => file.endsWith('.vue'))
       .sort()
 
-    expect(files).toHaveLength(19)
+    for (const referenceView of referenceViews) {
+      expect(files, `${referenceView} must remain available`).toContain(referenceView)
+    }
 
     for (const file of files) {
       const source = readFileSync(resolve(viewsDirectory, file), 'utf8')
