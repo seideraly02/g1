@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    public static final String SESSION_COOKIE = "qadam_session";
     private final AuthService authService;
     private final QadamProperties properties;
 
@@ -44,14 +43,14 @@ public class AuthController {
 
     @GetMapping("/session")
     AuthService.UserDto session(
-        @CookieValue(name = SESSION_COOKIE, required = false) String sessionToken
+        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
     ) {
         return authService.requireSession(sessionToken);
     }
 
     @DeleteMapping("/session")
     ResponseEntity<Void> signOut(
-        @CookieValue(name = SESSION_COOKIE, required = false) String sessionToken
+        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
     ) {
         authService.revokeSession(sessionToken);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -60,7 +59,7 @@ public class AuthController {
     }
 
     private ResponseCookie sessionCookie(String value, Duration maxAge) {
-        return ResponseCookie.from(SESSION_COOKIE, value)
+        return ResponseCookie.from(AuthService.SESSION_COOKIE, value)
             .httpOnly(true)
             .secure(properties.sessionCookieSecure())
             .sameSite("Lax")
