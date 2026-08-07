@@ -77,6 +77,6 @@ public class AuthController {
 
     public record VerifyCodeRequest(
         @NotBlank String requestId,
-        @Pattern(regexp = "\\d{6}") String code
+        @NotBlank @Pattern(regexp = "\\d{6}") String code
     ) {}
 }
