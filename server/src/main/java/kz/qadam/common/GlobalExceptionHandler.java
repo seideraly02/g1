@@ -2,6 +2,7 @@ package kz.qadam.common;
 
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,7 +14,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(error.status()).body(Map.of("code", error.code()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     ResponseEntity<Map<String, String>> handleValidationException() {
         return ResponseEntity.badRequest().body(Map.of("code", "VALIDATION_ERROR"));
     }
