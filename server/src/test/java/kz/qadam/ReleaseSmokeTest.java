@@ -18,7 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
+@SpringBootTest(properties = "qadam.auth-mode=development")
 @AutoConfigureMockMvc
 @Testcontainers
 class ReleaseSmokeTest {
