@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ArrowRight, BarChart3, BookOpenCheck, Target } from 'lucide-vue-next'
+import { ArrowRight, BarChart3, BookOpenCheck, FlaskConical, Target } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import BrandMark from '../components/BrandMark.vue'
+import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 const benefits = [
   {
@@ -25,6 +27,11 @@ const benefits = [
 
 function openRegistration() {
   void router.push({ name: 'register' })
+}
+
+function startTestMode() {
+  auth.enterTestMode()
+  void router.push({ name: 'subjects-onboarding' })
 }
 </script>
 
@@ -56,16 +63,26 @@ function openRegistration() {
               жеке жоспар аласың, жаттығу жасайсың және прогресіңді бақылайсың.
             </p>
 
-            <button
-              class="mt-7 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 text-[15px] font-bold text-white shadow-[0_8px_20px_rgba(37,99,235,.18)] transition hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-2 sm:w-auto"
-              type="button"
-              @click="openRegistration"
-            >
-              Дайындықты бастау
-              <ArrowRight :size="19" aria-hidden="true" />
-            </button>
+            <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+              <button
+                class="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 text-[15px] font-bold text-white shadow-[0_8px_20px_rgba(37,99,235,.18)] transition hover:bg-[#1d4ed8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-2 sm:w-auto"
+                type="button"
+                @click="openRegistration"
+              >
+                Дайындықты бастау
+                <ArrowRight :size="19" aria-hidden="true" />
+              </button>
+              <button
+                class="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl border border-[#cbd5e1] bg-white px-5 text-[15px] font-bold text-[#334155] transition hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-2 sm:w-auto"
+                type="button"
+                @click="startTestMode"
+              >
+                <FlaskConical :size="18" aria-hidden="true" />
+                Тіркелмей тестілеу
+              </button>
+            </div>
             <p class="mt-3 text-xs leading-5 text-[#7a8598]">
-              Тіркелгеннен кейін бастапқы тексеру мен жеке жоспарға өтесің.
+              Тест режимі тек тексеруге арналған және браузер қойындысы жабылғанда өшеді.
             </p>
           </div>
 
