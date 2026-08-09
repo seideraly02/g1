@@ -3,6 +3,7 @@ package kz.qadam.auth;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.time.Duration;
 import kz.qadam.config.QadamProperties;
 import org.springframework.http.HttpHeaders;
@@ -59,9 +60,11 @@ public class AuthController {
     }
 
     private ResponseCookie sessionCookie(String value, Duration maxAge) {
+        boolean secure = properties.sessionCookieSecure()
+            || !"development".equalsIgnoreCase(properties.authMode());
         return ResponseCookie.from(AuthService.SESSION_COOKIE, value)
             .httpOnly(true)
-            .secure(properties.sessionCookieSecure())
+            .secure(secure)
             .sameSite("Lax")
             .path("/")
             .maxAge(maxAge)
@@ -69,13 +72,13 @@ public class AuthController {
     }
 
     public record RegistrationRequest(
-        @NotBlank String fullName,
-        @NotBlank String city,
-        @NotBlank String phone
+        @NotBlank @Size(max = 120) String fullName,
+        @NotBlank @Size(max = 80) String city,
+        @NotBlank @Size(max = 32) String phone
     ) {}
 
     public record VerifyCodeRequest(
-        @NotBlank String requestId,
+        @NotBlank @Size(max = 36) String requestId,
         @NotBlank @Pattern(regexp = "\\d{6}") String code
     ) {}
 }
