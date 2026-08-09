@@ -33,9 +33,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependencies
-        run: npm run audit
-
       - name: Check formatting
         run: npm run format:check
 
@@ -50,6 +47,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Audit dependencies
+        run: npm run audit
 
   backend:
     name: Backend compile and test
