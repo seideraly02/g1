@@ -17,23 +17,29 @@ public class AuthService {
     public static final String SESSION_COOKIE = "qadam_session";
     private static final SecureRandom RANDOM = new SecureRandom();
     private final JdbcClient jdbc;
-    private final Sha256Hasher hasher;
+    private final Sha256Hasher sessionHasher;
+    private final OtpCodeHasher otpHasher;
     private final TelegramGatewayClient telegramGateway;
 
-    public AuthService(JdbcClient jdbc, Sha256Hasher hasher, TelegramGatewayClient telegramGateway) {
+    public AuthService(
+        JdbcClient jdbc,
+        Sha256Hasher sessionHasher,
+        OtpCodeHasher otpHasher,
+        TelegramGatewayClient telegramGateway
+    ) {
         this.jdbc = jdbc;
-        this.hasher = hasher;
+        this.sessionHasher = sessionHasher;
+        this.otpHasher = otpHasher;
         this.telegramGateway = telegramGateway;
     }
 
     @Transactional
     public CodeRequest requestCode(String fullName, String city, String rawPhone) {
         String phone = normalizePhone(rawPhone);
-        Integer recent = jdbc.sql("select count(*) from otp_requests where phone=:phone and created_at > now() - interval '60 seconds'")
-            .param("phone", phone)
-            .query(Integer.class)
-            .single();
-        if (recent > 0) {
+        Integer recent = countOtpRequests(phone, "60 seconds");
+        Integer hourly = countOtpRequests(phone, "1 hour");
+        Integer daily = countOtpRequests(phone, "24 hours");
+        if (recent > 0 || hourly >= 5 || daily >= 20) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
         }
 
@@ -45,7 +51,7 @@ public class AuthService {
             .param("name", fullName.trim())
             .param("city", city.trim())
             .param("phone", phone)
-            .param("hash", hasher.hash(code))
+            .param("hash", otpHasher.hash(code))
             .param("expires", Timestamp.from(expiresAt))
             .update();
 
@@ -56,7 +62,7 @@ public class AuthService {
     @Transactional
     public AuthResult verifyCode(String rawRequestId, String code) {
         UUID requestId = parseRequestId(rawRequestId);
-        OtpRow otp = jdbc.sql("select id,full_name,city,phone,code_hash,attempts,expires_at,used_at from otp_requests where id=:id")
+        OtpRow otp = jdbc.sql("select id,full_name,city,phone,code_hash,attempts,expires_at,used_at from otp_requests where id=:id for update")
             .param("id", requestId)
             .query((rs, rowNum) -> new OtpRow(
                 rs.getObject("id", UUID.class),
@@ -77,7 +83,7 @@ public class AuthService {
         if (otp.attempts() >= 5) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
         }
-        if (!hasher.matches(code, otp.codeHash())) {
+        if (!otpHasher.matches(code, otp.codeHash())) {
             jdbc.sql("update otp_requests set attempts=attempts+1 where id=:id")
                 .param("id", requestId)
                 .update();
@@ -95,17 +101,21 @@ public class AuthService {
         String sessionToken = UUID.randomUUID() + "." + UUID.randomUUID();
         jdbc.sql("insert into sessions(user_id,token_hash,expires_at) values(:user,:hash,now()+interval '30 days')")
             .param("user", userId)
-            .param("hash", hasher.hash(sessionToken))
+            .param("hash", sessionHasher.hash(sessionToken))
             .update();
         return new AuthResult(sessionToken, findUser(userId));
     }
 
     public UserDto requireSession(String token) {
+        return findUser(requireSessionUserId(token));
+    }
+
+    public UUID requireSessionUserId(String token) {
         UUID userId = findSessionUser(token);
         if (userId == null) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED");
         }
-        return findUser(userId);
+        return userId;
     }
 
     public UUID findSessionUser(String token) {
@@ -113,7 +123,7 @@ public class AuthService {
             return null;
         }
         return jdbc.sql("select user_id from sessions where token_hash=:hash and revoked_at is null and expires_at>now()")
-            .param("hash", hasher.hash(token))
+            .param("hash", sessionHasher.hash(token))
             .query(UUID.class)
             .optional()
             .orElse(null);
@@ -122,9 +132,17 @@ public class AuthService {
     public void revokeSession(String token) {
         if (token != null && !token.isBlank()) {
             jdbc.sql("update sessions set revoked_at=now() where token_hash=:hash")
-                .param("hash", hasher.hash(token))
+                .param("hash", sessionHasher.hash(token))
                 .update();
         }
+    }
+
+    private int countOtpRequests(String phone, String interval) {
+        return jdbc.sql("select count(*) from otp_requests where phone=:phone and created_at > now() - cast(:interval as interval)")
+            .param("phone", phone)
+            .param("interval", interval)
+            .query(Integer.class)
+            .single();
     }
 
     private UserDto findUser(UUID id) {
