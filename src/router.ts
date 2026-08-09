@@ -4,6 +4,7 @@ import { pinia } from './stores/pinia'
 
 export type AppRouteName =
   | 'welcome'
+  | 'register'
   | 'subjects-onboarding'
   | 'diagnostic'
   | 'diagnostic-result'
@@ -24,7 +25,8 @@ export type AppRouteName =
   | 'notifications'
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', name: 'welcome', component: () => import('./views/RegistrationView.vue') },
+  { path: '/', name: 'welcome', component: () => import('./views/WelcomeView.vue') },
+  { path: '/register', name: 'register', component: () => import('./views/RegistrationView.vue') },
   {
     path: '/onboarding/subjects',
     name: 'subjects-onboarding',
@@ -92,7 +94,9 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore(pinia)
   await auth.ensureSession()
 
-  if (to.name === 'welcome') {
+  const isPublicRoute = to.name === 'welcome' || to.name === 'register'
+
+  if (isPublicRoute) {
     return auth.isAuthenticated ? { name: 'home' } : true
   }
 
