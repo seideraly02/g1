@@ -23,7 +23,7 @@ public class TelegramGatewayClient {
 
     public void sendCode(String phone, String code, UUID requestId) {
         if ("development".equalsIgnoreCase(properties.authMode())) {
-            log.info("Development OTP requestId={} code={}", requestId, code);
+            log.debug("Development OTP requestId={} code={}", requestId, code);
             return;
         }
         if (properties.telegramGatewayUrl().isBlank() || properties.telegramGatewayToken().isBlank()) {
