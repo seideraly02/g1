@@ -15,11 +15,14 @@ spring:
 
 qadam:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:4173}
-  auth-mode: ${AUTH_MODE:development}
-  session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  auth-mode: ${AUTH_MODE:production}
+  session-cookie-secure: ${SESSION_COOKIE_SECURE:true}
   telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
   telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
 
 springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:false}
   swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:false}
     path: /swagger
