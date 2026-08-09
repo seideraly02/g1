@@ -40,9 +40,13 @@ export default tseslint.config(
     },
   },
   {
-    files: ['eslint.config.js', 'tests/**/*.ts', 'vite.config.ts'],
+    files: ['eslint.config.js', 'tests/**/*.ts', 'vite.config.ts', 'netlify/functions/**/*.mjs'],
     languageOptions: {
-      globals: globals.node,
+      globals: {
+        ...globals.node,
+        fetch: 'readonly',
+        Headers: 'readonly',
+      },
     },
   },
   prettier,
