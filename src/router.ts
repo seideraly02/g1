@@ -91,14 +91,14 @@ export const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const auth = useAuthStore(pinia)
-  await auth.ensureSession()
-
   const isPublicRoute = to.name === 'welcome' || to.name === 'register'
 
   if (isPublicRoute) {
-    return auth.isAuthenticated ? { name: 'home' } : true
+    return true
   }
+
+  const auth = useAuthStore(pinia)
+  await auth.ensureSession()
 
   if (!auth.isAuthenticated) {
     return { name: 'welcome' }
