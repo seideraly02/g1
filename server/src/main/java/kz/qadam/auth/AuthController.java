@@ -3,12 +3,16 @@ package kz.qadam.auth;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.time.Duration;
+import java.util.UUID;
 import kz.qadam.config.QadamProperties;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,15 +41,20 @@ public class AuthController {
     ResponseEntity<AuthService.UserDto> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
         AuthService.AuthResult result = authService.verifyCode(request.requestId(), request.code());
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, sessionCookie(result.sessionToken(), Duration.ofDays(30)).toString())
+            .cacheControl(CacheControl.noStore())
+            .header(HttpHeaders.SET_COOKIE, sessionCookie(
+                result.sessionToken(),
+                Duration.ofDays(properties.sessionTtlDays())
+            ).toString())
             .body(result.user());
     }
 
     @GetMapping("/session")
-    AuthService.UserDto session(
-        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
-    ) {
-        return authService.requireSession(sessionToken);
+    ResponseEntity<AuthService.UserDto> session(Authentication authentication) {
+        UUID userId = (UUID) authentication.getPrincipal();
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noStore())
+            .body(authService.findUser(userId));
     }
 
     @DeleteMapping("/session")
@@ -62,16 +71,16 @@ public class AuthController {
         return ResponseCookie.from(AuthService.SESSION_COOKIE, value)
             .httpOnly(true)
             .secure(properties.sessionCookieSecure())
-            .sameSite("Lax")
+            .sameSite(properties.sessionCookieSameSite())
             .path("/")
             .maxAge(maxAge)
             .build();
     }
 
     public record RegistrationRequest(
-        @NotBlank String fullName,
-        @NotBlank String city,
-        @NotBlank String phone
+        @NotBlank @Size(max = 120) String fullName,
+        @NotBlank @Size(max = 80) String city,
+        @NotBlank @Size(max = 32) String phone
     ) {}
 
     public record VerifyCodeRequest(
