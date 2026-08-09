@@ -15,5 +15,24 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: ./server
+    environment:
+      PORT: 3000
+      DATABASE_URL: jdbc:postgresql://postgres:5432/qadam_ent
+      DATABASE_USER: qadam
+      DATABASE_PASSWORD: qadam
+      FRONTEND_ORIGINS: http://localhost:5173,http://localhost:4173
+      AUTH_MODE: development
+      SECURITY_PEPPER: local-development-pepper-change-before-production
+      SESSION_COOKIE_SECURE: 'false'
+      SESSION_COOKIE_SAME_SITE: Lax
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   qadam_postgres:

@@ -48,5 +48,10 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build
+      - name: Check Netlify proxy syntax
+        run: node --check netlify/functions/api.mjs
+
+      - name: Build production frontend
         run: npm run build
+        env:
+          VITE_API_BASE_URL: /api

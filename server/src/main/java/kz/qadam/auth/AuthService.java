@@ -4,9 +4,11 @@ import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.UUID;
 import kz.qadam.common.ApiException;
-import kz.qadam.common.Sha256Hasher;
+import kz.qadam.common.TokenHasher;
+import kz.qadam.config.QadamProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -16,26 +18,30 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     public static final String SESSION_COOKIE = "qadam_session";
     private static final SecureRandom RANDOM = new SecureRandom();
-    private final JdbcClient jdbc;
-    private final Sha256Hasher hasher;
-    private final TelegramGatewayClient telegramGateway;
+    private static final int OTP_MAX_ATTEMPTS = 5;
+    private static final int OTP_HOURLY_LIMIT = 5;
+    private static final int OTP_DAILY_LIMIT = 10;
 
-    public AuthService(JdbcClient jdbc, Sha256Hasher hasher, TelegramGatewayClient telegramGateway) {
+    private final JdbcClient jdbc;
+    private final TokenHasher hasher;
+    private final TelegramGatewayClient telegramGateway;
+    private final QadamProperties properties;
+
+    public AuthService(
+        JdbcClient jdbc,
+        TokenHasher hasher,
+        TelegramGatewayClient telegramGateway,
+        QadamProperties properties
+    ) {
         this.jdbc = jdbc;
         this.hasher = hasher;
         this.telegramGateway = telegramGateway;
+        this.properties = properties;
     }
 
-    @Transactional
     public CodeRequest requestCode(String fullName, String city, String rawPhone) {
         String phone = normalizePhone(rawPhone);
-        Integer recent = jdbc.sql("select count(*) from otp_requests where phone=:phone and created_at > now() - interval '60 seconds'")
-            .param("phone", phone)
-            .query(Integer.class)
-            .single();
-        if (recent > 0) {
-            throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
-        }
+        enforceOtpRateLimit(phone);
 
         String code = "%06d".formatted(RANDOM.nextInt(1_000_000));
         UUID requestId = UUID.randomUUID();
@@ -49,7 +55,14 @@ public class AuthService {
             .param("expires", Timestamp.from(expiresAt))
             .update();
 
-        telegramGateway.sendCode(phone, code, requestId);
+        try {
+            telegramGateway.sendCode(phone, code, requestId);
+        } catch (RuntimeException error) {
+            jdbc.sql("delete from otp_requests where id=:id and used_at is null")
+                .param("id", requestId)
+                .update();
+            throw error;
+        }
         return new CodeRequest(requestId.toString(), expiresAt.toString(), 60);
     }
 
@@ -74,14 +87,23 @@ public class AuthService {
         if (otp.usedAt() != null || otp.expiresAt().isBefore(Instant.now())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "CODE_EXPIRED");
         }
-        if (otp.attempts() >= 5) {
+        if (otp.attempts() >= OTP_MAX_ATTEMPTS) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
         }
         if (!hasher.matches(code, otp.codeHash())) {
-            jdbc.sql("update otp_requests set attempts=attempts+1 where id=:id")
+            jdbc.sql("update otp_requests set attempts=attempts+1 where id=:id and used_at is null and attempts<:max")
                 .param("id", requestId)
+                .param("max", OTP_MAX_ATTEMPTS)
                 .update();
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CODE");
+        }
+
+        int claimed = jdbc.sql("update otp_requests set used_at=now() where id=:id and used_at is null and expires_at>now() and attempts<:max")
+            .param("id", requestId)
+            .param("max", OTP_MAX_ATTEMPTS)
+            .update();
+        if (claimed != 1) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "CODE_EXPIRED");
         }
 
         UUID userId = jdbc.sql("insert into users(full_name,city,phone) values(:name,:city,:phone) on conflict(phone) do update set full_name=excluded.full_name,city=excluded.city,verified_at=now() returning id")
@@ -90,12 +112,13 @@ public class AuthService {
             .param("phone", otp.phone())
             .query(UUID.class)
             .single();
-        jdbc.sql("update otp_requests set used_at=now() where id=:id").param("id", requestId).update();
 
-        String sessionToken = UUID.randomUUID() + "." + UUID.randomUUID();
-        jdbc.sql("insert into sessions(user_id,token_hash,expires_at) values(:user,:hash,now()+interval '30 days')")
+        String sessionToken = randomToken();
+        Instant sessionExpiresAt = Instant.now().plus(Duration.ofDays(properties.sessionTtlDays()));
+        jdbc.sql("insert into sessions(user_id,token_hash,expires_at) values(:user,:hash,:expires)")
             .param("user", userId)
             .param("hash", hasher.hash(sessionToken))
+            .param("expires", Timestamp.from(sessionExpiresAt))
             .update();
         return new AuthResult(sessionToken, findUser(userId));
     }
@@ -127,7 +150,7 @@ public class AuthService {
         }
     }
 
-    private UserDto findUser(UUID id) {
+    public UserDto findUser(UUID id) {
         return jdbc.sql("select id,full_name,city,phone,verified_at from users where id=:id")
             .param("id", id)
             .query((rs, rowNum) -> new UserDto(
@@ -138,6 +161,29 @@ public class AuthService {
                 rs.getTimestamp("verified_at").toInstant().toString()
             ))
             .single();
+    }
+
+    private void enforceOtpRateLimit(String phone) {
+        long recent = countOtpRequests(phone, "60 seconds");
+        long hourly = countOtpRequests(phone, "1 hour");
+        long daily = countOtpRequests(phone, "24 hours");
+        if (recent > 0 || hourly >= OTP_HOURLY_LIMIT || daily >= OTP_DAILY_LIMIT) {
+            throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
+        }
+    }
+
+    private long countOtpRequests(String phone, String interval) {
+        return jdbc.sql("select count(*) from otp_requests where phone=:phone and created_at > now() - cast(:window as interval)")
+            .param("phone", phone)
+            .param("window", interval)
+            .query(Long.class)
+            .single();
+    }
+
+    private static String randomToken() {
+        byte[] bytes = new byte[32];
+        RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private static UUID parseRequestId(String value) {

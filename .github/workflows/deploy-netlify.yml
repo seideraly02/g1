@@ -35,7 +35,7 @@ jobs:
       - name: Build frontend
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: /api
 
       - name: Verify Netlify credentials
         shell: bash

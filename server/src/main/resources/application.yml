@@ -1,25 +1,57 @@
 server:
   port: ${PORT:3000}
+  shutdown: graceful
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
 
 spring:
+  application:
+    name: qadam-ent-api
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/qadam_ent}
     username: ${DATABASE_USER:qadam}
     password: ${DATABASE_PASSWORD:qadam}
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
+    hikari:
+      maximum-pool-size: ${DATABASE_POOL_SIZE:10}
+      minimum-idle: ${DATABASE_MIN_IDLE:2}
+      connection-timeout: 5000
+      validation-timeout: 3000
   flyway:
     enabled: true
+    clean-disabled: true
+    validate-migration-naming: true
 
 qadam:
-  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:4173}
+  frontend-origins: ${FRONTEND_ORIGINS:${FRONTEND_ORIGIN:http://localhost:4173}}
   auth-mode: ${AUTH_MODE:development}
   session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  session-cookie-same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
+  session-ttl-days: ${SESSION_TTL_DAYS:30}
+  security-pepper: ${SECURITY_PEPPER:development-only-pepper-change-before-production}
   telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
   telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
 springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:true}
   swagger-ui:
+    enabled: ${SWAGGER_ENABLED:true}
     path: /swagger
