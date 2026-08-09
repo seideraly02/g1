@@ -1,16 +1,24 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { clearAuthenticatedUser, persistAuthenticatedUser } from '../features/auth/authPersistence'
+import { clearAuthenticatedUser } from '../features/auth/authPersistence'
 import { verifyServerSession } from '../features/auth/sessionVerification'
-import { AuthError, type CodeRequest, type RegistrationProfile } from '../features/auth/types'
+import {
+  AuthError,
+  type AuthenticatedUser,
+  type CodeRequest,
+  type RegistrationProfile,
+} from '../features/auth/types'
 import { authRepository } from '../services/api/apiAuthRepository'
 
 const message = (error: unknown) =>
   error instanceof AuthError ? error.message : 'Белгісіз қате болды. Қайта көр'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user =
-    ref<ReturnType<typeof import('../features/auth/authPersistence').readAuthenticatedUser>>(null)
+  // Authentication state is authoritative on the server via the HttpOnly session cookie.
+  // Remove any legacy persisted profile so PII is not retained in localStorage.
+  clearAuthenticatedUser()
+
+  const user = ref<AuthenticatedUser | null>(null)
   const codeRequest = ref<CodeRequest | null>(null)
   const pendingProfile = ref<RegistrationProfile | null>(null)
   const loading = ref(false)
@@ -56,7 +64,6 @@ export const useAuthStore = defineStore('auth', () => {
         requestId: codeRequest.value.requestId,
         code,
       })
-      persistAuthenticatedUser(user.value)
       sessionChecked.value = true
       codeRequest.value = null
       pendingProfile.value = null
