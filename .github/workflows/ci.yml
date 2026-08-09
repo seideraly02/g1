@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   quality:
-    name: Quality gate
+    name: Frontend quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -50,3 +50,26 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  backend:
+    name: Backend compile and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Java
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Compile and test backend
+        run: gradle -p server test
