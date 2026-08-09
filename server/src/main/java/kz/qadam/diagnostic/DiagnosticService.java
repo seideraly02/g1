@@ -43,6 +43,7 @@ public class DiagnosticService {
     @Transactional
     public DiagnosticResult submit(String subjectId, List<AnswerInput> answers, String sessionToken) {
         validateAnswers(answers);
+        UUID userId = authService.requireSessionUserId(sessionToken);
 
         List<AnswerResult> results = new ArrayList<>();
         int correctCount = 0;
@@ -76,7 +77,7 @@ public class DiagnosticService {
         UUID attemptId = UUID.randomUUID();
         jdbc.sql("insert into diagnostic_attempts(id,user_id,subject_id,correct_count,total_count) values(:id,:user,:subject,:correct,:total)")
             .param("id", attemptId)
-            .param("user", authService.findSessionUser(sessionToken))
+            .param("user", userId)
             .param("subject", subjectId)
             .param("correct", correctCount)
             .param("total", answers.size())
