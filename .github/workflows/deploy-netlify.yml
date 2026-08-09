@@ -52,7 +52,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
-          npx --yes netlify-cli@latest deploy \
+          npx --yes netlify-cli@27.1.1 deploy \
             --dir=dist \
             --prod \
             --auth="$NETLIFY_AUTH_TOKEN" \

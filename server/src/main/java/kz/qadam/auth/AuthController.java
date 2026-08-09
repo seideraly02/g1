@@ -84,7 +84,7 @@ public class AuthController {
     ) {}
 
     public record VerifyCodeRequest(
-        @NotBlank String requestId,
+        @NotBlank @Size(max = 36) String requestId,
         @NotBlank @Pattern(regexp = "\\d{6}") String code
     ) {}
 }
