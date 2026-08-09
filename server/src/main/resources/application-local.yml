@@ -1,0 +1,9 @@
+qadam:
+  auth-mode: development
+  session-cookie-secure: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
