@@ -30,11 +30,11 @@ spring:
 
 qadam:
   frontend-origins: ${FRONTEND_ORIGINS:${FRONTEND_ORIGIN:http://localhost:4173}}
-  auth-mode: ${AUTH_MODE:development}
-  session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  auth-mode: ${AUTH_MODE:production}
+  session-cookie-secure: ${SESSION_COOKIE_SECURE:true}
   session-cookie-same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
   session-ttl-days: ${SESSION_TTL_DAYS:30}
-  security-pepper: ${SECURITY_PEPPER:development-only-pepper-change-before-production}
+  security-pepper: ${SECURITY_PEPPER:}
   telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
   telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
 
@@ -51,7 +51,7 @@ management:
 
 springdoc:
   api-docs:
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: ${SWAGGER_ENABLED:false}
   swagger-ui:
-    enabled: ${SWAGGER_ENABLED:true}
+    enabled: ${SWAGGER_ENABLED:false}
     path: /swagger
