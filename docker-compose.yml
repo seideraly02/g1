@@ -4,9 +4,9 @@ services:
     environment:
       POSTGRES_DB: qadam_ent
       POSTGRES_USER: qadam
-      POSTGRES_PASSWORD: qadam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qadam}
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - qadam_postgres:/var/lib/postgresql/data
     healthcheck:
