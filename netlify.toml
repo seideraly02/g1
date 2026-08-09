@@ -5,6 +5,17 @@
 [build.environment]
   NODE_VERSION = "22.23.1"
   NPM_VERSION = "10.9.8"
+  VITE_API_BASE_URL = "/api"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api?path=:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
