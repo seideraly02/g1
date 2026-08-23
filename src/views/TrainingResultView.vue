@@ -1,56 +1,22 @@
 <script setup lang="ts">
-import { ArrowRight, Share2, Sparkles, TrendingUp } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ArrowRight, Sparkles, TrendingUp } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import ProgressRing from '../components/ProgressRing.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 const router = useRouter()
-const shareMessage = ref('')
-
-async function shareResult() {
-  const shareData = {
-    title: 'Qadam ҰБТ',
-    text: 'Тарих жаттығуында 20 сұрақтың 16-сына дұрыс жауап бердім!',
-  }
-
-  try {
-    if (navigator.share) {
-      await navigator.share(shareData)
-      shareMessage.value = 'Нәтиже бөлісілді'
-      return
-    }
-
-    await navigator.clipboard?.writeText(shareData.text)
-    shareMessage.value = 'Нәтиже көшірілді'
-  } catch {
-    shareMessage.value = ''
-  }
-}
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-white">
-    <AppHeader title="Жаттығу аяқталды" close>
-      <template #actions>
-        <button
-          class="icon-button"
-          type="button"
-          aria-label="Нәтижемен бөлісу"
-          @click="shareResult"
-        >
-          <Share2 :size="20" :stroke-width="2.2" />
-        </button>
-      </template>
-    </AppHeader>
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8]">
+    <AppHeader title="Нәтиже үлгісі" close />
 
     <div class="flex flex-1 flex-col px-4 pb-5">
-      <p v-if="shareMessage" class="mb-1 text-center text-[11px] font-[700] text-[#1aa65a]">
-        {{ shareMessage }}
-      </p>
+      <SampleDataNotice class="mb-2" />
 
       <div class="flex justify-center py-3">
-        <ProgressRing :value="80" :size="140" :stroke="11" color="#8bc8ff">
+        <ProgressRing :value="80" :size="140" :stroke="11" color="#1f66d9">
           <div class="text-center">
             <div class="metric-value text-[34px] font-[850] leading-none tracking-[-.04em]">
               16/20

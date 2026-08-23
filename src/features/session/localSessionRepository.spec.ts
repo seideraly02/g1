@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PersistenceService, type StorageAdapter } from '../../services/persistenceService'
 import { createLocalSessionRepository } from './localSessionRepository'
-import { discardTrialSession } from './sessionApplication'
+import { discardTrialSession, getLatestSessionByType } from './sessionApplication'
 
 class MemoryStorage implements StorageAdapter {
   private readonly values = new Map<string, string>()
@@ -85,5 +85,40 @@ describe('discardTrialSession', () => {
 
     expect(discardTrialSession(repository, trial.id)).toBe(false)
     expect(repository.getSession(trial.id)?.status).toBe('completed')
+  })
+})
+
+describe('getLatestSessionByType', () => {
+  it('returns a completed diagnostic after it stops being active', () => {
+    let sequence = 0
+    const repository = createLocalSessionRepository(
+      new PersistenceService(new MemoryStorage()),
+      () => `diagnostic-${++sequence}`,
+    )
+    const diagnostic = repository.createSession({
+      type: 'guest-diagnostic',
+      selectedSubjectIds: ['history'],
+      questionIds: ['question-1'],
+      startedAt: '2026-07-31T12:00:00.000Z',
+    })
+    repository.completeSession(diagnostic.id, '2026-07-31T12:05:00.000Z')
+
+    expect(repository.getActiveSession('guest-diagnostic')).toBeNull()
+    expect(getLatestSessionByType(repository, 'guest-diagnostic')?.id).toBe(diagnostic.id)
+  })
+
+  it('does not return a different session type', () => {
+    const repository = createLocalSessionRepository(
+      new PersistenceService(new MemoryStorage()),
+      () => 'trial-only',
+    )
+    repository.createSession({
+      type: 'trial',
+      selectedSubjectIds: ['math'],
+      questionIds: ['question-1'],
+      startedAt: '2026-07-31T12:00:00.000Z',
+    })
+
+    expect(getLatestSessionByType(repository, 'guest-diagnostic')).toBeNull()
   })
 })

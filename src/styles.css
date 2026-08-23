@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 :root {
-  color: #14203a;
-  background: #edf2f8;
+  color: #17223b;
+  background: #f1f5fb;
   font-family:
     'Inter Variable',
     Inter,
@@ -14,22 +14,24 @@
   font-optical-sizing: auto;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #14203a;
-  --muted: #6b768b;
-  --line: #e5eaf2;
+  --ink: #17223b;
+  --muted: #667085;
+  --line: #e2e8f0;
   --surface: #ffffff;
-  --canvas: #f7f9fc;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-soft: #eff5ff;
-  --violet: #7962f7;
-  --violet-soft: #f1edff;
-  --green: #22bc69;
-  --green-soft: #ecfbf3;
-  --orange: #f5a623;
-  --orange-soft: #fff7e6;
-  --red: #f04c55;
-  --red-soft: #fff0f1;
+  --canvas: #f8f8f8;
+  --canvas-blue: #f1f5fb;
+  --primary: #1f66d9;
+  --primary-dark: #1d5bbd;
+  --primary-soft: #edf4ff;
+  --green: #168653;
+  --green-soft: #ebf8f1;
+  --orange: #b86708;
+  --orange-soft: #fff7e8;
+  --red: #c93645;
+  --red-soft: #fff0f2;
+  --radius-card: 20px;
+  --radius-control: 14px;
+  --shadow-card: 0 10px 32px rgba(31, 63, 114, 0.07);
   --page-max-width: 720px;
   --workspace-sidebar-width: 248px;
   --workspace-content-width: 1040px;
@@ -41,7 +43,7 @@
 
 html {
   min-width: 320px;
-  background: #edf2f8;
+  background: var(--canvas-blue);
 }
 
 body {
@@ -49,12 +51,13 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 15% 15%, rgba(36, 104, 242, 0.07), transparent 28rem), #edf2f8;
+  background: var(--canvas-blue);
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font-family: inherit;
 }
 
@@ -65,8 +68,10 @@ a {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
-  outline: 3px solid rgba(36, 104, 242, 0.28);
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(31, 102, 217, 0.26);
   outline-offset: 2px;
 }
 
@@ -84,13 +89,13 @@ button {
     min-height: 100dvh;
     align-items: stretch;
     justify-content: center;
-    padding: 24px;
+    padding: 20px;
   }
 
   .app-route-stage {
     width: min(100%, var(--page-max-width));
     min-width: 0;
-    min-height: calc(100dvh - 48px);
+    min-height: calc(100dvh - 40px);
   }
 
   .app-route-stage > .screen-page {
@@ -112,6 +117,22 @@ button {
     min-height: 100dvh;
   }
 
+  .app-stage--public {
+    padding: 0;
+    background: var(--canvas-blue);
+  }
+
+  .app-stage--public .app-route-stage {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+  }
+
+  .app-stage--public .app-route-stage > .screen-page {
+    width: 100%;
+    min-height: 100dvh;
+  }
+
   .app-stage--focus .app-header {
     width: min(100%, 960px);
     margin-right: auto;
@@ -121,7 +142,8 @@ button {
   .screen-page {
     position: relative;
     min-height: 100dvh;
-    background: var(--surface);
+    overflow: hidden;
+    background: var(--canvas);
   }
 
   .screen-content {
@@ -143,14 +165,14 @@ button {
 
   .card {
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: var(--radius-card);
     background: var(--surface);
-    box-shadow: 0 2px 8px rgba(20, 38, 69, 0.035);
+    box-shadow: var(--shadow-card);
   }
 
   .soft-card {
-    border: 1px solid #d8e6ff;
-    border-radius: 14px;
+    border: 1px solid #cfe0fb;
+    border-radius: var(--radius-card);
     background: var(--primary-soft);
   }
 
@@ -162,12 +184,12 @@ button {
     justify-content: center;
     gap: 8px;
     border: 0;
-    border-radius: 12px;
+    border-radius: var(--radius-control);
     padding: 0 18px;
     color: white;
     background: var(--primary);
-    box-shadow: 0 7px 16px rgba(37, 99, 235, 0.16);
-    font-size: 14px;
+    box-shadow: 0 8px 18px rgba(31, 102, 217, 0.18);
+    font-size: 15px;
     font-weight: 700;
     line-height: 1;
     transition:
@@ -178,7 +200,7 @@ button {
 
   .primary-button:hover {
     background: var(--primary-dark);
-    box-shadow: 0 9px 20px rgba(36, 104, 242, 0.25);
+    box-shadow: 0 10px 22px rgba(31, 102, 217, 0.24);
   }
 
   .primary-button:active {
@@ -199,7 +221,7 @@ button {
     justify-content: center;
     gap: 8px;
     border: 1px solid #b7cffd;
-    border-radius: 12px;
+    border-radius: var(--radius-control);
     padding: 0 16px;
     color: var(--primary);
     background: white;
@@ -231,13 +253,13 @@ button {
 
   .icon-button {
     display: inline-flex;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: 12px;
     color: var(--ink);
     background: transparent;
     transition:
@@ -253,9 +275,9 @@ button {
   .eyebrow {
     margin: 0;
     color: var(--primary);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     line-height: 1.25;
     text-transform: uppercase;
   }
@@ -328,7 +350,7 @@ button {
 
   .page-title {
     margin: 0;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.025em;
     line-height: 1.2;
@@ -372,7 +394,14 @@ button {
 
 @media (min-width: 521px) {
   .app-route-stage > .screen-page {
-    min-height: calc(100dvh - 48px);
+    min-height: calc(100dvh - 40px);
+    border-radius: 24px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .app-stage--public .app-route-stage > .screen-page {
+    border-radius: 0;
+    box-shadow: none;
   }
 }
 
@@ -383,7 +412,7 @@ button {
     align-items: start;
     justify-content: stretch;
     padding: 0;
-    background: #f4f7fb;
+    background: var(--canvas-blue);
   }
 
   .app-stage--workspace .desktop-sidebar {
@@ -393,7 +422,7 @@ button {
     height: 100dvh;
     flex-direction: column;
     border-right: 1px solid var(--line);
-    padding: 24px 20px;
+    padding: 28px 20px;
     background: white;
   }
 }
@@ -444,7 +473,7 @@ button {
 @media (max-width: 520px) {
   html,
   body {
-    background: white;
+    background: var(--canvas);
   }
 
   .app-stage {

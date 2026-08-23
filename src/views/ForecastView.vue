@@ -14,7 +14,7 @@ function startTraining() {
 </script>
 
 <template>
-  <section class="screen-page bg-[#f8faff]">
+  <section class="screen-page bg-[#f8f8f8]">
     <AppHeader title="ҰБТ болжамы" back />
 
     <div class="screen-content px-4 pt-4">
@@ -24,8 +24,8 @@ function startTraining() {
         aria-labelledby="forecast-status-title"
         role="status"
       >
-        <Gauge :size="24" :stroke-width="2" class="text-[#2468f2]" aria-hidden="true" />
-        <p class="mt-4 text-[11px] font-[800] tracking-[0.06em] text-[#2468f2]">
+        <Gauge :size="24" :stroke-width="2" class="text-[#1f66d9]" aria-hidden="true" />
+        <p class="mt-4 text-[11px] font-[800] tracking-[0.06em] text-[#1f66d9]">
           {{ forecast.eyebrow }}
         </p>
         <h2

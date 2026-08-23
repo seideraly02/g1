@@ -1,7 +1,7 @@
 import { PersistenceService } from '../../services/persistenceService'
 import { createLocalSessionRepository } from './localSessionRepository'
 import type { SessionRepository } from './sessionRepository'
-import type { LearningSession, SaveSessionAnswerInput } from './types'
+import type { LearningSession, LearningSessionType, SaveSessionAnswerInput } from './types'
 
 let defaultSessionRepository = createLocalSessionRepository(new PersistenceService())
 
@@ -58,16 +58,64 @@ export function startGuestDiagnostic(
   selectedSubjectIds: readonly string[],
   questionIds: readonly string[],
 ): LearningSession {
-  return getOrCreateSession(
-    defaultSessionRepository,
-    'guest-diagnostic',
-    selectedSubjectIds,
-    questionIds,
+  const matchingSession = [...defaultSessionRepository.getSessions()]
+    .reverse()
+    .find(
+      (candidate) =>
+        candidate.type === 'guest-diagnostic' &&
+        (candidate.status === 'created' || candidate.status === 'in-progress') &&
+        candidate.selectedSubjectIds.length === selectedSubjectIds.length &&
+        candidate.selectedSubjectIds.every(
+          (subjectId, index) => subjectId === selectedSubjectIds[index],
+        ) &&
+        candidate.questionIds.length === questionIds.length &&
+        candidate.questionIds.every((questionId, index) => questionId === questionIds[index]),
+    )
+
+  return (
+    matchingSession ??
+    defaultSessionRepository.createSession({
+      type: 'guest-diagnostic',
+      selectedSubjectIds,
+      questionIds,
+      startedAt: nowAsIso(),
+    })
   )
 }
 
-export function getGuestDiagnosticSession(): LearningSession | null {
+export function getGuestDiagnosticSession(sessionId?: string): LearningSession | null {
+  if (sessionId) {
+    const session = defaultSessionRepository.getSession(sessionId)
+    if (
+      session?.type === 'guest-diagnostic' &&
+      (session.status === 'created' || session.status === 'in-progress')
+    ) {
+      return session
+    }
+  }
   return defaultSessionRepository.getActiveSession('guest-diagnostic')
+}
+
+export function getGuestDiagnosticRecord(sessionId?: string): LearningSession | null {
+  if (sessionId) {
+    const session = defaultSessionRepository.getSession(sessionId)
+    return session?.type === 'guest-diagnostic' ? session : null
+  }
+
+  return getLatestSessionByType(defaultSessionRepository, 'guest-diagnostic')
+}
+
+export function getLatestSessionByType(
+  repository: SessionRepository,
+  type: LearningSessionType,
+): LearningSession | null {
+  return (
+    [...repository.getSessions()].reverse().find((candidate) => candidate.type === type) ?? null
+  )
+}
+
+export function getLatestGuestDiagnosticSession(): LearningSession | null {
+  return getGuestDiagnosticRecord()
 }
 
 export function saveGuestDiagnosticAnswer(input: SaveSessionAnswerInput): LearningSession | null {

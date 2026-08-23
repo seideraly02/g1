@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 type FilterKey = 'all' | 'profile' | 'weak'
 
@@ -93,7 +94,7 @@ function clearFilters() {
 </script>
 
 <template>
-  <section class="screen-page bg-[#f8faff]">
+  <section class="screen-page bg-[#f8f8f8]">
     <AppHeader title="Пәндер">
       <template #actions>
         <button
@@ -109,6 +110,7 @@ function clearFilters() {
     </AppHeader>
 
     <div class="screen-content px-4 pt-1">
+      <SampleDataNotice class="mb-3" />
       <div v-if="showSort" class="relative z-10">
         <button
           type="button"
@@ -141,7 +143,7 @@ function clearFilters() {
           :class="
             activeFilter === filter.key
               ? filter.key === 'weak'
-                ? 'border-[#f0cf62] bg-[#fffaf0] text-[#b56803]'
+                ? 'border-[#cfe0fb] bg-[#edf4ff] text-[#1f66d9]'
                 : 'chip--active'
               : ''
           "
@@ -157,22 +159,15 @@ function clearFilters() {
           v-for="subject in visibleSubjects"
           :key="subject.id"
           type="button"
-          class="w-full rounded-[18px] border p-3.5 text-left transition-transform active:scale-[.995]"
+          class="card w-full p-4 text-left transition-transform active:scale-[.995]"
           :class="{
-            'border-[#f3d66a] bg-[#fffdf3]': subject.id === 'history',
-            'border-[#ddd3ff] bg-[#fdfcff]': subject.id === 'math',
-            'border-[#dfe8e4] bg-white': subject.id === 'informatics',
+            'border-[#cfe0fb]': subject.id === 'history',
           }"
           @click="openSubject(subject)"
         >
           <span class="flex items-start gap-3">
             <span
-              class="grid size-10 shrink-0 place-items-center rounded-[12px]"
-              :class="{
-                'bg-[#fff7df] text-[#dc8105]': subject.id === 'history',
-                'bg-[#f1edff] text-[#7846e8]': subject.id === 'math',
-                'bg-[#ecfbf3] text-[#18a65a]': subject.id === 'informatics',
-              }"
+              class="grid size-10 shrink-0 place-items-center rounded-[12px] bg-[#edf4ff] text-[#1f66d9]"
             >
               <Landmark v-if="subject.id === 'history'" :size="20" />
               <Sigma v-else-if="subject.id === 'math'" :size="20" />
@@ -186,7 +181,7 @@ function clearFilters() {
                   class="chip shrink-0 border-0"
                   :class="{
                     'chip--orange': subject.id === 'history',
-                    'bg-[#f0e9ff] text-[#7840db]': subject.id === 'math',
+                    'chip--blue': subject.id === 'math',
                     'chip--green': subject.id === 'informatics',
                   }"
                 >
@@ -206,18 +201,14 @@ function clearFilters() {
           <span class="progress-track mt-2 block">
             <span
               class="block h-full rounded-full"
-              :class="{
-                'bg-[linear-gradient(90deg,#d97d05,#ffc32a)]': subject.id === 'history',
-                'bg-[linear-gradient(90deg,#7545e7,#a486f4)]': subject.id === 'math',
-                'bg-[linear-gradient(90deg,#0fa552,#42d982)]': subject.id === 'informatics',
-              }"
+              :class="subject.id === 'informatics' ? 'bg-[#168653]' : 'bg-[#1f66d9]'"
               :style="{ width: `${subject.mastery}%` }"
             />
           </span>
 
           <span
             v-if="subject.id !== 'informatics'"
-            class="mt-3 flex h-10 items-center justify-center rounded-[11px] border border-[#91bdf8] bg-white text-[12px] font-[800] text-[#2468f2]"
+            class="mt-3 flex h-11 items-center justify-center rounded-[12px] border border-[#b7cffd] bg-white text-[12px] font-[800] text-[#1f66d9]"
           >
             Жалғастыру
           </span>

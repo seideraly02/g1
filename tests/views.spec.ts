@@ -56,4 +56,11 @@ describe('Qadam mobile screens', () => {
       expect(sources).not.toContain(russianCopy)
     }
   })
+
+  it('starts the temporary public learning flow from subject selection', () => {
+    const welcome = readFileSync(resolve(viewsDirectory, 'WelcomeView.vue'), 'utf8')
+
+    expect(welcome).toContain("router.push({ name: 'subjects-onboarding' })")
+    expect(welcome).toContain('@click="startPreparation"')
+  })
 })

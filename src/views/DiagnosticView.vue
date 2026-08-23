@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ArrowRight, BatteryMedium, Bookmark, Check, Flag, Save, Wifi, X } from 'lucide-vue-next'
+import { ArrowRight, Check, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
 import {
   completeGuestDiagnostic,
@@ -19,7 +19,7 @@ interface DiagnosticQuestion {
   explanation: string
 }
 
-const questions: DiagnosticQuestion[] = [
+const historyQuestions: DiagnosticQuestion[] = [
   {
     id: guestDiagnosticQuestionIds[0],
     topic: 'Қазақ хандығы',
@@ -65,14 +65,198 @@ const questions: DiagnosticQuestion[] = [
   },
 ]
 
+const questionBanks: Record<string, DiagnosticQuestion[]> = {
+  history: historyQuestions,
+  reading: [
+    {
+      id: guestDiagnosticQuestionIds[0],
+      topic: 'Мәтін құрылымы',
+      prompt: 'Мәтіннің негізгі ойын анықтайтын бөлік қайсы?',
+      options: ['Тақырып пен түйін', 'Тек бірінші сөйлем', 'Тыныс белгілері', 'Сөз саны'],
+      correct: 0,
+      explanation: 'Негізгі ой тақырып пен автор қорытындысы арқылы анықталады.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[1],
+      topic: 'Сөз мағынасы',
+      prompt: '«Ұқыпты» сөзіне мағыналас сөзді тап.',
+      options: ['Салғырт', 'Жинақы', 'Асығыс', 'Кездейсоқ'],
+      correct: 1,
+      explanation: '«Жинақы» сөзі ұқыпты әрекет пен тәртіпті білдіреді.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[2],
+      topic: 'Қорытынды',
+      prompt: 'Мәтіннен қорытынды жасау үшін неге сүйену керек?',
+      options: ['Жеке пікірге', 'Мәтіндегі дерекке', 'Тек тақырыпқа', 'Сөйлем санына'],
+      correct: 1,
+      explanation: 'Дұрыс қорытынды мәтінде берілген деректер мен байланыстарға сүйенеді.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[3],
+      topic: 'Автор ұстанымы',
+      prompt: 'Автордың көзқарасын не арқылы тануға болады?',
+      options: ['Бағалауыш сөздерден', 'Абзац санынан', 'Қаріп өлшемінен', 'Мәтін ұзындығынан'],
+      correct: 0,
+      explanation: 'Бағалауыш сөздер автордың оқиғаға немесе мәселеге қатынасын білдіреді.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[4],
+      topic: 'Логикалық байланыс',
+      prompt: 'Себеп-салдар байланысын білдіретін сөзді таңда.',
+      options: ['Сондықтан', 'Алайда', 'Мысалы', 'Немесе'],
+      correct: 0,
+      explanation: '«Сондықтан» алдыңғы ойдың салдарын көрсетеді.',
+    },
+  ],
+  'math-literacy': [
+    {
+      id: guestDiagnosticQuestionIds[0],
+      topic: 'Пайыз',
+      prompt: '10 000 теңгенің 20%-ы қанша?',
+      options: ['1 000', '2 000', '5 000', '8 000'],
+      correct: 1,
+      explanation: '10 000 × 0,2 = 2 000.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[1],
+      topic: 'Пропорция',
+      prompt: '3 дәптер 900 теңге тұрса, 5 дәптер қанша тұрады?',
+      options: ['1 200', '1 500', '1 800', '2 000'],
+      correct: 1,
+      explanation: 'Бір дәптер 300 теңге, сондықтан 5 дәптер 1 500 теңге.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[2],
+      topic: 'Уақыт',
+      prompt: 'Сабақ 14:20-да басталып, 45 минутқа созылды. Қашан аяқталды?',
+      options: ['14:55', '15:05', '15:15', '15:25'],
+      correct: 1,
+      explanation: '14:20-ға 45 минут қоссақ, 15:05 болады.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[3],
+      topic: 'Орташа мән',
+      prompt: '4, 6 және 8 сандарының орташа мәнін тап.',
+      options: ['5', '6', '7', '18'],
+      correct: 1,
+      explanation: '(4 + 6 + 8) ÷ 3 = 6.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[4],
+      topic: 'Аудан',
+      prompt: 'Ұзындығы 5 м, ені 3 м бөлменің ауданы қанша?',
+      options: ['8 м²', '15 м²', '16 м²', '30 м²'],
+      correct: 1,
+      explanation: 'Тіктөртбұрыш ауданы: 5 × 3 = 15 м².',
+    },
+  ],
+  math: [
+    {
+      id: guestDiagnosticQuestionIds[0],
+      topic: 'Теңдеу',
+      prompt: '2x + 6 = 14 теңдеуінің түбірін тап.',
+      options: ['2', '4', '6', '10'],
+      correct: 1,
+      explanation: '2x = 8, сондықтан x = 4.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[1],
+      topic: 'Дәреже',
+      prompt: '2³ · 2² өрнегінің мәні қандай?',
+      options: ['16', '32', '64', '128'],
+      correct: 1,
+      explanation: 'Бірдей негіздер көбейтілгенде дәреже көрсеткіштері қосылады: 2⁵ = 32.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[2],
+      topic: 'Функция',
+      prompt: 'y = 3x − 1 болса, x = 2 кезіндегі y мәнін тап.',
+      options: ['3', '5', '6', '7'],
+      correct: 1,
+      explanation: 'y = 3 × 2 − 1 = 5.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[3],
+      topic: 'Геометрия',
+      prompt: 'Үшбұрыш бұрыштарының қосындысы неше градус?',
+      options: ['90°', '180°', '270°', '360°'],
+      correct: 1,
+      explanation: 'Кез келген үшбұрыштың ішкі бұрыштарының қосындысы 180°.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[4],
+      topic: 'Түбір',
+      prompt: '√81 мәнін тап.',
+      options: ['7', '8', '9', '10'],
+      correct: 2,
+      explanation: '9 × 9 = 81, сондықтан √81 = 9.',
+    },
+  ],
+  physics: [
+    {
+      id: guestDiagnosticQuestionIds[0],
+      topic: 'Жылдамдық',
+      prompt: 'Жылдамдықтың негізгі формуласы қайсы?',
+      options: ['v = s/t', 'v = st', 'v = t/s', 'v = s + t'],
+      correct: 0,
+      explanation: 'Жылдамдық жүрілген жолды уақытқа бөлу арқылы табылады.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[1],
+      topic: 'Күш',
+      prompt: 'Күштің SI жүйесіндегі өлшем бірлігі қандай?',
+      options: ['Джоуль', 'Ньютон', 'Ватт', 'Паскаль'],
+      correct: 1,
+      explanation: 'Күш ньютонмен өлшенеді.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[2],
+      topic: 'Тығыздық',
+      prompt: 'Тығыздық формуласы қайсы?',
+      options: ['ρ = m/V', 'ρ = mV', 'ρ = V/m', 'ρ = m + V'],
+      correct: 0,
+      explanation: 'Тығыздық масса мен көлемнің қатынасына тең.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[3],
+      topic: 'Электр тогы',
+      prompt: 'Ток күшінің өлшем бірлігін таңда.',
+      options: ['Вольт', 'Ом', 'Ампер', 'Кулон'],
+      correct: 2,
+      explanation: 'Ток күші ампермен өлшенеді.',
+    },
+    {
+      id: guestDiagnosticQuestionIds[4],
+      topic: 'Энергия',
+      prompt: 'Механикалық энергияның өлшем бірлігі қандай?',
+      options: ['Ньютон', 'Джоуль', 'Ватт', 'Тесла'],
+      correct: 1,
+      explanation: 'Энергияның SI жүйесіндегі өлшем бірлігі — джоуль.',
+    },
+  ],
+}
+
 const router = useRouter()
-const diagnosticSession = ref(getGuestDiagnosticSession())
+const route = useRoute()
+const requestedSessionId = typeof route.query.session === 'string' ? route.query.session : undefined
+const diagnosticSession = ref(getGuestDiagnosticSession(requestedSessionId))
+const selectedSubjectId = computed(
+  () => diagnosticSession.value?.selectedSubjectIds[0] ?? 'history',
+)
+const subjectNames: Record<string, string> = {
+  history: 'Қазақстан тарихы',
+  reading: 'Оқу сауаттылығы',
+  'math-literacy': 'Математикалық сауаттылық',
+  math: 'Математика',
+  physics: 'Физика',
+}
+const subjectName = computed(() => subjectNames[selectedSubjectId.value] ?? 'Диагностика')
+const questions = computed(() => questionBanks[selectedSubjectId.value] ?? historyQuestions)
 const questionIndex = ref(diagnosticSession.value?.currentQuestionIndex ?? 0)
-const bookmarked = ref(true)
-const reported = ref(false)
 const detailsOpen = ref(false)
 
-const question = computed(() => questions[questionIndex.value])
+const question = computed(() => questions.value[questionIndex.value] ?? historyQuestions[0])
 const savedAnswer = computed(() =>
   diagnosticSession.value?.answers.find((answer) => answer.questionId === question.value.id),
 )
@@ -87,7 +271,7 @@ const selectedAnswer = computed(() => {
 })
 const answered = computed(() => savedAnswer.value !== undefined)
 const sessionUnavailable = computed(() => diagnosticSession.value === null)
-const progress = computed(() => ((questionIndex.value + 1) / questions.length) * 100)
+const progress = computed(() => ((questionIndex.value + 1) / questions.value.length) * 100)
 
 function selectAnswer(index: number) {
   if (answered.value || !diagnosticSession.value) {
@@ -117,11 +301,11 @@ function selectAnswer(index: number) {
 function nextQuestion() {
   if (!answered.value || !diagnosticSession.value) return
 
-  if (questionIndex.value === questions.length - 1) {
+  if (questionIndex.value === questions.value.length - 1) {
     const completedSession = completeGuestDiagnostic(diagnosticSession.value.id)
     if (completedSession) {
       diagnosticSession.value = completedSession
-      router.push({ name: 'diagnostic-result' })
+      router.push({ name: 'diagnostic-result', query: { session: completedSession.id } })
     }
     return
   }
@@ -132,28 +316,13 @@ function nextQuestion() {
     diagnosticSession.value = updatedSession
     questionIndex.value = nextQuestionIndex
     detailsOpen.value = false
-    reported.value = false
   }
 }
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8fafc] px-4 pb-4">
-    <div class="flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]">
-      <span class="text-[12px] font-[850] tracking-[.01em]">09:41</span>
-      <div class="flex items-center gap-2">
-        <svg width="14" height="13" viewBox="0 0 14 13" fill="none" aria-hidden="true">
-          <rect x="1" y="8" width="2" height="4" rx="1" fill="currentColor" />
-          <rect x="4.3" y="6" width="2" height="6" rx="1" fill="currentColor" />
-          <rect x="7.6" y="3.5" width="2" height="8.5" rx="1" fill="currentColor" />
-          <rect x="10.9" y="1" width="2" height="11" rx="1" fill="currentColor" />
-        </svg>
-        <Wifi :size="16" :stroke-width="2.4" aria-hidden="true" />
-        <BatteryMedium :size="21" :stroke-width="2" aria-hidden="true" />
-      </div>
-    </div>
-
-    <header class="grid grid-cols-[40px_1fr_88px] items-start">
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] px-4 pb-4">
+    <header class="safe-top grid min-h-[72px] grid-cols-[44px_1fr_52px] items-center">
       <button
         class="icon-button -ml-1 mt-1"
         type="button"
@@ -163,27 +332,18 @@ function nextQuestion() {
         <X :size="21" :stroke-width="2" />
       </button>
       <div class="px-1 pt-1.5">
-        <h1 class="truncate text-[13px] font-[850] text-[#111b34]">Қазақстан тарихы</h1>
+        <h1 class="truncate text-[13px] font-[850] text-[#111b34]">{{ subjectName }}</h1>
         <div class="progress-track mt-2 h-[8px]">
           <div
-            class="h-full rounded-full bg-gradient-to-r from-[#2468f2] to-[#63aaf7] transition-[width]"
+            class="h-full rounded-full bg-[#1f66d9] transition-[width]"
             :style="{ width: `${progress}%` }"
           />
         </div>
       </div>
-      <div class="flex items-start justify-end gap-1">
+      <div class="flex items-start justify-end">
         <span class="whitespace-nowrap pt-2 text-[12px] font-[600] text-[#536178]">
           {{ questionIndex + 1 }} / {{ questions.length }}
         </span>
-        <button
-          class="icon-button"
-          type="button"
-          :aria-label="bookmarked ? 'Белгіні алып тастау' : 'Белгілеу'"
-          :aria-pressed="bookmarked"
-          @click="bookmarked = !bookmarked"
-        >
-          <Bookmark :size="20" :stroke-width="2" :fill="bookmarked ? 'currentColor' : 'none'" />
-        </button>
       </div>
     </header>
 
@@ -197,7 +357,7 @@ function nextQuestion() {
 
     <main class="min-h-0 flex-1 overflow-y-auto pb-3">
       <div class="mt-4 flex items-center gap-2">
-        <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#2468f2]">
+        <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#1f66d9]">
           {{ question.topic }}
         </span>
         <span class="rounded-[9px] bg-[#f1f4f8] px-2 py-1 text-[11px] font-[750] text-[#536178]">
@@ -265,7 +425,7 @@ function nextQuestion() {
       </div>
 
       <div v-if="answered" class="mt-2.5 rounded-[18px] border border-[#afd6ff] bg-[#edf5ff] p-3">
-        <div class="border-l-[3px] border-[#2468f2] pl-3">
+        <div class="border-l-[3px] border-[#1f66d9] pl-3">
           <h3 class="text-[13px] font-[850] text-[#111b34]">Неліктен?</h3>
           <p class="mt-1 text-[12px] leading-[1.45] text-[#536178]">{{ question.explanation }}</p>
           <p v-if="detailsOpen" class="mt-1 text-[11px] leading-[1.4] text-[#536178]">
@@ -276,31 +436,12 @@ function nextQuestion() {
           <span class="text-[11px] text-[#536178]">Тақырып түсіндірмесі</span>
           <button
             type="button"
-            class="text-[12px] font-[800] text-[#2468f2]"
+            class="text-[12px] font-[800] text-[#1f66d9]"
             @click="detailsOpen = !detailsOpen"
           >
             Толығырақ
           </button>
         </div>
-      </div>
-
-      <div v-if="answered" class="mt-2.5 flex items-center justify-between gap-2">
-        <button
-          type="button"
-          class="inline-flex min-h-8 items-center gap-2 text-[12px] font-[750] text-[#2468f2]"
-          @click="reported = !reported"
-        >
-          <Flag :size="16" :stroke-width="2" aria-hidden="true" />
-          {{ reported ? 'Хабарланды' : 'Мәселе туралы хабарлау' }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex min-h-8 items-center gap-1 rounded-[10px] bg-[#dcf8e7] px-2 text-[11px] font-[750] text-[#148747]"
-          @click="bookmarked = !bookmarked"
-        >
-          <Save :size="16" :stroke-width="2" aria-hidden="true" />
-          {{ bookmarked ? 'Сақталды' : 'Сақтау' }}
-        </button>
       </div>
     </main>
 

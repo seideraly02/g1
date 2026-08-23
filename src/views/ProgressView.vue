@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomNav from '../components/BottomNav.vue'
 import MiniLineChart from '../components/MiniLineChart.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 const router = useRouter()
 const period = ref<7 | 30>(7)
@@ -28,9 +29,9 @@ const summary = computed(() =>
 )
 
 const subjects = [
-  { name: 'Информатика', value: 82, color: 'from-[#18a750] to-[#50d981]' },
-  { name: 'Математика', value: 76, color: 'from-[#8238e9] to-[#a988f5]' },
-  { name: 'Тарих', value: 63, color: 'from-[#db7700] to-[#ffc13b]' },
+  { name: 'Информатика', value: 82, color: 'bg-[#168653]' },
+  { name: 'Математика', value: 76, color: 'bg-[#1f66d9]' },
+  { name: 'Тарих', value: 63, color: 'bg-[#1f66d9]' },
 ]
 
 const days = [
@@ -45,7 +46,7 @@ const days = [
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
     <div class="safe-top flex items-center justify-between px-4 pb-2 pt-4">
       <h1 class="page-title text-[22px]">Ілгерілеу</h1>
       <div class="flex rounded-[14px] bg-[#dfe6f0] p-1" role="group" aria-label="Кезеңді таңдау">
@@ -66,6 +67,7 @@ const days = [
     </div>
 
     <div class="screen-content space-y-2.5 pt-2">
+      <SampleDataNotice />
       <button
         class="card block w-full p-3 text-left transition-transform active:scale-[.995]"
         type="button"
@@ -73,7 +75,7 @@ const days = [
       >
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-[11px] font-[850] tracking-[.08em] text-[#2869df]">БОЛЖАМ</div>
+            <div class="text-[11px] font-[850] tracking-[.08em] text-[#1f66d9]">БОЛЖАМ</div>
             <div class="metric-value mt-1 text-[27px] font-[900] tracking-[-.03em]">
               {{ summary.forecast }}
             </div>
@@ -112,7 +114,7 @@ const days = [
             <span class="text-[11px]">{{ subject.name }}</span>
             <div class="h-2 overflow-hidden rounded-full bg-[#dfe6ef]">
               <div
-                class="h-full rounded-full bg-gradient-to-r"
+                class="h-full rounded-full"
                 :class="subject.color"
                 :style="{ width: `${subject.value}%` }"
               />
@@ -124,7 +126,7 @@ const days = [
 
       <div class="grid grid-cols-2 gap-2">
         <div class="card p-3">
-          <div class="grid size-10 place-items-center rounded-xl bg-[#eef5ff] text-[#2869df]">
+          <div class="grid size-10 place-items-center rounded-xl bg-[#edf4ff] text-[#1f66d9]">
             <Clock3 :size="20" />
           </div>
           <div class="metric-value mt-2 text-[21px] font-[900]">38 сек.</div>
@@ -157,7 +159,7 @@ const days = [
             class="grid h-10 place-items-center rounded-[10px] border text-[10px] font-[800]"
             :class="
               selectedDay === index
-                ? 'border-2 border-[#2869df] bg-white text-[#2869df]'
+                ? 'border-2 border-[#1f66d9] bg-white text-[#1f66d9]'
                 : day.done
                   ? 'border-[#d7e8ff] bg-[#deecff] text-[#215bc4]'
                   : 'border-transparent bg-[#f1f4f8] text-[#536178]'

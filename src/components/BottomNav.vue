@@ -20,7 +20,7 @@ function isActive(item: (typeof primaryNavigationItems)[number]) {
 
 <template>
   <nav
-    class="bottom-navigation fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] w-full max-w-[720px] items-end justify-around border-t border-[#e8edf5] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
+    class="bottom-navigation fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] w-full max-w-[720px] items-end justify-around border-t border-[#e2e8f0] bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur min-[521px]:absolute"
     aria-label="Негізгі мәзір"
   >
     <button
@@ -30,8 +30,8 @@ function isActive(item: (typeof primaryNavigationItems)[number]) {
       :class="
         isActive(item)
           ? item.key === 'training'
-            ? 'bg-transparent text-[#2563eb]'
-            : 'rounded-[14px] bg-[#edf4ff] text-[#2563eb]'
+            ? 'bg-transparent text-[#1f66d9]'
+            : 'rounded-[14px] bg-[#edf4ff] text-[#1f66d9]'
           : 'bg-transparent text-[#69758a]'
       "
       type="button"
@@ -40,7 +40,7 @@ function isActive(item: (typeof primaryNavigationItems)[number]) {
     >
       <span
         v-if="item.key === 'training'"
-        class="absolute top-[-25px] grid size-[58px] place-items-center rounded-[18px] bg-[#2563eb] text-white shadow-[0_9px_20px_rgba(37,99,235,.28)] transition-transform group-active:scale-95"
+        class="absolute top-[-25px] grid size-[58px] place-items-center rounded-[18px] bg-[#1f66d9] text-white shadow-[0_9px_20px_rgba(31,102,217,.25)] transition-transform group-active:scale-95"
       >
         <component :is="item.icon" :size="21" :stroke-width="2" fill="currentColor" />
       </span>

@@ -7,7 +7,7 @@ withDefaults(
   }>(),
   {
     points: '3,37 27,31 51,33 75,20 99,23 123,12 147,7',
-    color: '#2468f2',
+    color: '#1f66d9',
     fill: false,
   },
 )

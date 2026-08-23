@@ -12,6 +12,7 @@ import {
 import { ref } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 type DetailKey = 'history' | 'pause'
 
@@ -35,7 +36,7 @@ function toggleDetail(key: DetailKey) {
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
     <AppHeader title="Сабақтар сериясы" back>
       <template #actions>
         <button
@@ -51,6 +52,7 @@ function toggleDetail(key: DetailKey) {
     </AppHeader>
 
     <div class="screen-content space-y-3 pt-3">
+      <SampleDataNotice />
       <div
         v-if="showInfo"
         class="rounded-xl border border-[#b9dcff] bg-[#eff6ff] px-3 py-2 text-[11px] leading-5 text-[#34516f]"
@@ -59,18 +61,16 @@ function toggleDetail(key: DetailKey) {
       </div>
 
       <div
-        class="rounded-[23px] border border-[#ffd29b] bg-gradient-to-br from-[#fff9ef] to-[#fffdf4] p-4"
+        class="rounded-b-[30px] rounded-t-[20px] border border-[#1f66d9] bg-[#1f66d9] p-5 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)]"
       >
-        <div class="text-[11px] font-[850] tracking-[.08em] text-[#bd3f0a]">АҒЫМДАҒЫ СЕРИЯ</div>
+        <div class="text-[11px] font-[850] tracking-[.08em] text-white">АҒЫМДАҒЫ СЕРИЯ</div>
         <div class="mt-2 flex items-center">
           <Flame :size="29" :stroke-width="2" />
-          <span class="metric-value ml-2 text-[44px] font-[900] leading-none text-[#c94408]"
-            >8</span
-          >
+          <span class="metric-value ml-2 text-[44px] font-[900] leading-none text-white">8</span>
           <span class="ml-2 text-[16px] font-[850]">күн қатарынан</span>
-          <Award class="ml-auto text-[#d77a00]" :size="26" />
+          <Award class="ml-auto text-white" :size="26" />
         </div>
-        <div class="mt-3 text-[12px] leading-5 text-[#a13f1c]">
+        <div class="mt-3 text-[12px] leading-5 text-white">
           Шағын жаттығу ырғақты сақтауға көмектеседі.
         </div>
       </div>
@@ -129,12 +129,12 @@ function toggleDetail(key: DetailKey) {
             <h2 class="text-[13px] font-[850]">Келесі марапат</h2>
             <div class="mt-1 text-[11px] text-[#536178]">10 күн · «Тұрақты ырғақ» белгісі</div>
           </div>
-          <div class="grid size-10 place-items-center rounded-xl bg-[#f5f0ff] text-[#8338e8]">
+          <div class="grid size-10 place-items-center rounded-xl bg-[#edf4ff] text-[#1f66d9]">
             <Award :size="21" />
           </div>
         </div>
         <div class="mt-2.5 h-2 overflow-hidden rounded-full bg-[#dfe6ef]">
-          <div class="h-full w-[80%] rounded-full bg-gradient-to-r from-[#8338e8] to-[#ac8af3]" />
+          <div class="h-full w-[80%] rounded-full bg-[#1f66d9]" />
         </div>
       </div>
 

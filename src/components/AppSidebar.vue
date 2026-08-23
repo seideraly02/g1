@@ -35,7 +35,7 @@ async function signOut() {
         class="flex min-h-12 w-full items-center gap-3 rounded-lg border-0 px-3 text-left text-[14px] font-[650] transition-colors"
         :class="
           isNavigationItemActive(item, route.name)
-            ? 'bg-[#edf4ff] text-[#2563eb]'
+            ? 'bg-[#edf4ff] text-[#1f66d9]'
             : 'bg-transparent text-[#526078] hover:bg-[#f4f7fb] hover:text-[#14203a]'
         "
         type="button"
@@ -52,7 +52,7 @@ async function signOut() {
       </button>
     </nav>
 
-    <div class="mt-auto border-t border-[#e5eaf1] pt-3">
+    <div v-if="auth.isAuthenticated" class="mt-auto border-t border-[#e5eaf1] pt-3">
       <button
         class="flex min-h-11 w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 text-left text-[14px] font-[650] text-[#c52835] transition-colors hover:bg-[#fff1f2] hover:text-[#a71927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c52835]"
         type="button"

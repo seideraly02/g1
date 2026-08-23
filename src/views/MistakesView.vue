@@ -4,6 +4,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
+import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
+import { startGuestDiagnostic } from '../features/session/sessionApplication'
 
 interface ReviewTopic {
   id: string
@@ -28,7 +31,7 @@ const topics: ReviewTopic[] = [
     detail: '3 белсенді қате · соңғы талпыныс кеше',
     completed: 2,
     total: 3,
-    color: 'from-[#e27b00] to-[#ffc13b]',
+    color: 'bg-[#1f66d9]',
     chip: 'bg-[#fff1c9] text-[#b65a09]',
   },
   {
@@ -38,7 +41,7 @@ const topics: ReviewTopic[] = [
     detail: '2 белсенді қате · қазір қайталау керек',
     completed: 1,
     total: 3,
-    color: 'from-[#8338e8] to-[#aa85f2]',
+    color: 'bg-[#1f66d9]',
     chip: 'bg-[#f0e9ff] text-[#7434dc]',
   },
   {
@@ -48,22 +51,20 @@ const topics: ReviewTopic[] = [
     detail: 'Барлық 3 қайталау аяқталды · тарихы қолжетімді',
     completed: 3,
     total: 3,
-    color: 'from-[#19a658] to-[#52d983]',
+    color: 'bg-[#168653]',
     chip: 'bg-[#dcf8e7] text-[#15894a]',
     done: true,
   },
 ]
 
-function startReview(topic?: ReviewTopic) {
-  router.push({
-    name: 'mock-exam',
-    query: topic ? { review: topic.id } : { review: 'all' },
-  })
+function startSubjectQuestions(topic: ReviewTopic) {
+  const session = startGuestDiagnostic([topic.id], guestDiagnosticQuestionIds)
+  router.push({ name: 'diagnostic', query: { session: session.id } })
 }
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
     <AppHeader title="Қателермен жұмыс" back>
       <template #actions>
         <button
@@ -79,6 +80,7 @@ function startReview(topic?: ReviewTopic) {
     </AppHeader>
 
     <div class="screen-content pt-3">
+      <SampleDataNotice class="mb-3" />
       <div class="flex items-center gap-4 rounded-[20px] border border-[#b9dcff] bg-[#eff6ff] p-4">
         <Repeat2 class="shrink-0 text-[#2869df]" :size="25" />
         <div>
@@ -92,18 +94,9 @@ function startReview(topic?: ReviewTopic) {
         </div>
       </div>
 
-      <div class="mt-3 flex items-center justify-between gap-3">
-        <div>
-          <h2 class="text-[17px] font-[900] tracking-[-.02em]">Бүгін қайталау</h2>
-          <p class="text-[11px] text-[#536178]">7 белсенді қате</p>
-        </div>
-        <button
-          class="primary-button w-auto min-w-[100px] px-4"
-          type="button"
-          @click="startReview()"
-        >
-          Бәрін бастау
-        </button>
+      <div class="mt-3">
+        <h2 class="text-[17px] font-[900] tracking-[-.02em]">Қайталау үлгісі</h2>
+        <p class="text-[11px] text-[#536178]">Төмендегі көрсеткіштер жеке тарихтан алынбаған.</p>
       </div>
 
       <div class="mt-3 space-y-2">
@@ -130,7 +123,7 @@ function startReview(topic?: ReviewTopic) {
           <div v-if="!topic.done" class="mt-3 flex items-center gap-2">
             <div class="h-2 flex-1 overflow-hidden rounded-full bg-[#dfe6ef]">
               <div
-                class="h-full rounded-full bg-gradient-to-r"
+                class="h-full rounded-full"
                 :class="topic.color"
                 :style="{ width: `${(topic.completed / topic.total) * 100}%` }"
               />
@@ -138,9 +131,9 @@ function startReview(topic?: ReviewTopic) {
             <button
               class="secondary-button min-h-[40px] w-auto px-4"
               type="button"
-              @click="startReview(topic)"
+              @click="startSubjectQuestions(topic)"
             >
-              Қайталау
+              Пән бойынша 5 сұрақ
             </button>
           </div>
         </article>

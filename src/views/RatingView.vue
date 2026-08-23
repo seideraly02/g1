@@ -3,6 +3,7 @@ import { Info, TrendingUp, Trophy } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 type RatingTab = 'league' | 'friends' | 'class'
 
@@ -51,7 +52,7 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
     <div class="safe-top flex items-center justify-between px-4 pb-2 pt-4">
       <h1 class="page-title text-[22px]">Рейтинг</h1>
       <button
@@ -66,6 +67,7 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
     </div>
 
     <div class="screen-content space-y-2.5 pt-4">
+      <SampleDataNotice />
       <div
         class="grid grid-cols-3 rounded-2xl bg-[#dfe6f0] p-1"
         role="tablist"
@@ -96,10 +98,12 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
         Апта сайын жинаған ұпайыңызға қарай лигадағы орныңыз жаңарады.
       </div>
 
-      <div class="rounded-[24px] bg-gradient-to-br from-[#3b348f] to-[#5437ea] p-4 text-white">
+      <div
+        class="rounded-b-[30px] rounded-t-[20px] bg-[#1f66d9] p-5 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)]"
+      >
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-[10px] font-[850] tracking-[.08em] text-[#d4d1ff]">АПТАЛЫҚ ЛИГА</div>
+            <div class="text-[10px] font-[850] tracking-[.08em] text-white">АПТАЛЫҚ ЛИГА</div>
             <div class="mt-1 text-[23px] font-[900]">«Зерде» лигасы</div>
           </div>
           <div class="grid size-10 place-items-center rounded-xl bg-white/15">
@@ -108,11 +112,11 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
         </div>
         <div class="mt-4 flex items-end justify-between">
           <div>
-            <div class="text-[13px] text-[#d4d1ff]">Сіздің орныңыз</div>
+            <div class="text-[13px] text-white">Сіздің орныңыз</div>
             <div class="metric-value text-[26px] font-[900]">{{ currentPlace }}-орын</div>
           </div>
           <div class="text-right">
-            <div class="text-[13px] text-[#d4d1ff]">Аяқталуына</div>
+            <div class="text-[13px] text-white">Аяқталуына</div>
             <div class="metric-value text-[17px] font-[850]">2 күн 14 сағ.</div>
           </div>
         </div>

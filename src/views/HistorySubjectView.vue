@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 
 interface Topic {
   name: string
@@ -66,7 +67,7 @@ function showAllTopics() {
 </script>
 
 <template>
-  <section class="screen-page bg-[#f8faff]">
+  <section class="screen-page bg-[#f8f8f8]">
     <AppHeader title="Қазақстан тарихы" back>
       <template #actions>
         <button
@@ -82,6 +83,7 @@ function showAllTopics() {
     </AppHeader>
 
     <div class="screen-content px-4 pt-1">
+      <SampleDataNotice class="mb-3" />
       <div v-if="showMenu" class="relative z-10">
         <div
           class="absolute right-0 top-0 w-40 rounded-xl border border-[#e0e7f0] bg-white p-1.5 text-[11px] shadow-lg"
@@ -103,10 +105,10 @@ function showAllTopics() {
         </div>
       </div>
 
-      <article class="rounded-[20px] border border-[#b9d4ff] bg-[#edf5ff] p-4">
+      <article class="rounded-[20px] border border-[#1f66d9] bg-[#1f66d9] p-4 text-white">
         <div class="flex items-start gap-3">
           <span
-            class="grid size-12 shrink-0 place-items-center rounded-[14px] bg-white/75 text-[#2468f2]"
+            class="grid size-12 shrink-0 place-items-center rounded-[14px] bg-white text-[#1f66d9]"
           >
             <Landmark :size="24" />
           </span>
@@ -114,12 +116,12 @@ function showAllTopics() {
             <div class="flex items-start justify-between gap-2">
               <div>
                 <p class="metric-value m-0 text-[22px] font-[850] leading-none">48%</p>
-                <p class="mb-0 mt-1 text-[10px] text-[#66738a]">Жалпы ілгерілеу</p>
+                <p class="mb-0 mt-1 text-[10px] text-white">Жалпы ілгерілеу</p>
               </div>
-              <span class="chip chip--blue h-7 border-0 px-2.5">Аптасына +4%</span>
+              <span class="chip h-7 border-0 px-2.5 text-[#1f66d9]">Аптасына +4%</span>
             </div>
             <div class="progress-track mt-2.5 bg-[#dce5f0]">
-              <div class="progress-value w-[48%]" />
+              <div class="h-full w-[48%] rounded-full bg-white" />
             </div>
           </div>
         </div>
@@ -194,9 +196,9 @@ function showAllTopics() {
             <span
               class="block h-full rounded-full"
               :class="{
-                'bg-[linear-gradient(90deg,#10a653,#42db82)]': topic.tone === 'green',
-                'bg-[linear-gradient(90deg,#dc8105,#ffc32a)]': topic.tone === 'orange',
-                'bg-[linear-gradient(90deg,#2468f2,#64a4fb)]': topic.tone === 'blue',
+                'bg-[#168653]': topic.tone === 'green',
+                'bg-[#b86708]': topic.tone === 'orange',
+                'bg-[#1f66d9]': topic.tone === 'blue',
               }"
               :style="{ width: `${topic.progress}%` }"
             />

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { shouldCheckAuthentication } from './config/authAccess'
 import { useAuthStore } from './stores/authStore'
 import { pinia } from './stores/pinia'
 
@@ -35,7 +36,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/diagnostic',
     name: 'diagnostic',
-    component: () => import('./views/ApiDiagnosticView.vue'),
+    component: () => import('./views/DiagnosticView.vue'),
   },
   {
     path: '/diagnostic/result',
@@ -93,7 +94,7 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   const isPublicRoute = to.name === 'welcome' || to.name === 'register'
 
-  if (isPublicRoute) {
+  if (!shouldCheckAuthentication(isPublicRoute)) {
     return true
   }
 

@@ -1,137 +1,145 @@
 <script setup lang="ts">
-import { BatteryMedium, CircleUserRound, RefreshCcw, TrendingUp, Wifi, X } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
+import { ArrowRight, RefreshCcw, Target, X } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ProgressRing from '../components/ProgressRing.vue'
+import { getGuestDiagnosticRecord } from '../features/session/sessionApplication'
 
 const router = useRouter()
+const route = useRoute()
+const requestedSessionId = typeof route.query.session === 'string' ? route.query.session : undefined
+const session = getGuestDiagnosticRecord(requestedSessionId)
+const total = session?.questionIds.length ?? 0
+const correct = session?.answers.filter((answer) => answer.isCorrect).length ?? 0
+const incorrect = session?.answers.filter((answer) => answer.isCorrect === false).length ?? 0
+const percentage = total > 0 ? Math.round((correct / total) * 100) : 0
+const elapsedSeconds =
+  session?.completedAt && session.startedAt
+    ? Math.max(
+        0,
+        Math.round((Date.parse(session.completedAt) - Date.parse(session.startedAt)) / 1000),
+      )
+    : 0
+const elapsedLabel = `${Math.floor(elapsedSeconds / 60)} мин ${elapsedSeconds % 60} сек`
+const isCompleted =
+  session?.status === 'completed' && total === 5 && session.answers.length === total
+
+const subjectNames: Record<string, string> = {
+  history: 'Қазақстан тарихы',
+  reading: 'Оқу сауаттылығы',
+  'math-literacy': 'Математикалық сауаттылық',
+  math: 'Математика',
+  physics: 'Физика',
+}
+const subjectName = computed(() => {
+  const subjectId = session?.selectedSubjectIds[0]
+  return subjectId ? (subjectNames[subjectId] ?? 'Таңдалған пән') : 'Таңдалған пән'
+})
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-white px-4 pb-4">
-    <div class="flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]">
-      <span class="text-[12px] font-[850] tracking-[.01em]">09:41</span>
-      <div class="flex items-center gap-2">
-        <svg width="14" height="13" viewBox="0 0 14 13" fill="none" aria-hidden="true">
-          <rect x="1" y="8" width="2" height="4" rx="1" fill="currentColor" />
-          <rect x="4.3" y="6" width="2" height="6" rx="1" fill="currentColor" />
-          <rect x="7.6" y="3.5" width="2" height="8.5" rx="1" fill="currentColor" />
-          <rect x="10.9" y="1" width="2" height="11" rx="1" fill="currentColor" />
-        </svg>
-        <Wifi :size="16" :stroke-width="2.4" aria-hidden="true" />
-        <BatteryMedium :size="21" :stroke-width="2" aria-hidden="true" />
-      </div>
-    </div>
-
-    <header class="flex h-[46px] shrink-0 items-center">
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] px-4 pb-4">
+    <header class="safe-top flex min-h-[72px] shrink-0 items-end pb-3">
       <button
         class="icon-button -ml-1"
         type="button"
         aria-label="Жабу"
         @click="router.push({ name: 'welcome' })"
       >
-        <X :size="21" :stroke-width="2" />
+        <X :size="21" />
       </button>
-      <h1 class="ml-3 flex-1 text-[21px] font-[900] tracking-[-.025em] text-[#111b34]">Нәтиже</h1>
-      <span class="rounded-[10px] bg-[#deebff] px-2.5 py-1 text-[11px] font-[800] text-[#2468f2]">
-        Алдын ала
-      </span>
+      <h1 class="ml-3 flex-1 text-[21px] font-[800] tracking-[-.025em]">Диагностика нәтижесі</h1>
+      <span
+        v-if="isCompleted"
+        class="rounded-[10px] bg-[#edf4ff] px-2.5 py-1 text-[11px] font-[800] text-[#1f66d9]"
+        >Алдын ала</span
+      >
     </header>
 
-    <main class="min-h-0 flex-1 overflow-y-auto pb-3">
-      <div class="mt-5 flex justify-center">
-        <ProgressRing :value="80" :size="124" :stroke="16" color="#2468f2">
+    <main v-if="isCompleted" class="mx-auto flex w-full max-w-[560px] flex-1 flex-col pb-3">
+      <div class="mt-6 flex justify-center">
+        <ProgressRing :value="percentage" :size="136" :stroke="14" color="#1f66d9">
           <div class="text-center">
-            <strong
-              class="block text-[31px] font-[900] leading-none tracking-[-.03em] text-[#111b34]"
-              >4/5</strong
+            <strong class="metric-value block text-[32px] font-[800] leading-none"
+              >{{ correct }}/{{ total }}</strong
             >
-            <span class="mt-2 block text-[11px] text-[#536178]">дұрыс</span>
+            <span class="mt-2 block text-[11px] text-[#667085]">дұрыс жауап</span>
           </div>
         </ProgressRing>
       </div>
 
-      <h2 class="mt-1 text-center text-[21px] font-[900] tracking-[-.02em] text-[#111b34]">
-        Тамаша бастама!
-      </h2>
-      <p class="mt-1 text-center text-[15px] text-[#536178]">Алдын ала дәлдік — 80%</p>
-
-      <div class="mt-1 grid grid-cols-3 gap-2">
-        <div class="rounded-[17px] border border-[#dfe5ee] bg-[#f9fafc] px-2 py-3 text-center">
-          <strong class="metric-value block text-[20px] font-[900] text-[#111b34]">3:42</strong>
-          <span class="mt-1 block text-[10px] leading-tight text-[#536178]">уақыт</span>
-        </div>
-        <div class="rounded-[17px] border border-[#dfe5ee] bg-[#f9fafc] px-2 py-3 text-center">
-          <strong class="metric-value block text-[20px] font-[900] text-[#111b34]">48 сек.</strong>
-          <span class="mt-1 block text-[10px] leading-tight text-[#536178]">әр сұраққа</span>
-        </div>
-        <div class="rounded-[17px] border border-[#dfe5ee] bg-[#f9fafc] px-2 py-3 text-center">
-          <strong class="metric-value block text-[20px] font-[900] text-[#111b34]">1</strong>
-          <span class="mt-1 block text-[10px] leading-tight text-[#536178]">қайталауға</span>
-        </div>
-      </div>
-
-      <div class="mt-1 space-y-1">
-        <div
-          class="flex min-h-[67px] items-center rounded-[18px] border border-[#8aebb3] bg-[#effcf5] px-5"
-        >
-          <TrendingUp
-            :size="19"
-            :stroke-width="2.2"
-            class="shrink-0 text-[#16a757]"
-            aria-hidden="true"
-          />
-          <div class="ml-5">
-            <strong class="block text-[13px] font-[850] text-[#111b34]">Күшті тақырып</strong>
-            <span class="mt-0.5 block text-[12px] text-[#536178]">Қазақ хандығы</span>
-          </div>
-        </div>
-
-        <div
-          class="flex min-h-[67px] items-center rounded-[18px] border border-[#f4db6b] bg-[#fffbed] px-5"
-        >
-          <RefreshCcw
-            :size="19"
-            :stroke-width="2.2"
-            class="shrink-0 text-[#d17a00]"
-            aria-hidden="true"
-          />
-          <div class="ml-5">
-            <strong class="block text-[13px] font-[850] text-[#111b34]">Тағы тексерген жөн</strong>
-            <span class="mt-0.5 block text-[12px] text-[#536178]">XX ғасыр оқиғалары</span>
-          </div>
-        </div>
-      </div>
-
-      <p
-        class="mt-1 rounded-[14px] bg-[#f0f3f8] px-3 py-2.5 text-[11px] leading-[1.35] text-[#536178]"
-      >
-        <strong class="font-[850] text-[#111b34]">Ұсыныс:</strong>
-        тағы екі қысқа жаттығудан өт — сонда болжам дәлірек болады.
+      <h2 class="mt-4 text-center text-[23px] font-[800] tracking-[-.02em]">Алғашқы бағыт дайын</h2>
+      <p class="mt-2 text-center text-[14px] leading-6 text-[#667085]">
+        {{ subjectName }} бойынша нәтижең — {{ percentage }}%. Бұл 5 сұрақтық бастапқы тексеру,
+        нақты ҰБТ болжамы емес.
       </p>
 
-      <h3
-        class="mx-auto mt-1 max-w-[320px] text-center text-[15px] font-[900] leading-[1.25] text-[#111b34]"
-      >
-        Нәтижені сақтап, жеке дайындық жоспарын ал
-      </h3>
+      <div class="mt-5 grid grid-cols-3 gap-2">
+        <div class="card px-2 py-3 text-center">
+          <div class="metric-value text-[20px] font-[850]">{{ correct }}</div>
+          <div class="mt-1 text-[10px] text-[#667085]">дұрыс</div>
+        </div>
+        <div class="card px-2 py-3 text-center">
+          <div class="metric-value text-[20px] font-[850]">{{ incorrect }}</div>
+          <div class="mt-1 text-[10px] text-[#667085]">қате</div>
+        </div>
+        <div class="card px-2 py-3 text-center">
+          <div class="metric-value text-[13px] font-[850]">{{ elapsedLabel }}</div>
+          <div class="mt-1 text-[10px] text-[#667085]">уақыт</div>
+        </div>
+      </div>
+
+      <p class="mt-3 rounded-[16px] bg-[#f0f3f8] p-3 text-[12px] leading-5 text-[#667085]">
+        Күшті және әлсіз тақырыптарды анықтауға дерек жеткіліксіз. Бұл қорытынды үшін көбірек сұрақ
+        орындау керек.
+      </p>
+
+      <section class="soft-card mt-6 flex items-start gap-3 p-4" aria-labelledby="result-next-step">
+        <Target class="mt-0.5 shrink-0 text-[#1f66d9]" :size="23" />
+        <div>
+          <h2 id="result-next-step" class="text-[15px] font-[800]">Келесі қадам</h2>
+          <p class="mt-1 text-[13px] leading-5 text-[#667085]">
+            Күнделікті сұрақ санын таңдап, оқу мақсатын сақта.
+          </p>
+        </div>
+      </section>
+
+      <div class="mt-auto pt-6">
+        <button
+          class="primary-button min-h-[52px]"
+          type="button"
+          @click="router.push({ name: 'personal-plan', query: { session: session?.id } })"
+        >
+          Мақсатты баптау <ArrowRight :size="19" />
+        </button>
+        <button
+          class="text-button mx-auto mt-2 flex min-h-11"
+          type="button"
+          @click="router.push({ name: 'subjects-onboarding' })"
+        >
+          <RefreshCcw :size="17" /> Басқа пәнді тексеру
+        </button>
+      </div>
     </main>
 
-    <div class="shrink-0 space-y-1.5">
+    <main
+      v-else
+      class="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center text-center"
+    >
+      <span class="grid size-14 place-items-center rounded-[16px] bg-[#edf4ff] text-[#1f66d9]"
+        ><Target :size="25"
+      /></span>
+      <h2 class="mt-4 text-[21px] font-[800]">Аяқталған диагностика жоқ</h2>
+      <p class="mt-2 text-[14px] leading-6 text-[#667085]">
+        Нәтиже көру үшін пән таңдап, 5 сұраққа жауап бер.
+      </p>
       <button
-        class="primary-button min-h-[52px] rounded-[16px] text-[16px]"
+        class="primary-button mt-6 max-w-[320px]"
         type="button"
-        @click="router.push({ name: 'save-progress' })"
+        @click="router.push({ name: 'subjects-onboarding' })"
       >
-        <CircleUserRound :size="18" :stroke-width="2" aria-hidden="true" />
-        Google арқылы сақтау
+        Диагностиканы бастау
       </button>
-      <button
-        class="text-button min-h-[38px] w-full text-[14px]"
-        type="button"
-        @click="router.push({ name: 'personal-plan' })"
-      >
-        Тіркелмей жалғастыру
-      </button>
-    </div>
+    </main>
   </section>
 </template>

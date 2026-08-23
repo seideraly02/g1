@@ -1,116 +1,87 @@
 <script setup lang="ts">
+import { Check, WandSparkles } from 'lucide-vue-next'
+import { reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AppHeader from '../components/AppHeader.vue'
 import {
-  ArrowLeft,
-  BatteryMedium,
-  BookOpen,
-  CalendarDays,
-  Check,
-  ChevronRight,
-  Target,
-  WandSparkles,
-  Wifi,
-} from 'lucide-vue-next'
-import type { Component } from 'vue'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-interface PlanSetting {
-  id: string
-  label: string
-  value: string
-  icon: Component
-  color: string
-  soft: string
-}
+  getStudyPlan,
+  saveStudyPlan,
+  validateStudyPlan,
+  type DailyQuestionGoal,
+  type StudyPlanDraft,
+  type StudyPlanErrors,
+} from '../features/plan/studyPlanApplication'
+import { getGuestDiagnosticRecord } from '../features/session/sessionApplication'
 
 const router = useRouter()
-const dailyGoal = ref(20)
-const activeSetting = ref<string | null>(null)
-const goals = [
+const route = useRoute()
+const savedPlan = getStudyPlan()
+const dailyGoal = ref<DailyQuestionGoal>(savedPlan?.dailyQuestionGoal ?? 20)
+const subjectNames: Record<string, string> = {
+  history: 'Қазақстан тарихы',
+  reading: 'Оқу сауаттылығы',
+  'math-literacy': 'Математикалық сауаттылық',
+  math: 'Математика',
+  physics: 'Физика',
+}
+const requestedSessionId = typeof route.query.session === 'string' ? route.query.session : undefined
+const latestDiagnostic = requestedSessionId ? getGuestDiagnosticRecord(requestedSessionId) : null
+const selectedSubjectId =
+  latestDiagnostic?.selectedSubjectIds[0] ?? savedPlan?.selectedSubjectIds[0]
+const draft = reactive<StudyPlanDraft>({
+  subjectId: selectedSubjectId ?? '',
+  currentScore: savedPlan ? String(savedPlan.currentScore) : '',
+  targetScore: savedPlan ? String(savedPlan.targetScore) : '',
+  examDate: savedPlan?.examDate ?? '',
+  dailyQuestionGoal: dailyGoal.value,
+})
+const errors = ref<StudyPlanErrors>({})
+const saveError = ref('')
+const goals: Array<{ value: DailyQuestionGoal; minutes: number }> = [
   { value: 10, minutes: 5 },
   { value: 20, minutes: 12 },
   { value: 30, minutes: 18 },
   { value: 50, minutes: 30 },
 ]
-const settings: PlanSetting[] = [
-  {
-    id: 'subjects',
-    label: 'Бейіндік пәндер',
-    value: 'Математика, Информатика',
-    icon: BookOpen,
-    color: '#8247ec',
-    soft: '#f4efff',
-  },
-  {
-    id: 'target',
-    label: 'Мақсат',
-    value: '72 → 105 балл',
-    icon: Target,
-    color: '#16a757',
-    soft: '#edfbf3',
-  },
-  {
-    id: 'date',
-    label: 'ҰБТ күні',
-    value: '2027 жылғы 18 маусым',
-    icon: CalendarDays,
-    color: '#d17a00',
-    soft: '#fff9e9',
-  },
-]
+
+function createPlan() {
+  draft.dailyQuestionGoal = dailyGoal.value
+  errors.value = validateStudyPlan(draft)
+  saveError.value = ''
+  if (Object.keys(errors.value).length > 0) return
+
+  if (!saveStudyPlan(draft)) {
+    saveError.value = 'Жоспарды сақтау мүмкін болмады. Қайта көр.'
+    return
+  }
+  void router.push({ name: 'home' })
+}
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8fafc] px-4 pb-4">
-    <div class="flex h-[42px] shrink-0 items-center justify-between px-1 pt-1 text-[#111b34]">
-      <span class="text-[12px] font-[850]">09:41</span>
-      <div class="flex items-center gap-2">
-        <svg width="14" height="13" viewBox="0 0 14 13" fill="none" aria-hidden="true">
-          <rect x="1" y="8" width="2" height="4" rx="1" fill="currentColor" />
-          <rect x="4.3" y="6" width="2" height="6" rx="1" fill="currentColor" />
-          <rect x="7.6" y="3.5" width="2" height="8.5" rx="1" fill="currentColor" />
-          <rect x="10.9" y="1" width="2" height="11" rx="1" fill="currentColor" />
-        </svg>
-        <Wifi :size="16" :stroke-width="2.4" aria-hidden="true" />
-        <BatteryMedium :size="21" :stroke-width="2" aria-hidden="true" />
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] pb-4">
+    <AppHeader title="Оқу мақсаты" back>
+      <template #actions>
+        <button class="text-button min-h-11" type="button" @click="router.push({ name: 'home' })">
+          Өткізу
+        </button>
+      </template>
+    </AppHeader>
+
+    <div class="px-4">
+      <div class="mt-1 grid h-1.5 shrink-0 grid-cols-5 gap-1.5" aria-label="5 қадамның 4-қадамы">
+        <span
+          v-for="step in 5"
+          :key="step"
+          class="rounded-full"
+          :class="step <= 4 ? 'bg-[#1f66d9]' : 'bg-[#dfe6ef]'"
+        />
       </div>
     </div>
 
-    <header class="flex min-h-[58px] shrink-0 items-start">
-      <button
-        class="icon-button -ml-1 mt-2"
-        type="button"
-        aria-label="Артқа"
-        @click="router.push({ name: 'save-progress' })"
-      >
-        <ArrowLeft :size="21" :stroke-width="2" />
-      </button>
-      <h1
-        class="ml-3 mt-1 flex-1 text-[21px] font-[900] leading-[1.25] tracking-[-.025em] text-[#111b34]"
-      >
-        Жеке<br />жоспар
-      </h1>
-      <button
-        type="button"
-        class="mt-3 min-h-8 text-[14px] font-[800] text-[#2468f2]"
-        @click="router.push({ name: 'home' })"
-      >
-        Өткізіп жіберу
-      </button>
-    </header>
-
-    <div class="mt-1 grid h-1.5 shrink-0 grid-cols-5 gap-1.5" aria-label="5 қадамның 4-қадамы">
-      <span
-        v-for="step in 5"
-        :key="step"
-        class="rounded-full"
-        :class="step <= 4 ? 'bg-[#2468f2]' : 'bg-[#dfe6ef]'"
-      />
-    </div>
-
-    <main class="min-h-0 flex-1 overflow-y-auto pb-3">
+    <main class="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
       <div class="mt-4 flex items-center justify-between">
-        <span class="text-[11px] font-[850] uppercase tracking-[.03em] text-[#2468f2]">
+        <span class="text-[11px] font-[850] uppercase tracking-[.03em] text-[#1f66d9]">
           5 қадамның 4-қадамы
         </span>
         <span class="text-[12px] text-[#536178]">Күнделікті мақсат</span>
@@ -131,7 +102,7 @@ const settings: PlanSetting[] = [
           class="min-h-[78px] rounded-[18px] border bg-white px-1 transition-all"
           :class="
             dailyGoal === goal.value
-              ? 'border-[#2468f2] bg-[#edf4ff] shadow-[0_0_0_3px_rgba(36,104,242,.09)]'
+              ? 'border-[#1f66d9] bg-[#edf4ff] shadow-[0_0_0_3px_rgba(31,102,217,.09)]'
               : 'border-[#dce3ec]'
           "
           :aria-pressed="dailyGoal === goal.value"
@@ -139,7 +110,7 @@ const settings: PlanSetting[] = [
         >
           <strong
             class="block text-[22px] font-[900] leading-none"
-            :class="dailyGoal === goal.value ? 'text-[#2468f2]' : 'text-[#111b34]'"
+            :class="dailyGoal === goal.value ? 'text-[#1f66d9]' : 'text-[#111b34]'"
           >
             {{ goal.value }}
           </strong>
@@ -155,7 +126,7 @@ const settings: PlanSetting[] = [
         <WandSparkles
           :size="23"
           :stroke-width="2.1"
-          class="shrink-0 text-[#2468f2]"
+          class="shrink-0 text-[#1f66d9]"
           aria-hidden="true"
         />
         <div class="ml-5">
@@ -163,62 +134,76 @@ const settings: PlanSetting[] = [
             >Оңтайлы бастау: {{ dailyGoal }}</strong
           >
           <p class="mt-1 text-[12px] leading-[1.35] text-[#536178]">
-            Жоспарда әлсіз тақырыптар мен алдағы қайталаулар ескеріледі.
+            Бұл баптаулар сақталады және оқу қарқыныңды есте ұстауға көмектеседі.
           </p>
         </div>
       </div>
 
-      <div class="mt-4 flex items-center gap-3">
-        <span class="shrink-0 text-[10px] font-[850] uppercase tracking-[.04em] text-[#536178]">
-          Сенің баптауларың
-        </span>
-        <span class="h-px flex-1 bg-[#dce3ec]" />
-      </div>
-
-      <div class="mt-4 overflow-hidden rounded-[19px] border border-[#dce3ec] bg-white px-3">
-        <button
-          v-for="(setting, index) in settings"
-          :key="setting.id"
-          type="button"
-          class="flex min-h-[59px] w-full items-center px-1 text-left transition-colors"
-          :class="[
-            index < settings.length - 1 ? 'border-b border-[#e7ebf1]' : '',
-            activeSetting === setting.id ? 'bg-[#f8fafc]' : '',
-          ]"
-          :aria-pressed="activeSetting === setting.id"
-          @click="activeSetting = activeSetting === setting.id ? null : setting.id"
-        >
-          <span
-            class="grid size-10 shrink-0 place-items-center rounded-[13px]"
-            :style="{ color: setting.color, backgroundColor: setting.soft }"
+      <fieldset class="mt-5 space-y-3 rounded-[20px] border border-[#dce3ec] bg-white p-4">
+        <legend class="px-1 text-[13px] font-[800]">Мақсат баптаулары</legend>
+        <label class="block text-[12px] font-[700]"
+          >Дайындалатын пән
+          <select
+            v-model="draft.subjectId"
+            class="mt-2 min-h-12 w-full rounded-[14px] border border-[#cbd5e1] bg-white px-3 text-[14px]"
           >
-            <component :is="setting.icon" :size="21" :stroke-width="2.1" aria-hidden="true" />
-          </span>
-          <span class="ml-3 min-w-0 flex-1">
-            <strong class="block truncate text-[13px] font-[850] text-[#111b34]">{{
-              setting.label
-            }}</strong>
-            <span class="mt-0.5 block truncate text-[11px] text-[#536178]">{{
-              setting.value
+            <option value="" disabled>Пәнді таңда</option>
+            <option v-for="(name, id) in subjectNames" :key="id" :value="id">{{ name }}</option>
+          </select>
+          <span v-if="errors.subjectId" class="mt-1 block text-[11px] text-[#c93645]">{{
+            errors.subjectId
+          }}</span>
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block text-[12px] font-[700]"
+            >Қазіргі нәтиже
+            <input
+              v-model="draft.currentScore"
+              class="mt-2 min-h-12 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-[14px]"
+              inputmode="numeric"
+              placeholder="Мысалы, 60"
+            />
+            <span v-if="errors.currentScore" class="mt-1 block text-[11px] text-[#c93645]">{{
+              errors.currentScore
             }}</span>
-          </span>
-          <ChevronRight
-            :size="20"
-            :stroke-width="2"
-            class="shrink-0 text-[#91a0b3]"
-            aria-hidden="true"
+          </label>
+          <label class="block text-[12px] font-[700]"
+            >Мақсат
+            <input
+              v-model="draft.targetScore"
+              class="mt-2 min-h-12 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-[14px]"
+              inputmode="numeric"
+              placeholder="Мысалы, 90"
+            />
+            <span v-if="errors.targetScore" class="mt-1 block text-[11px] text-[#c93645]">{{
+              errors.targetScore
+            }}</span>
+          </label>
+        </div>
+        <label class="block text-[12px] font-[700]"
+          >ҰБТ күні
+          <input
+            v-model="draft.examDate"
+            type="date"
+            class="mt-2 min-h-12 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-[14px]"
           />
-        </button>
-      </div>
+          <span v-if="errors.examDate" class="mt-1 block text-[11px] text-[#c93645]">{{
+            errors.examDate
+          }}</span>
+        </label>
+      </fieldset>
+      <p v-if="saveError" class="mt-3 text-[12px] text-[#c93645]" role="alert">{{ saveError }}</p>
     </main>
 
-    <button
-      class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px]"
-      type="button"
-      @click="router.push({ name: 'home' })"
-    >
-      Жоспар құру
-      <Check :size="19" :stroke-width="2.4" aria-hidden="true" />
-    </button>
+    <div class="px-4">
+      <button
+        class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px]"
+        type="button"
+        @click="createPlan"
+      >
+        Мақсатты сақтау
+        <Check :size="19" :stroke-width="2.4" aria-hidden="true" />
+      </button>
+    </div>
   </section>
 </template>

@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import {
   ChevronRight,
-  Heart,
   History,
-  Layers3,
   Play,
   RotateCcw,
   Sparkles,
   Timer,
   WandSparkles,
-  Zap,
 } from 'lucide-vue-next'
 import { computed, ref, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomNav from '../components/BottomNav.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
+import { getStudyPlan } from '../features/plan/studyPlanApplication'
+import { startGuestDiagnostic } from '../features/session/sessionApplication'
+import { createSavedGoalTrainingPresentation } from '../features/training/trainingPresentation'
 
-type PlanKey = 'daily' | 'quick' | 'regular' | 'favorites'
+type PlanKey = 'daily'
 
 interface Plan {
   label: string
@@ -38,61 +39,21 @@ interface TrainingMode {
 
 const router = useRouter()
 const activePlan = ref<PlanKey>('daily')
+const savedGoal = createSavedGoalTrainingPresentation(getStudyPlan())
 
 const plans: Record<PlanKey, Plan> = {
   daily: {
-    label: 'Ұсынылады',
-    title: 'Күннің жаттығуы',
-    description: 'Әлсіз тақырыптар + аралық қайталау',
-    duration: '12 минут',
-    questions: 20,
-    topics: 3,
-    effect: '2 қатені бекітіп, тарих бойынша дәлдікті арттыру.',
-  },
-  quick: {
-    label: 'Жылдам режим',
-    title: 'Жылдам жаттығу',
-    description: 'Күнделікті ырғақты сақтауға арналған қысқа жинақ',
-    duration: '3 минут',
+    label: 'Бастапқы режим',
+    title: 'Қысқа жаттығу',
+    description: 'Пәнді таңдап, бес сұраққа жауап бер',
+    duration: '5 минут',
     questions: 5,
     topics: 1,
-    effect: 'Күндік мақсатты орындап, сабақтар сериясын сақтау.',
-  },
-  regular: {
-    label: 'Өз таңдауыңыз',
-    title: 'Қалыпты жаттығу',
-    description: 'Пән мен тақырыптарды өзіңіз таңдаңыз',
-    duration: '18 минут',
-    questions: 20,
-    topics: 3,
-    effect: 'Таңдалған тақырыптарды жүйелі түрде бекіту.',
-  },
-  favorites: {
-    label: 'Сақталғандар',
-    title: 'Таңдаулы сұрақтар',
-    description: 'Бұрын сақталған сұрақтарды қайталау',
-    duration: '6 минут',
-    questions: 8,
-    topics: 2,
-    effect: 'Маңызды сұрақтарды қайта қарап, жауапты бекіту.',
+    effect: 'Таңдалған пән бойынша қысқа жаттығудан өту.',
   },
 }
 
 const modes: TrainingMode[] = [
-  {
-    key: 'quick',
-    title: 'Жылдам жаттығу',
-    description: '5 сұрақ · шамамен 3 минут',
-    icon: Zap,
-    tone: 'bg-[#ecfbf3] text-[#19a658]',
-  },
-  {
-    key: 'regular',
-    title: 'Қалыпты жаттығу',
-    description: 'Пән мен тақырыптарды таңдаңыз',
-    icon: Layers3,
-    tone: 'bg-[#eef5ff] text-[#2869df]',
-  },
   {
     key: 'mistakes',
     title: 'Қателермен жұмыс',
@@ -103,21 +64,26 @@ const modes: TrainingMode[] = [
   },
   {
     key: 'mock',
-    title: 'Сынақ ҰБТ',
-    description: 'Таймері бар толық формат',
+    title: 'Сұрақтар картасы',
+    description: '40 позициялы навигация үлгісі',
     icon: Timer,
-    tone: 'bg-[#f5f0ff] text-[#8338e8]',
-  },
-  {
-    key: 'favorites',
-    title: 'Таңдаулы сұрақтар',
-    description: '8 сұрақ сақталды',
-    icon: Heart,
-    tone: 'bg-[#fff0f1] text-[#dc2933]',
+    tone: 'bg-[#edf4ff] text-[#1f66d9]',
   },
 ]
 
-const plan = computed(() => plans[activePlan.value])
+const plan = computed<Plan>(() => {
+  if (!savedGoal) return plans[activePlan.value]
+
+  return {
+    label: 'Сақталған мақсат',
+    title: savedGoal.subjectName,
+    description: `Күндік мақсатың — ${savedGoal.dailyQuestionGoal} сұрақ. Қазір қолжетімді қысқа жинақтан баста.`,
+    duration: '5 минут',
+    questions: savedGoal.starterQuestionIds.length,
+    topics: 1,
+    effect: 'Бұл 5 сұрақ сақталған пән бойынша орындалады.',
+  }
+})
 
 function selectMode(mode: TrainingMode) {
   if (mode.key === 'mistakes') {
@@ -128,12 +94,21 @@ function selectMode(mode: TrainingMode) {
     router.push({ name: 'mock-exam' })
     return
   }
-  activePlan.value = mode.key
+}
+
+function startSelectedMode() {
+  if (savedGoal) {
+    const session = startGuestDiagnostic([savedGoal.subjectId], savedGoal.starterQuestionIds)
+    void router.push({ name: 'diagnostic', query: { session: session.id } })
+    return
+  }
+
+  void router.push({ name: 'subjects-onboarding' })
 }
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8faff]">
+  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
     <div class="safe-top flex items-center justify-between px-4 pb-3 pt-4">
       <h1 class="page-title text-[22px]">Жаттығу</h1>
       <button
@@ -147,49 +122,53 @@ function selectMode(mode: TrainingMode) {
     </div>
 
     <div class="screen-content pt-1">
+      <SampleDataNotice
+        class="mb-3"
+        text="Қателер саны мен сұрақтар картасы — интерфейс үлгісі. Сақталған оқу мақсаты жергілікті құрылғыдан оқылады."
+      />
       <div
-        class="rounded-[22px] border border-[#b9dcff] bg-gradient-to-br from-[#eef6ff] to-[#f2f4ff] p-4"
+        class="overflow-hidden rounded-b-[30px] rounded-t-[20px] border border-[#1f66d9] bg-[#1f66d9] p-5 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)]"
       >
         <div class="flex items-center justify-between">
-          <span class="rounded-lg bg-[#dceaff] px-2 py-1 text-[10px] font-[850] text-[#235ec9]">
+          <span class="rounded-lg bg-white/15 px-2 py-1 text-[10px] font-[850] text-white">
             {{ plan.label }}
           </span>
-          <span class="inline-flex items-center gap-2 text-[11px] text-[#536178]">
+          <span class="inline-flex items-center gap-2 text-[11px] text-white">
             <Timer :size="18" />
             {{ plan.duration }}
           </span>
         </div>
 
         <h2 class="mt-4 text-[19px] font-[900] tracking-[-.025em]">{{ plan.title }}</h2>
-        <p class="mt-1 text-[11px] leading-5 text-[#536178]">{{ plan.description }}</p>
+        <p class="mt-1 text-[13px] leading-5 text-white">{{ plan.description }}</p>
 
         <div class="mt-3 flex gap-2">
           <span
-            class="rounded-full border border-[#b9dcff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#235ec9]"
+            class="rounded-[12px] border border-white/25 bg-white/10 px-3 py-2 text-[12px] font-[850] text-white"
           >
             {{ plan.questions }} сұрақ
           </span>
           <span
-            class="rounded-full border border-[#ddcaff] bg-white/50 px-3 py-2 text-[12px] font-[850] text-[#7434dc]"
+            class="rounded-[12px] border border-white/25 bg-white/10 px-3 py-2 text-[12px] font-[850] text-white"
           >
             {{ plan.topics }} тақырып
           </span>
         </div>
 
         <div
-          class="mt-3 flex items-center gap-3 rounded-[17px] border border-[#dce4ef] bg-white/80 p-3"
+          class="mt-3 flex items-center gap-3 rounded-[16px] border border-white/20 bg-white/10 p-3"
         >
           <WandSparkles class="shrink-0" :size="22" />
-          <p class="text-[11px] leading-5 text-[#536178]">
-            <strong class="text-[#111b34]">Күтілетін нәтиже:</strong>
+          <p class="text-[12px] leading-5 text-white">
+            <strong class="text-white">Күтілетін нәтиже:</strong>
             {{ plan.effect }}
           </p>
         </div>
 
         <button
-          class="primary-button mt-3"
+          class="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] border-0 bg-white px-5 text-[15px] font-bold text-[#1d5bbd]"
           type="button"
-          @click="router.push({ name: 'mock-exam' })"
+          @click="startSelectedMode"
         >
           Бастау
           <Play :size="19" fill="currentColor" />

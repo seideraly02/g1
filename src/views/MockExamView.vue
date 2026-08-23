@@ -3,8 +3,8 @@ import { ArrowLeft, ArrowRight, Clock3, Flag } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
+import SampleDataNotice from '../components/SampleDataNotice.vue'
 import {
-  completeTrialTraining,
   discardTrialTraining,
   saveTrialTrainingAnswer,
   setTrialTrainingQuestion,
@@ -13,15 +13,17 @@ import {
 
 const router = useRouter()
 const trialQuestionIds = Array.from({ length: 40 }, (_, index) => `trial-math-${index + 1}`)
-const trialSession = ref(startTrialTraining(['math'], trialQuestionIds, 22))
+const trialSession = ref(startTrialTraining(['math'], trialQuestionIds, 0))
 const currentQuestion = ref(trialSession.value.currentQuestionIndex + 1)
 const selectedAnswer = ref(getSelectedAnswer(currentQuestion.value))
-const markedQuestions = ref<number[]>([19])
+const markedQuestions = ref<number[]>([])
 const canLeaveWithoutConfirmation = ref(false)
 const leaveDialogOpen = ref(false)
 const leaveDialog = ref<HTMLElement | null>(null)
 const continueButton = ref<HTMLButtonElement | null>(null)
 let previouslyFocusedElement: HTMLElement | null = null
+const now = ref(Date.now())
+let timerId: number | undefined
 
 const options = [
   { key: 'A', value: '−3,5' },
@@ -36,6 +38,22 @@ const questionNumbers = computed(() => {
 })
 
 const isMarked = computed(() => markedQuestions.value.includes(currentQuestion.value))
+const answeredCount = computed(
+  () => trialSession.value.answers.filter((answer) => !answer.isSkipped).length,
+)
+const skippedCount = computed(
+  () => trialSession.value.answers.filter((answer) => answer.isSkipped).length,
+)
+const elapsedTime = computed(() => {
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((now.value - Date.parse(trialSession.value.startedAt)) / 1000),
+  )
+  const hours = Math.floor(elapsedSeconds / 3600)
+  const minutes = Math.floor((elapsedSeconds % 3600) / 60)
+  const seconds = elapsedSeconds % 60
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':')
+})
 
 function shouldConfirmLeave(): boolean {
   return !canLeaveWithoutConfirmation.value && trialSession.value.status !== 'completed'
@@ -59,10 +77,14 @@ function handlePageHide(event: PageTransitionEvent) {
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload)
   window.addEventListener('pagehide', handlePageHide)
+  timerId = window.setInterval(() => {
+    now.value = Date.now()
+  }, 1000)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
   window.removeEventListener('pagehide', handlePageHide)
+  if (timerId !== undefined) window.clearInterval(timerId)
 })
 
 watch(leaveDialogOpen, async (isOpen) => {
@@ -192,46 +214,49 @@ function continueTrial() {
     return
   }
 
-  const completedSession = completeTrialTraining(trialSession.value.id)
-  if (completedSession) {
-    trialSession.value = completedSession
+  if (discardTrialTraining(trialSession.value.id)) {
     canLeaveWithoutConfirmation.value = true
-    router.push({ name: 'training-result' })
+    router.push({ name: 'training' })
   }
 }
 </script>
 
 <template>
-  <section class="mock-exam-page screen-page flex min-h-[844px] flex-col bg-[#f8faff]">
-    <AppHeader title="Сынақ ҰБТ" close managed-close @close="requestClose">
+  <section class="mock-exam-page screen-page flex min-h-[844px] flex-col bg-[#f8f8f8]">
+    <AppHeader title="Сұрақтар картасы" close managed-close @close="requestClose">
       <template #actions>
         <div
           class="flex items-center gap-2 rounded-xl bg-[#f0f3f8] px-3 py-2 text-[14px] font-[850]"
         >
           <Clock3 :size="18" />
-          <span class="metric-value">01:42:18</span>
+          <span class="sr-only">Өткен уақыт:</span>
+          <span class="metric-value">{{ elapsedTime }}</span>
         </div>
       </template>
     </AppHeader>
 
     <div class="mx-auto flex w-full max-w-[960px] flex-1 flex-col px-4 pb-4">
+      <SampleDataNotice
+        class="mb-3"
+        text="Бұл — 40 позициялы навигация интерфейсінің үлгісі. Сұрақтар қайталанады және нәтиже есептелмейді."
+      />
       <div class="-mt-1 pl-[56px] text-[11px] text-[#536178]">
         Математика · 40 сұрақтың {{ currentQuestion }}-і
       </div>
 
       <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#dfe6f0]">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-[#2c69ec] to-[#68a8f7] transition-[width]"
+          class="h-full rounded-full bg-[#1f66d9] transition-[width]"
           :style="{ width: `${(currentQuestion / 40) * 100}%` }"
         />
       </div>
       <div class="mt-1.5 flex justify-between text-[11px] text-[#536178]">
-        <span>Жауап берілді: 18</span>
-        <span>Өткізілді: 4 · Белгіленді: {{ markedQuestions.length }}</span>
+        <span>Жауап берілді: {{ answeredCount }}</span>
+        <span>Өткізілді: {{ skippedCount }} · Белгіленді: {{ markedQuestions.length }}</span>
       </div>
 
       <div class="mt-6 flex items-center justify-between">
-        <span class="rounded-lg bg-[#f1eaff] px-2.5 py-1 text-[10px] font-[800] text-[#7434dc]">
+        <span class="rounded-lg bg-[#edf4ff] px-2.5 py-1 text-[10px] font-[800] text-[#1f66d9]">
           Квадрат теңдеулер
         </span>
         <button
@@ -261,7 +286,7 @@ function continueTrial() {
           class="flex min-h-[54px] items-center gap-3 rounded-2xl border bg-white px-3 text-left text-[15px] transition-colors"
           :class="
             selectedAnswer === option.key
-              ? 'border-[#2869df] bg-[#eef5ff] font-[800] text-[#111b34]'
+              ? 'border-[#1f66d9] bg-[#edf4ff] font-[800] text-[#111b34]'
               : 'border-[#dce4ef] text-[#111b34]'
           "
           type="button"
@@ -270,7 +295,7 @@ function continueTrial() {
         >
           <span
             class="grid size-8 place-items-center rounded-[10px] font-[850]"
-            :class="selectedAnswer === option.key ? 'bg-[#2869df] text-white' : 'bg-[#f1f4f9]'"
+            :class="selectedAnswer === option.key ? 'bg-[#1f66d9] text-white' : 'bg-[#f1f4f9]'"
           >
             {{ option.key }}
           </span>
@@ -290,7 +315,7 @@ function continueTrial() {
             class="grid h-11 min-w-0 place-items-center rounded-[9px] border text-[11px] font-[800]"
             :class="
               number === currentQuestion
-                ? 'border-[#2869df] bg-[#2869df] text-white'
+                ? 'border-[#1f66d9] bg-[#1f66d9] text-white'
                 : markedQuestions.includes(number)
                   ? 'border-[#d47500] bg-[#fff8e8] text-[#a65300]'
                   : number < currentQuestion
@@ -315,7 +340,7 @@ function continueTrial() {
           Артқа
         </button>
         <button class="primary-button min-h-[52px]" type="button" @click="continueTrial">
-          Әрі қарай
+          {{ currentQuestion === 40 ? 'Үлгіден шығу' : 'Әрі қарай' }}
           <ArrowRight :size="18" />
         </button>
       </div>
@@ -337,13 +362,12 @@ function continueTrial() {
           tabindex="-1"
           @keydown="handleLeaveDialogKeydown"
         >
-          <p class="eyebrow">Аяқталмаған сынақ</p>
+          <p class="eyebrow">Аяқталмаған үлгі</p>
           <h2 id="leave-dialog-title" class="mt-2 text-[20px] font-[850] text-[#111b34]">
-            Сынақтан шығу керек пе?
+            Үлгіден шығу керек пе?
           </h2>
           <p id="leave-dialog-description" class="mt-2 text-[14px] leading-6 text-[#536178]">
-            Жауаптарың өшіріледі. Аяқталмаған сынақ нәтижелерге қосылмайды және оны жалғастыра
-            алмайсың.
+            Жауаптарың өшіріледі. Бұл үлгі нәтижелерге қосылмайды және оны жалғастыра алмайсың.
           </p>
 
           <div class="mt-5 grid grid-cols-2 gap-2">
@@ -353,7 +377,7 @@ function continueTrial() {
               type="button"
               @click="cancelLeave"
             >
-              Сынаққа оралу
+              Үлгіге оралу
             </button>
             <button
               class="inline-flex min-h-11 items-center justify-center rounded-lg border-0 bg-[#d92d38] px-4 text-[14px] font-[700] text-white hover:bg-[#b4232d]"

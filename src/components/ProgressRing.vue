@@ -11,7 +11,7 @@ const props = withDefaults(
   {
     size: 100,
     stroke: 10,
-    color: '#2468f2',
+    color: '#1f66d9',
   },
 )
 

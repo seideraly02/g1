@@ -7,6 +7,7 @@ import { isWorkspaceRoute } from './components/navigation'
 const route = useRoute()
 const hasWorkspaceShell = computed(() => isWorkspaceRoute(route.name))
 const hasFocusShell = computed(() => route.name === 'mock-exam')
+const hasPublicShell = computed(() => route.name === 'welcome' || route.name === 'register')
 </script>
 
 <template>
@@ -15,6 +16,7 @@ const hasFocusShell = computed(() => route.name === 'mock-exam')
     :class="{
       'app-stage--workspace': hasWorkspaceShell,
       'app-stage--focus': hasFocusShell,
+      'app-stage--public': hasPublicShell,
     }"
   >
     <AppSidebar v-if="hasWorkspaceShell" />

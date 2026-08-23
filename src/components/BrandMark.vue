@@ -7,7 +7,7 @@ defineProps<{
 <template>
   <div class="inline-flex items-center gap-2">
     <span
-      class="grid size-[34px] place-items-center rounded-[11px] bg-gradient-to-br from-[#346ff4] to-[#765cf3] text-white shadow-[0_5px_12px_rgba(83,91,232,.22)]"
+      class="grid size-9 place-items-center rounded-xl bg-[#1f66d9] text-white shadow-[0_6px_14px_rgba(31,102,217,.22)]"
       aria-hidden="true"
     >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -19,8 +19,8 @@ defineProps<{
         <circle cx="3.6" cy="13.8" r=".85" fill="currentColor" opacity=".7" />
       </svg>
     </span>
-    <span v-if="!compact" class="text-[18px] font-[750] tracking-[-.025em] text-[#14203a]"
-      >Qadam ENT</span
+    <span v-if="!compact" class="text-[19px] font-[750] tracking-[-.025em] text-[#17223b]"
+      >Qadam <span class="text-[#1f66d9]">ENT</span></span
     >
   </div>
 </template>

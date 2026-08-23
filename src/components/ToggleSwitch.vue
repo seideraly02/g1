@@ -12,7 +12,7 @@ const model = defineModel<boolean>({ required: true })
   >
     <span
       class="relative block h-[24px] w-[42px] rounded-full transition-colors"
-      :class="model ? 'bg-[#2468f2]' : 'bg-[#cbd4e3]'"
+      :class="model ? 'bg-[#1f66d9]' : 'bg-[#cbd4e3]'"
       aria-hidden="true"
     >
       <span

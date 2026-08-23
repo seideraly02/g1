@@ -94,25 +94,19 @@ const filteredSubjects = computed(() => {
 })
 
 function toggleSubject(id: string) {
-  const next = new Set(selected.value)
-  if (next.has(id)) {
-    next.delete(id)
-  } else {
-    next.add(id)
-  }
-  selected.value = next
+  selected.value = new Set([id])
 }
 
 function continueToDiagnostic() {
   if (selected.value.size > 0) {
-    startGuestDiagnostic([...selected.value], guestDiagnosticQuestionIds)
-    router.push({ name: 'diagnostic' })
+    const session = startGuestDiagnostic([...selected.value], guestDiagnosticQuestionIds)
+    router.push({ name: 'diagnostic', query: { session: session.id } })
   }
 }
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8fafc] px-4 pb-4">
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] px-4 pb-4">
     <header class="safe-top flex min-h-[64px] shrink-0 items-end pb-2">
       <button
         class="icon-button -ml-1"
@@ -183,7 +177,7 @@ function continueToDiagnostic() {
         class="flex min-h-[64px] shrink-0 items-center rounded-[18px] border bg-white px-3 text-left transition-all"
         :class="
           selected.has(subject.id)
-            ? 'border-[#2468f2] bg-[#edf4ff] shadow-[0_0_0_3px_rgba(36,104,242,.08)]'
+            ? 'border-[#1f66d9] bg-[#edf4ff] shadow-[0_0_0_3px_rgba(31,102,217,.08)]'
             : 'border-[#dce3ec]'
         "
         :aria-pressed="selected.has(subject.id)"
@@ -207,7 +201,7 @@ function continueToDiagnostic() {
           class="ml-2 grid size-7 shrink-0 place-items-center rounded-[9px] border"
           :class="
             selected.has(subject.id)
-              ? 'border-[#2468f2] bg-[#2468f2] text-white'
+              ? 'border-[#1f66d9] bg-[#1f66d9] text-white'
               : 'border-[#c9d4e2] bg-white text-transparent'
           "
           aria-hidden="true"

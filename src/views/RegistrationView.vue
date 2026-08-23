@@ -40,12 +40,14 @@ async function confirmCode() {
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-white px-4 pb-6">
-    <header class="flex min-h-20 items-center justify-between">
+  <section class="screen-page flex min-h-[844px] flex-col bg-[#f1f5fb] px-4 pb-6">
+    <header class="mx-auto flex min-h-20 w-full max-w-[920px] items-center justify-between">
       <BrandMark />
       <span class="text-xs font-bold text-[#6b768b]">ҰБТ дайындығы</span>
     </header>
-    <main class="mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center py-6">
+    <main
+      class="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center rounded-[20px] bg-white px-5 py-7 shadow-[0_12px_36px_rgba(31,63,114,.08)] sm:px-8"
+    >
       <button
         v-if="codeStep"
         class="icon-button -ml-2 mb-4 min-h-11 min-w-11"
@@ -55,17 +57,17 @@ async function confirmCode() {
       >
         <ArrowLeft :size="21" />
       </button>
-      <span class="mb-5 grid size-12 place-items-center rounded-lg bg-[#eff5ff] text-[#2563eb]">
+      <span class="mb-5 grid size-12 place-items-center rounded-[14px] bg-[#edf4ff] text-[#1f66d9]">
         <MessageCircle :size="25" aria-hidden="true" />
       </span>
-      <h1 class="text-[26px] font-extrabold text-[#14203a]">
+      <h1 class="text-[28px] font-extrabold tracking-[-.03em] text-[#17223b]">
         {{ codeStep ? 'Телефонды раста' : 'Тіркелу' }}
       </h1>
       <p class="mt-2 text-sm leading-6 text-[#6b768b]">
         {{
           codeStep
             ? `Код ${profile.phone} нөміріне байланыстырылған Telegram-ға жіберілді.`
-            : 'Оқуды бастау үшін барлық жолды толтыр.'
+            : 'Прогресті тіркелгіге сақтау үшін барлық жолды толтыр.'
         }}
       </p>
 
@@ -78,7 +80,7 @@ async function confirmCode() {
           {{ field === 'fullName' ? 'Аты-жөні' : field === 'city' ? 'Қала' : 'Телефон нөмірі' }}
           <input
             v-model="profile[field]"
-            class="mt-2 min-h-12 w-full rounded-lg border border-[#cbd5e1] px-3 text-[15px]"
+            class="mt-2 min-h-[52px] w-full rounded-[14px] border border-[#cbd5e1] px-4 text-[15px] transition focus:border-[#1f66d9]"
             :type="field === 'phone' ? 'tel' : 'text'"
             :inputmode="field === 'phone' ? 'tel' : 'text'"
             :autocomplete="
@@ -104,7 +106,7 @@ async function confirmCode() {
           Растау коды
           <input
             v-model="code"
-            class="mt-2 min-h-14 w-full rounded-lg border border-[#cbd5e1] px-3 text-center text-2xl font-bold"
+            class="mt-2 min-h-14 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-center text-2xl font-bold tracking-[.3em] transition focus:border-[#1f66d9]"
             inputmode="numeric"
             autocomplete="one-time-code"
             maxlength="6"
