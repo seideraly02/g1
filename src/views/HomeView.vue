@@ -42,8 +42,12 @@ const shortcuts = [
 
 <template>
   <section class="screen-page bg-[#f8f8f8]">
-    <header class="safe-top flex items-center justify-between px-4 pb-4 pt-4">
-      <BrandMark />
+    <header class="workspace-page-header safe-top flex items-center justify-between px-4 pb-4 pt-4">
+      <BrandMark class="lg:hidden" />
+      <div class="hidden lg:block">
+        <p class="eyebrow">Оқу кеңістігі</p>
+        <p class="mt-1 text-[22px] font-[800] tracking-[-.025em]">Басты бет</p>
+      </div>
       <button
         class="icon-button border border-[#e2e8f0] bg-white text-[#1f66d9]"
         type="button"
@@ -54,17 +58,20 @@ const shortcuts = [
       </button>
     </header>
 
-    <div class="screen-content pt-0 lg:grid lg:grid-cols-12 lg:gap-6">
+    <div class="screen-content pt-0 xl:grid xl:grid-cols-12 xl:gap-5">
       <section
-        class="overflow-hidden rounded-b-[30px] rounded-t-[20px] bg-[#1f66d9] px-5 py-6 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)] lg:col-span-8 lg:row-span-2 lg:flex lg:flex-col lg:justify-center lg:px-10 lg:py-10"
+        class="overflow-hidden rounded-[22px] bg-[#1f66d9] px-5 py-6 text-white shadow-[0_10px_24px_rgba(31,102,217,.16)] xl:col-span-8 xl:flex xl:flex-col xl:justify-center xl:px-10 xl:py-10"
+        :class="{ 'xl:row-span-2': studyPlan }"
       >
         <p class="text-sm font-semibold text-white">{{ forecast.eyebrow }}</p>
-        <h1 class="mt-2 text-[27px] font-extrabold leading-tight tracking-[-.03em]">
+        <h1
+          class="mt-2 max-w-[620px] text-[27px] font-extrabold leading-tight tracking-[-.03em] xl:text-[32px]"
+        >
           {{ forecast.title }}
         </h1>
-        <p class="mt-2 text-sm leading-6 text-white">{{ forecast.description }}</p>
+        <p class="mt-2 max-w-[620px] text-sm leading-6 text-white">{{ forecast.description }}</p>
         <button
-          class="mt-5 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] border-0 bg-white px-5 text-[15px] font-bold text-[#1d5bbd] transition hover:bg-[#f5f8ff]"
+          class="mt-5 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] border-0 bg-white px-5 text-[15px] font-bold text-[#1d5bbd] transition hover:bg-[#f5f8ff] sm:max-w-[360px]"
           type="button"
           @click="router.push({ name: 'training' })"
         >
@@ -74,7 +81,7 @@ const shortcuts = [
 
       <section
         v-if="studyPlan"
-        class="card mt-5 p-4 lg:col-span-4 lg:mt-0"
+        class="card mt-5 p-4 xl:col-span-4 xl:mt-0"
         aria-labelledby="saved-plan-title"
       >
         <p class="eyebrow">Сақталған оқу мақсаты</p>
@@ -91,7 +98,7 @@ const shortcuts = [
         </button>
       </section>
 
-      <section class="mt-5 lg:col-span-4 lg:mt-0" aria-labelledby="quick-actions-title">
+      <section class="mt-5 xl:col-span-4 xl:mt-0" aria-labelledby="quick-actions-title">
         <h2 id="quick-actions-title" class="text-[17px] font-bold tracking-[-.02em]">
           Оқу режимдері
         </h2>
@@ -113,7 +120,7 @@ const shortcuts = [
       </section>
 
       <section
-        class="soft-card mt-5 p-4 lg:col-span-12 lg:mt-0"
+        class="soft-card mt-5 p-4 xl:col-span-12 xl:mt-0"
         :data-status="forecast.status"
         role="status"
         aria-labelledby="forecast-title"

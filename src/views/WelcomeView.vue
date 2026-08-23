@@ -29,25 +29,23 @@ function startPreparation() {
 
 <template>
   <section class="min-h-dvh bg-[#f1f5fb] text-[#17223b]">
-    <header
-      class="flex min-h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-[clamp(40px,5vw,80px)]"
-    >
+    <header class="mx-auto flex min-h-20 w-full max-w-[1440px] items-center justify-between px-4">
       <BrandMark />
       <button class="text-button min-h-11 text-sm" type="button" @click="openRegistration">
         Тіркелу
       </button>
     </header>
 
-    <main class="w-full px-4 pb-8 sm:px-6 lg:px-[clamp(40px,5vw,80px)]">
+    <main class="mx-auto w-full max-w-[1440px] px-4 pb-8">
       <section
-        class="overflow-hidden rounded-b-[30px] rounded-t-[22px] bg-[#1f66d9] px-5 py-8 text-white sm:px-10 sm:py-12 lg:grid lg:min-h-[calc(100dvh-160px)] lg:grid-cols-[minmax(0,1.45fr)_minmax(360px,.75fr)] lg:items-center lg:gap-[clamp(48px,7vw,120px)] lg:px-[clamp(48px,6vw,112px)] lg:py-16"
+        class="overflow-hidden rounded-[24px] bg-[#1f66d9] px-5 py-8 text-white sm:px-10 sm:py-12 lg:grid lg:min-h-[620px] lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,.8fr)] lg:items-center lg:gap-[clamp(48px,6vw,88px)] lg:px-[clamp(48px,5vw,80px)] lg:py-14"
       >
         <div>
           <p class="inline-flex items-center gap-2 text-sm font-bold text-white">
             <Clock3 :size="18" aria-hidden="true" /> ҰБТ-ға дайындықты бүгін баста
           </p>
           <h1
-            class="mt-4 max-w-[650px] text-[34px] font-extrabold leading-[1.08] tracking-[-.04em] sm:text-[48px] lg:text-[56px]"
+            class="mt-4 max-w-[650px] text-[34px] font-extrabold leading-[1.08] tracking-[-.04em] sm:text-[48px] lg:text-[52px]"
           >
             Қай тақырыпты қайталау керегін дәл қазір анықта
           </h1>
@@ -71,7 +69,7 @@ function startPreparation() {
         </div>
 
         <div
-          class="mt-8 rounded-[20px] bg-white p-5 text-[#17223b] shadow-[0_16px_40px_rgba(14,44,94,.18)] lg:mt-0 lg:p-6"
+          class="mt-8 w-full max-w-[460px] rounded-[20px] bg-white p-5 text-[#17223b] shadow-[0_14px_34px_rgba(14,44,94,.16)] lg:mt-0 lg:justify-self-end lg:p-6"
         >
           <p class="text-xs font-bold uppercase tracking-[.08em] text-[#1f66d9]">
             Қалай жұмыс істейді?

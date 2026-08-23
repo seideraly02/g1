@@ -154,7 +154,7 @@ function clearFilters() {
         </button>
       </div>
 
-      <div class="mt-3 space-y-3 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0" aria-live="polite">
+      <div class="mt-3 space-y-3 xl:grid xl:grid-cols-3 xl:gap-4 xl:space-y-0" aria-live="polite">
         <button
           v-for="subject in visibleSubjects"
           :key="subject.id"

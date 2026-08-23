@@ -29,10 +29,12 @@
   --orange-soft: #fff7e8;
   --red: #c93645;
   --red-soft: #fff0f2;
-  --radius-card: 20px;
+  --radius-card: 18px;
   --radius-control: 14px;
-  --shadow-card: 0 10px 32px rgba(31, 63, 114, 0.07);
+  --shadow-card: 0 4px 18px rgba(31, 63, 114, 0.055);
   --workspace-sidebar-width: 248px;
+  --content-zone: 1280px;
+  --desktop-gutter: clamp(28px, 3.5vw, 56px);
 }
 
 * {
@@ -396,8 +398,17 @@ button {
   }
 
   .app-stage:not(.app-stage--workspace):not(.app-stage--public) .app-header {
-    padding-right: clamp(40px, 6vw, 96px);
-    padding-left: clamp(40px, 6vw, 96px);
+    width: min(100%, calc(var(--content-zone) + 2 * var(--desktop-gutter)));
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: var(--desktop-gutter);
+    padding-left: var(--desktop-gutter);
+  }
+
+  .app-stage:not(.app-stage--workspace):not(.app-stage--public) .screen-page > header.safe-top {
+    width: min(100%, var(--content-zone));
+    margin-right: auto;
+    margin-left: auto;
   }
 
   .app-stage--workspace {
@@ -434,8 +445,10 @@ button {
   }
 
   .app-stage--workspace .screen-content {
-    width: 100%;
-    padding: 24px clamp(32px, 4vw, 64px) 48px;
+    width: min(100%, calc(var(--content-zone) + 2 * var(--desktop-gutter)));
+    margin-right: auto;
+    margin-left: auto;
+    padding: 28px var(--desktop-gutter) 56px;
   }
 
   .app-stage--workspace .screen-content--flush {
@@ -446,10 +459,22 @@ button {
 
 @media (min-width: 1024px) {
   .app-stage--workspace .app-header {
+    width: min(100%, calc(var(--content-zone) + 2 * var(--desktop-gutter)));
     min-height: 80px;
     align-items: center;
     border-bottom: 1px solid var(--line);
-    padding: 0 clamp(32px, 4vw, 64px);
+    margin-right: auto;
+    margin-left: auto;
+    padding: 0 var(--desktop-gutter);
+  }
+
+  .app-stage--workspace .workspace-page-header {
+    width: min(100%, calc(var(--content-zone) + 2 * var(--desktop-gutter)));
+    min-height: 80px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: var(--desktop-gutter);
+    padding-left: var(--desktop-gutter);
   }
 
   .app-stage--workspace .app-header h1 {
@@ -462,10 +487,9 @@ button {
   }
 
   .app-stage--focus .app-header {
-    width: 100%;
-    max-width: none;
-    padding-right: clamp(32px, 4vw, 64px);
-    padding-left: clamp(32px, 4vw, 64px);
+    width: min(100%, calc(var(--content-zone) + 2 * var(--desktop-gutter)));
+    padding-right: var(--desktop-gutter);
+    padding-left: var(--desktop-gutter);
   }
 
   .subject-select-layout {
@@ -475,6 +499,9 @@ button {
     grid-template-columns: minmax(280px, 0.72fr) minmax(480px, 1.28fr);
     grid-template-rows: 1fr auto;
     gap: 24px 40px;
+    width: min(100%, var(--content-zone));
+    margin-right: auto;
+    margin-left: auto;
   }
 
   .subject-select-controls {
@@ -494,6 +521,13 @@ button {
   .subject-select-action {
     grid-row: 2;
     grid-column: 1;
+    max-width: 360px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-stage--workspace .screen-content {
+    padding-top: 32px;
   }
 }
 

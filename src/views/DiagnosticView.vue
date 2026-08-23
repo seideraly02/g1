@@ -356,7 +356,7 @@ function nextQuestion() {
     </p>
 
     <main
-      class="min-h-0 flex-1 overflow-y-auto pb-3 lg:grid lg:grid-cols-[minmax(300px,.8fr)_minmax(520px,1.2fr)] lg:content-center lg:gap-x-[clamp(40px,6vw,96px)] lg:gap-y-4 lg:overflow-visible"
+      class="mx-auto min-h-0 w-full max-w-[1280px] flex-1 overflow-y-auto pb-3 lg:grid lg:grid-cols-[minmax(300px,.82fr)_minmax(520px,1.18fr)] lg:content-center lg:gap-x-[clamp(40px,5vw,72px)] lg:gap-y-4 lg:overflow-visible"
     >
       <div class="mt-4 flex items-center gap-2 lg:col-start-1 lg:mt-0">
         <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#1f66d9]">
@@ -452,14 +452,16 @@ function nextQuestion() {
       </div>
     </main>
 
-    <button
-      class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:ml-auto lg:w-[min(100%,520px)]"
-      type="button"
-      :disabled="!answered || sessionUnavailable"
-      @click="nextQuestion"
-    >
-      {{ questionIndex === questions.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ' }}
-      <ArrowRight :size="20" :stroke-width="2" aria-hidden="true" />
-    </button>
+    <div class="mx-auto flex w-full max-w-[1280px] justify-end">
+      <button
+        class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:w-[min(100%,520px)]"
+        type="button"
+        :disabled="!answered || sessionUnavailable"
+        @click="nextQuestion"
+      >
+        {{ questionIndex === questions.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ' }}
+        <ArrowRight :size="20" :stroke-width="2" aria-hidden="true" />
+      </button>
+    </div>
   </section>
 </template>

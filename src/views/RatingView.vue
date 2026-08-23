@@ -53,7 +53,7 @@ const currentPlace = computed(() => rows.value.find((row) => row.current)?.place
 
 <template>
   <section class="screen-page bg-[#f8f8f8]">
-    <div class="safe-top flex items-center justify-between px-4 pb-2 pt-4">
+    <div class="workspace-page-header safe-top flex items-center justify-between px-4 pb-2 pt-4">
       <h1 class="page-title text-[22px]">Рейтинг</h1>
       <button
         class="icon-button"

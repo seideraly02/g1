@@ -68,7 +68,7 @@ function createPlan() {
       </template>
     </AppHeader>
 
-    <div class="px-4 lg:px-[clamp(40px,6vw,96px)]">
+    <div class="mx-auto w-full max-w-[1400px] px-4 lg:px-[var(--desktop-gutter)]">
       <div class="mt-1 grid h-1.5 shrink-0 grid-cols-5 gap-1.5" aria-label="5 қадамның 4-қадамы">
         <span
           v-for="step in 5"
@@ -80,7 +80,7 @@ function createPlan() {
     </div>
 
     <main
-      class="min-h-0 flex-1 overflow-y-auto px-4 pb-3 lg:grid lg:grid-cols-2 lg:content-start lg:gap-x-[clamp(40px,6vw,96px)] lg:px-[clamp(40px,6vw,96px)]"
+      class="mx-auto min-h-0 w-full max-w-[1400px] flex-1 overflow-y-auto px-4 pb-3 lg:grid lg:grid-cols-[minmax(320px,.9fr)_minmax(440px,1.1fr)] lg:content-start lg:gap-x-[clamp(40px,5vw,72px)] lg:px-[var(--desktop-gutter)]"
     >
       <div class="mt-4 flex items-center justify-between lg:col-start-1">
         <span class="text-[11px] font-[850] uppercase tracking-[.03em] text-[#1f66d9]">
@@ -204,7 +204,7 @@ function createPlan() {
     </main>
 
     <div
-      class="px-4 lg:grid lg:grid-cols-2 lg:gap-x-[clamp(40px,6vw,96px)] lg:px-[clamp(40px,6vw,96px)]"
+      class="mx-auto w-full max-w-[1400px] px-4 lg:grid lg:grid-cols-[minmax(320px,.9fr)_minmax(440px,1.1fr)] lg:gap-x-[clamp(40px,5vw,72px)] lg:px-[var(--desktop-gutter)]"
     >
       <button
         class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:col-start-2 lg:mt-0"
