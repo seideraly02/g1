@@ -40,7 +40,7 @@ async function confirmCode() {
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f1f5fb] px-4 pb-6">
+  <section class="screen-page flex flex-col bg-[#f1f5fb] px-4 pb-6">
     <header class="mx-auto flex min-h-20 w-full max-w-[920px] items-center justify-between">
       <BrandMark />
       <span class="text-xs font-bold text-[#6b768b]">ҰБТ дайындығы</span>

@@ -85,7 +85,7 @@ function openNotification(id: number) {
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
+  <section class="screen-page bg-[#f8f8f8]">
     <AppHeader title="Хабарландырулар" back />
 
     <div class="screen-content pt-3">

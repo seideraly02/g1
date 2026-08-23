@@ -30,7 +30,7 @@ function startPreparation() {
 <template>
   <section class="min-h-dvh bg-[#f1f5fb] text-[#17223b]">
     <header
-      class="mx-auto flex min-h-20 w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 lg:px-8"
+      class="flex min-h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-[clamp(40px,5vw,80px)]"
     >
       <BrandMark />
       <button class="text-button min-h-11 text-sm" type="button" @click="openRegistration">
@@ -38,9 +38,9 @@ function startPreparation() {
       </button>
     </header>
 
-    <main class="mx-auto w-full max-w-[1120px] px-4 pb-8 sm:px-6 lg:px-8">
+    <main class="w-full px-4 pb-8 sm:px-6 lg:px-[clamp(40px,5vw,80px)]">
       <section
-        class="overflow-hidden rounded-b-[30px] rounded-t-[22px] bg-[#1f66d9] px-5 py-8 text-white sm:px-10 sm:py-12 lg:grid lg:grid-cols-[1.12fr_.88fr] lg:items-center lg:gap-14 lg:px-14 lg:py-16"
+        class="overflow-hidden rounded-b-[30px] rounded-t-[22px] bg-[#1f66d9] px-5 py-8 text-white sm:px-10 sm:py-12 lg:grid lg:min-h-[calc(100dvh-160px)] lg:grid-cols-[minmax(0,1.45fr)_minmax(360px,.75fr)] lg:items-center lg:gap-[clamp(48px,7vw,120px)] lg:px-[clamp(48px,6vw,112px)] lg:py-16"
       >
         <div>
           <p class="inline-flex items-center gap-2 text-sm font-bold text-white">

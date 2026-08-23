@@ -46,7 +46,7 @@ const days = [
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
+  <section class="screen-page bg-[#f8f8f8]">
     <div class="safe-top flex items-center justify-between px-4 pb-2 pt-4">
       <h1 class="page-title text-[22px]">Ілгерілеу</h1>
       <div class="flex rounded-[14px] bg-[#dfe6f0] p-1" role="group" aria-label="Кезеңді таңдау">
@@ -66,10 +66,10 @@ const days = [
       </div>
     </div>
 
-    <div class="screen-content space-y-2.5 pt-2">
-      <SampleDataNotice />
+    <div class="screen-content space-y-2.5 pt-2 lg:grid lg:grid-cols-12 lg:gap-4 lg:space-y-0">
+      <SampleDataNotice class="lg:col-span-12" />
       <button
-        class="card block w-full p-3 text-left transition-transform active:scale-[.995]"
+        class="card block w-full p-3 text-left transition-transform active:scale-[.995] lg:col-span-4"
         type="button"
         @click="router.push({ name: 'forecast' })"
       >
@@ -90,7 +90,7 @@ const days = [
         <div class="mt-1.5 text-[11px] text-[#536178]">{{ summary.note }}</div>
       </button>
 
-      <div class="card p-3">
+      <div class="card p-3 lg:col-span-8">
         <div class="flex items-center justify-between">
           <h2 class="text-[14px] font-[850]">Дәлдік динамикасы</h2>
           <span class="metric-value text-[12px] text-[#536178]">{{ summary.accuracy }}</span>
@@ -100,7 +100,7 @@ const days = [
         </div>
       </div>
 
-      <div class="card p-3">
+      <div class="card p-3 lg:col-span-8">
         <div class="mb-2 flex items-center justify-between">
           <h2 class="text-[14px] font-[850]">Пәндер бойынша дәлдік</h2>
           <span class="text-[10px] text-[#536178]">барлық талпыныс</span>
@@ -124,7 +124,7 @@ const days = [
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-2 gap-2 lg:col-span-4">
         <div class="card p-3">
           <div class="grid size-10 place-items-center rounded-xl bg-[#edf4ff] text-[#1f66d9]">
             <Clock3 :size="20" />
@@ -147,7 +147,7 @@ const days = [
         </button>
       </div>
 
-      <div class="card p-3">
+      <div class="card p-3 lg:col-span-12">
         <div class="flex items-center justify-between">
           <h2 class="text-[14px] font-[850]">Белсенділік</h2>
           <span class="text-[10px] uppercase text-[#536178]">шілде</span>

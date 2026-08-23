@@ -11,14 +11,17 @@ const selectedAchievement = ref('series')
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] w-full min-w-0 bg-[#f8f8f8]">
+  <section class="screen-page w-full min-w-0 bg-[#f8f8f8]">
     <AppHeader title="Профиль" />
 
-    <div class="screen-content min-w-0 space-y-2.5 pt-3">
+    <div
+      class="screen-content min-w-0 space-y-2.5 pt-3 lg:grid lg:grid-cols-12 lg:gap-4 lg:space-y-0"
+    >
       <SampleDataNotice
+        class="lg:col-span-12"
         text="Авторизация уақытша өшірулі. Профильдегі барлық көрсеткіш — интерфейс үлгісі және жеке нәтижең емес."
       />
-      <div class="card flex items-center gap-3 p-4">
+      <div class="card flex items-center gap-3 p-4 lg:col-span-7">
         <div
           class="grid size-[74px] shrink-0 place-items-center rounded-[24px] bg-[#edf4ff] text-[26px] font-[900] text-[#1f66d9]"
         >
@@ -47,7 +50,7 @@ const selectedAchievement = ref('series')
         </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-3 gap-2 lg:col-span-5">
         <div class="card px-2 py-3 text-center">
           <div class="metric-value text-[21px] font-[900]">20</div>
           <div class="mt-1 text-[10px] text-[#536178]">күндік мақсат</div>
@@ -62,7 +65,7 @@ const selectedAchievement = ref('series')
         </div>
       </div>
 
-      <div class="card overflow-hidden">
+      <div class="card overflow-hidden lg:col-span-7">
         <button
           class="flex min-h-[52px] w-full items-center gap-3 border-0 bg-white px-3 text-left"
           type="button"
@@ -91,7 +94,7 @@ const selectedAchievement = ref('series')
         </button>
       </div>
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between lg:col-span-5 lg:px-4">
         <span class="text-[12px] text-[#536178]">Жетістіктер · 6</span>
         <div class="flex gap-2">
           <button

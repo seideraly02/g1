@@ -38,7 +38,7 @@ const subjectName = computed(() => {
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] px-4 pb-4">
+  <section class="screen-page flex flex-col bg-[#f8f8f8] px-4 pb-4">
     <header class="safe-top flex min-h-[72px] shrink-0 items-end pb-3">
       <button
         class="icon-button -ml-1"
@@ -56,8 +56,11 @@ const subjectName = computed(() => {
       >
     </header>
 
-    <main v-if="isCompleted" class="mx-auto flex w-full max-w-[560px] flex-1 flex-col pb-3">
-      <div class="mt-6 flex justify-center">
+    <main
+      v-if="isCompleted"
+      class="mx-auto flex w-full max-w-[1280px] flex-1 flex-col pb-3 lg:grid lg:grid-cols-12 lg:content-center lg:gap-x-10 lg:gap-y-4 lg:px-[clamp(32px,5vw,80px)]"
+    >
+      <div class="mt-6 flex justify-center lg:col-span-4 lg:row-span-4 lg:mt-0 lg:items-center">
         <ProgressRing :value="percentage" :size="136" :stroke="14" color="#1f66d9">
           <div class="text-center">
             <strong class="metric-value block text-[32px] font-[800] leading-none"
@@ -68,13 +71,19 @@ const subjectName = computed(() => {
         </ProgressRing>
       </div>
 
-      <h2 class="mt-4 text-center text-[23px] font-[800] tracking-[-.02em]">Алғашқы бағыт дайын</h2>
-      <p class="mt-2 text-center text-[14px] leading-6 text-[#667085]">
+      <h2
+        class="mt-4 text-center text-[23px] font-[800] tracking-[-.02em] lg:col-span-8 lg:mt-0 lg:text-left lg:text-[30px]"
+      >
+        Алғашқы бағыт дайын
+      </h2>
+      <p
+        class="mt-2 text-center text-[14px] leading-6 text-[#667085] lg:col-span-8 lg:mt-0 lg:text-left"
+      >
         {{ subjectName }} бойынша нәтижең — {{ percentage }}%. Бұл 5 сұрақтық бастапқы тексеру,
         нақты ҰБТ болжамы емес.
       </p>
 
-      <div class="mt-5 grid grid-cols-3 gap-2">
+      <div class="mt-5 grid grid-cols-3 gap-2 lg:col-span-8 lg:mt-0">
         <div class="card px-2 py-3 text-center">
           <div class="metric-value text-[20px] font-[850]">{{ correct }}</div>
           <div class="mt-1 text-[10px] text-[#667085]">дұрыс</div>
@@ -89,12 +98,17 @@ const subjectName = computed(() => {
         </div>
       </div>
 
-      <p class="mt-3 rounded-[16px] bg-[#f0f3f8] p-3 text-[12px] leading-5 text-[#667085]">
+      <p
+        class="mt-3 rounded-[16px] bg-[#f0f3f8] p-3 text-[12px] leading-5 text-[#667085] lg:col-span-8 lg:mt-0"
+      >
         Күшті және әлсіз тақырыптарды анықтауға дерек жеткіліксіз. Бұл қорытынды үшін көбірек сұрақ
         орындау керек.
       </p>
 
-      <section class="soft-card mt-6 flex items-start gap-3 p-4" aria-labelledby="result-next-step">
+      <section
+        class="soft-card mt-6 flex items-start gap-3 p-4 lg:col-span-6 lg:mt-2"
+        aria-labelledby="result-next-step"
+      >
         <Target class="mt-0.5 shrink-0 text-[#1f66d9]" :size="23" />
         <div>
           <h2 id="result-next-step" class="text-[15px] font-[800]">Келесі қадам</h2>
@@ -104,7 +118,7 @@ const subjectName = computed(() => {
         </div>
       </section>
 
-      <div class="mt-auto pt-6">
+      <div class="mt-auto pt-6 lg:col-span-6 lg:mt-2 lg:pt-0">
         <button
           class="primary-button min-h-[52px]"
           type="button"
@@ -124,7 +138,7 @@ const subjectName = computed(() => {
 
     <main
       v-else
-      class="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center text-center"
+      class="mx-auto flex w-full max-w-[960px] flex-1 flex-col items-center justify-center px-6 text-center"
     >
       <span class="grid size-14 place-items-center rounded-[16px] bg-[#edf4ff] text-[#1f66d9]"
         ><Target :size="25"

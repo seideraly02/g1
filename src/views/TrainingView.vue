@@ -108,7 +108,7 @@ function startSelectedMode() {
 </script>
 
 <template>
-  <section class="screen-page min-h-[844px] bg-[#f8f8f8]">
+  <section class="screen-page bg-[#f8f8f8]">
     <div class="safe-top flex items-center justify-between px-4 pb-3 pt-4">
       <h1 class="page-title text-[22px]">Жаттығу</h1>
       <button

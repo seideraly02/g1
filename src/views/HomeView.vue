@@ -54,9 +54,9 @@ const shortcuts = [
       </button>
     </header>
 
-    <div class="screen-content pt-0">
+    <div class="screen-content pt-0 lg:grid lg:grid-cols-12 lg:gap-6">
       <section
-        class="overflow-hidden rounded-b-[30px] rounded-t-[20px] bg-[#1f66d9] px-5 py-6 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)]"
+        class="overflow-hidden rounded-b-[30px] rounded-t-[20px] bg-[#1f66d9] px-5 py-6 text-white shadow-[0_12px_28px_rgba(31,102,217,.18)] lg:col-span-8 lg:row-span-2 lg:flex lg:flex-col lg:justify-center lg:px-10 lg:py-10"
       >
         <p class="text-sm font-semibold text-white">{{ forecast.eyebrow }}</p>
         <h1 class="mt-2 text-[27px] font-extrabold leading-tight tracking-[-.03em]">
@@ -72,7 +72,11 @@ const shortcuts = [
         </button>
       </section>
 
-      <section v-if="studyPlan" class="card mt-5 p-4" aria-labelledby="saved-plan-title">
+      <section
+        v-if="studyPlan"
+        class="card mt-5 p-4 lg:col-span-4 lg:mt-0"
+        aria-labelledby="saved-plan-title"
+      >
         <p class="eyebrow">Сақталған оқу мақсаты</p>
         <h2 id="saved-plan-title" class="mt-2 text-[17px] font-[800]">{{ planSubjectName }}</h2>
         <p class="mt-1 text-[13px] leading-5 text-[#667085]">
@@ -87,7 +91,7 @@ const shortcuts = [
         </button>
       </section>
 
-      <section class="mt-5" aria-labelledby="quick-actions-title">
+      <section class="mt-5 lg:col-span-4 lg:mt-0" aria-labelledby="quick-actions-title">
         <h2 id="quick-actions-title" class="text-[17px] font-bold tracking-[-.02em]">
           Оқу режимдері
         </h2>
@@ -109,7 +113,7 @@ const shortcuts = [
       </section>
 
       <section
-        class="soft-card mt-5 p-4"
+        class="soft-card mt-5 p-4 lg:col-span-12 lg:mt-0"
         :data-status="forecast.status"
         role="status"
         aria-labelledby="forecast-title"

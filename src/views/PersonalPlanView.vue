@@ -59,7 +59,7 @@ function createPlan() {
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] pb-4">
+  <section class="screen-page flex flex-col bg-[#f8f8f8] pb-4">
     <AppHeader title="Оқу мақсаты" back>
       <template #actions>
         <button class="text-button min-h-11" type="button" @click="router.push({ name: 'home' })">
@@ -68,7 +68,7 @@ function createPlan() {
       </template>
     </AppHeader>
 
-    <div class="px-4">
+    <div class="px-4 lg:px-[clamp(40px,6vw,96px)]">
       <div class="mt-1 grid h-1.5 shrink-0 grid-cols-5 gap-1.5" aria-label="5 қадамның 4-қадамы">
         <span
           v-for="step in 5"
@@ -79,22 +79,26 @@ function createPlan() {
       </div>
     </div>
 
-    <main class="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
-      <div class="mt-4 flex items-center justify-between">
+    <main
+      class="min-h-0 flex-1 overflow-y-auto px-4 pb-3 lg:grid lg:grid-cols-2 lg:content-start lg:gap-x-[clamp(40px,6vw,96px)] lg:px-[clamp(40px,6vw,96px)]"
+    >
+      <div class="mt-4 flex items-center justify-between lg:col-start-1">
         <span class="text-[11px] font-[850] uppercase tracking-[.03em] text-[#1f66d9]">
           5 қадамның 4-қадамы
         </span>
         <span class="text-[12px] text-[#536178]">Күнделікті мақсат</span>
       </div>
 
-      <h2 class="mt-3 text-[25px] font-[900] leading-[1.18] tracking-[-.025em] text-[#0d1730]">
+      <h2
+        class="mt-3 text-[25px] font-[900] leading-[1.18] tracking-[-.025em] text-[#0d1730] lg:col-start-1 lg:text-[32px]"
+      >
         Күніне қанша сұрақ шешу ыңғайлы?
       </h2>
-      <p class="mt-2 text-[14px] leading-[1.4] text-[#536178]">
+      <p class="mt-2 text-[14px] leading-[1.4] text-[#536178] lg:col-start-1">
         Мақсатты профильде өзгертуге болады. Өзіңе ыңғайлы қарқыннан баста.
       </p>
 
-      <div class="mt-4 grid grid-cols-4 gap-2">
+      <div class="mt-4 grid grid-cols-4 gap-2 lg:col-start-1">
         <button
           v-for="goal in goals"
           :key="goal.value"
@@ -121,7 +125,7 @@ function createPlan() {
       </div>
 
       <div
-        class="mt-4 flex items-center rounded-[18px] border border-[#add4ff] bg-[#edf5ff] px-6 py-5"
+        class="mt-4 flex items-center rounded-[18px] border border-[#add4ff] bg-[#edf5ff] px-6 py-5 lg:col-start-1"
       >
         <WandSparkles
           :size="23"
@@ -139,7 +143,9 @@ function createPlan() {
         </div>
       </div>
 
-      <fieldset class="mt-5 space-y-3 rounded-[20px] border border-[#dce3ec] bg-white p-4">
+      <fieldset
+        class="mt-5 space-y-3 rounded-[20px] border border-[#dce3ec] bg-white p-4 lg:col-start-2 lg:row-start-1 lg:row-span-5 lg:mt-4 lg:p-6"
+      >
         <legend class="px-1 text-[13px] font-[800]">Мақсат баптаулары</legend>
         <label class="block text-[12px] font-[700]"
           >Дайындалатын пән
@@ -192,12 +198,16 @@ function createPlan() {
           }}</span>
         </label>
       </fieldset>
-      <p v-if="saveError" class="mt-3 text-[12px] text-[#c93645]" role="alert">{{ saveError }}</p>
+      <p v-if="saveError" class="mt-3 text-[12px] text-[#c93645] lg:col-start-2" role="alert">
+        {{ saveError }}
+      </p>
     </main>
 
-    <div class="px-4">
+    <div
+      class="px-4 lg:grid lg:grid-cols-2 lg:gap-x-[clamp(40px,6vw,96px)] lg:px-[clamp(40px,6vw,96px)]"
+    >
       <button
-        class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px]"
+        class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:col-start-2 lg:mt-0"
         type="button"
         @click="createPlan"
       >

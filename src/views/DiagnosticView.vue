@@ -321,7 +321,7 @@ function nextQuestion() {
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] px-4 pb-4">
+  <section class="screen-page flex flex-col bg-[#f8f8f8] px-4 pb-4 lg:px-[clamp(40px,6vw,96px)]">
     <header class="safe-top grid min-h-[72px] grid-cols-[44px_1fr_52px] items-center">
       <button
         class="icon-button -ml-1 mt-1"
@@ -355,8 +355,10 @@ function nextQuestion() {
       Диагностиканы бастау үшін алдымен пән таңда.
     </p>
 
-    <main class="min-h-0 flex-1 overflow-y-auto pb-3">
-      <div class="mt-4 flex items-center gap-2">
+    <main
+      class="min-h-0 flex-1 overflow-y-auto pb-3 lg:grid lg:grid-cols-[minmax(300px,.8fr)_minmax(520px,1.2fr)] lg:content-center lg:gap-x-[clamp(40px,6vw,96px)] lg:gap-y-4 lg:overflow-visible"
+    >
+      <div class="mt-4 flex items-center gap-2 lg:col-start-1 lg:mt-0">
         <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#1f66d9]">
           {{ question.topic }}
         </span>
@@ -365,11 +367,13 @@ function nextQuestion() {
         </span>
       </div>
 
-      <h2 class="mt-3 text-[19px] font-[900] leading-[1.38] tracking-[-.018em] text-[#0d1730]">
+      <h2
+        class="mt-3 text-[19px] font-[900] leading-[1.38] tracking-[-.018em] text-[#0d1730] lg:col-start-1 lg:text-[28px]"
+      >
         {{ question.prompt }}
       </h2>
 
-      <div class="mt-3 space-y-2">
+      <div class="mt-3 space-y-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:mt-0">
         <button
           v-for="(option, index) in question.options"
           :key="option"
@@ -424,7 +428,10 @@ function nextQuestion() {
         </button>
       </div>
 
-      <div v-if="answered" class="mt-2.5 rounded-[18px] border border-[#afd6ff] bg-[#edf5ff] p-3">
+      <div
+        v-if="answered"
+        class="mt-2.5 rounded-[18px] border border-[#afd6ff] bg-[#edf5ff] p-3 lg:col-span-2 lg:mt-2"
+      >
         <div class="border-l-[3px] border-[#1f66d9] pl-3">
           <h3 class="text-[13px] font-[850] text-[#111b34]">Неліктен?</h3>
           <p class="mt-1 text-[12px] leading-[1.45] text-[#536178]">{{ question.explanation }}</p>
@@ -446,7 +453,7 @@ function nextQuestion() {
     </main>
 
     <button
-      class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px]"
+      class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:ml-auto lg:w-[min(100%,520px)]"
       type="button"
       :disabled="!answered || sessionUnavailable"
       @click="nextQuestion"

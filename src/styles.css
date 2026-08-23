@@ -32,9 +32,7 @@
   --radius-card: 20px;
   --radius-control: 14px;
   --shadow-card: 0 10px 32px rgba(31, 63, 114, 0.07);
-  --page-max-width: 720px;
   --workspace-sidebar-width: 248px;
-  --workspace-content-width: 1040px;
 }
 
 * {
@@ -88,14 +86,14 @@ button {
     display: flex;
     min-height: 100dvh;
     align-items: stretch;
-    justify-content: center;
-    padding: 20px;
+    justify-content: stretch;
+    padding: 0;
   }
 
   .app-route-stage {
-    width: min(100%, var(--page-max-width));
+    width: 100%;
     min-width: 0;
-    min-height: calc(100dvh - 40px);
+    min-height: 100dvh;
   }
 
   .app-route-stage > .screen-page {
@@ -392,20 +390,16 @@ button {
   font-weight: 650;
 }
 
-@media (min-width: 521px) {
-  .app-route-stage > .screen-page {
-    min-height: calc(100dvh - 40px);
-    border-radius: 24px;
-    box-shadow: var(--shadow-card);
-  }
-
-  .app-stage--public .app-route-stage > .screen-page {
-    border-radius: 0;
-    box-shadow: none;
-  }
-}
-
 @media (min-width: 1024px) {
+  .screen-page {
+    overflow: visible;
+  }
+
+  .app-stage:not(.app-stage--workspace):not(.app-stage--public) .app-header {
+    padding-right: clamp(40px, 6vw, 96px);
+    padding-left: clamp(40px, 6vw, 96px);
+  }
+
   .app-stage--workspace {
     display: grid;
     grid-template-columns: var(--workspace-sidebar-width) minmax(0, 1fr);
@@ -440,10 +434,8 @@ button {
   }
 
   .app-stage--workspace .screen-content {
-    width: min(100%, var(--workspace-content-width));
-    margin-right: auto;
-    margin-left: auto;
-    padding: 24px 32px 48px;
+    width: 100%;
+    padding: 24px clamp(32px, 4vw, 64px) 48px;
   }
 
   .app-stage--workspace .screen-content--flush {
@@ -457,7 +449,7 @@ button {
     min-height: 80px;
     align-items: center;
     border-bottom: 1px solid var(--line);
-    padding: 0 32px;
+    padding: 0 clamp(32px, 4vw, 64px);
   }
 
   .app-stage--workspace .app-header h1 {
@@ -467,6 +459,41 @@ button {
 
   .app-stage--workspace .bottom-navigation {
     display: none;
+  }
+
+  .app-stage--focus .app-header {
+    width: 100%;
+    max-width: none;
+    padding-right: clamp(32px, 4vw, 64px);
+    padding-left: clamp(32px, 4vw, 64px);
+  }
+
+  .subject-select-layout {
+    display: grid;
+    min-height: 0;
+    flex: 1;
+    grid-template-columns: minmax(280px, 0.72fr) minmax(480px, 1.28fr);
+    grid-template-rows: 1fr auto;
+    gap: 24px 40px;
+  }
+
+  .subject-select-controls {
+    align-self: start;
+  }
+
+  .subject-select-list {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    display: grid;
+    align-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    overflow: visible;
+  }
+
+  .subject-select-action {
+    grid-row: 2;
+    grid-column: 1;
   }
 }
 

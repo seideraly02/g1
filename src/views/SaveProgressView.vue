@@ -16,7 +16,7 @@ const steps = [
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8] pb-4">
+  <section class="screen-page flex flex-col bg-[#f8f8f8] pb-4">
     <AppHeader title="Ілгерілеуді сақтау" back />
 
     <main v-if="hasSavedDiagnostic" class="min-h-0 flex-1 overflow-y-auto px-4 pb-3">

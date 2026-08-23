@@ -9,7 +9,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <section class="screen-page flex min-h-[844px] flex-col bg-[#f8f8f8]">
+  <section class="screen-page flex flex-col bg-[#f8f8f8]">
     <AppHeader title="Нәтиже үлгісі" close />
 
     <div class="flex flex-1 flex-col px-4 pb-5">

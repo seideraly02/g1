@@ -222,7 +222,7 @@ function continueTrial() {
 </script>
 
 <template>
-  <section class="mock-exam-page screen-page flex min-h-[844px] flex-col bg-[#f8f8f8]">
+  <section class="mock-exam-page screen-page flex flex-col bg-[#f8f8f8]">
     <AppHeader title="Сұрақтар картасы" close managed-close @close="requestClose">
       <template #actions>
         <div
