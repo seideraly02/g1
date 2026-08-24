@@ -26,6 +26,7 @@ export type AuthErrorCode =
   | 'expired-code'
   | 'rate-limited'
   | 'telegram-not-linked'
+  | 'validation'
   | 'offline'
   | 'server'
 

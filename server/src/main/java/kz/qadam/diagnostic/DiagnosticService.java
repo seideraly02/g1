@@ -1,8 +1,8 @@
 package kz.qadam.diagnostic;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -134,7 +134,7 @@ public class DiagnosticService {
     private List<String> readOptions(String value) {
         try {
             return objectMapper.readValue(value, new TypeReference<List<String>>() {});
-        } catch (JsonProcessingException error) {
+        } catch (JacksonException error) {
             throw new IllegalStateException("Invalid question options in database", error);
         }
     }

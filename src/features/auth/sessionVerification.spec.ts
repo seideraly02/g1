@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PersistenceService, type StorageAdapter } from '../../services/persistenceService'
 import type { AuthRepository } from './authRepository'
-import { persistAuthenticatedUser, readAuthenticatedUser } from './authPersistence'
+import { authStorageKey } from './authPersistence'
 import { verifyServerSession } from './sessionVerification'
 import type { AuthenticatedUser } from './types'
 
@@ -42,16 +42,16 @@ function repository(session: AuthenticatedUser | null): AuthRepository {
 describe('server session verification', () => {
   it('denies and removes a forged or stale cached profile', async () => {
     const persistence = new PersistenceService(new MemoryStorage())
-    persistAuthenticatedUser(user, persistence)
+    persistence.write(authStorageKey, { version: 1, user })
 
     expect(await verifyServerSession(repository(null), persistence)).toBeNull()
-    expect(readAuthenticatedUser(persistence)).toBeNull()
+    expect(persistence.read(authStorageKey, () => true)).toBeNull()
   })
 
-  it('authorizes and refreshes cache only from a valid server session', async () => {
+  it('authorizes only from a valid server session without persisting PII', async () => {
     const persistence = new PersistenceService(new MemoryStorage())
 
     expect(await verifyServerSession(repository(user), persistence)).toEqual(user)
-    expect(readAuthenticatedUser(persistence)).toEqual(user)
+    expect(persistence.read(authStorageKey, () => true)).toBeNull()
   })
 })

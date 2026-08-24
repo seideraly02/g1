@@ -25,6 +25,8 @@ services:
       DATABASE_PASSWORD: qadam
       FRONTEND_ORIGINS: http://localhost:5173,http://localhost:4173
       AUTH_MODE: development
+      DEVELOPMENT_OTP_CODE: '111111'
+      TRUSTED_PROXY_SECRET: ''
       SECURITY_PEPPER: local-development-pepper-change-before-production
       SESSION_COOKIE_SECURE: 'false'
       SESSION_COOKIE_SAME_SITE: Lax
@@ -35,5 +37,23 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    image: node:22.23.1-alpine
+    working_dir: /workspace
+    command: sh -c "npm ci && npm run dev"
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000
+      VITE_REQUIRE_AUTHENTICATION: 'true'
+      VITE_AUTH_DEV_OTP_HINT: 'true'
+      VITE_AUTH_DEV_OTP_CODE: '111111'
+    ports:
+      - '4173:4173'
+    volumes:
+      - .:/workspace
+      - qadam_node_modules:/workspace/node_modules
+    depends_on:
+      - api
+
 volumes:
   qadam_postgres:
+  qadam_node_modules:

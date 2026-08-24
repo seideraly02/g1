@@ -3,6 +3,8 @@ node_modules/
 dist/
 .vite/
 *.tsbuildinfo
+server/.gradle/
+server/build/
 
 # Environment and local secrets
 .env
@@ -27,4 +29,3 @@ qa-artifacts/
 *.log
 .DS_Store
 Thumbs.db
-

@@ -5,10 +5,10 @@ import {
   shouldCheckAuthentication,
 } from './authAccess'
 
-describe('temporary authentication access policy', () => {
-  it('keeps every learning route open while authentication is disabled', () => {
-    expect(REQUIRE_AUTHENTICATION).toBe(false)
-    expect(shouldCheckAuthentication(false)).toBe(false)
+describe('authentication access policy', () => {
+  it('protects learning routes by default', () => {
+    expect(REQUIRE_AUTHENTICATION).toBe(true)
+    expect(shouldCheckAuthentication(false)).toBe(true)
   })
 
   it('never asks for authentication on public routes', () => {
@@ -18,6 +18,6 @@ describe('temporary authentication access policy', () => {
   it('restores the session gate through the release setting', () => {
     expect(resolveAuthenticationRequirement('true')).toBe(true)
     expect(resolveAuthenticationRequirement('false')).toBe(false)
-    expect(resolveAuthenticationRequirement(undefined)).toBe(false)
+    expect(resolveAuthenticationRequirement(undefined)).toBe(true)
   })
 })

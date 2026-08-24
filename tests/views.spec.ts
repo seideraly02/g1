@@ -57,10 +57,10 @@ describe('Qadam mobile screens', () => {
     }
   })
 
-  it('starts the temporary public learning flow from subject selection', () => {
+  it('starts the mandatory registration flow before subject selection', () => {
     const welcome = readFileSync(resolve(viewsDirectory, 'WelcomeView.vue'), 'utf8')
 
-    expect(welcome).toContain("router.push({ name: 'subjects-onboarding' })")
+    expect(welcome).toContain("router.push({ name: 'register' })")
     expect(welcome).toContain('@click="startPreparation"')
   })
 })

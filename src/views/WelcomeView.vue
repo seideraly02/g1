@@ -23,7 +23,7 @@ function openRegistration() {
 }
 
 function startPreparation() {
-  void router.push({ name: 'subjects-onboarding' })
+  void router.push({ name: 'register' })
 }
 </script>
 
@@ -64,7 +64,7 @@ function startPreparation() {
             </button>
           </div>
           <p class="mt-4 flex items-center gap-2 text-xs text-white">
-            <Check :size="16" aria-hidden="true" /> Карта қажет емес · нәтиже бірден шығады
+            <Check :size="16" aria-hidden="true" /> Тіркелу қажет · карта қажет емес
           </p>
         </div>
 

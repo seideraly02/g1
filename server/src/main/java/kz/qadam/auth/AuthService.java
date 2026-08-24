@@ -21,6 +21,8 @@ public class AuthService {
     private static final int OTP_MAX_ATTEMPTS = 5;
     private static final int OTP_HOURLY_LIMIT = 5;
     private static final int OTP_DAILY_LIMIT = 10;
+    private static final int FINGERPRINT_HOURLY_LIMIT = 20;
+    private static final int FINGERPRINT_DAILY_LIMIT = 50;
 
     private final JdbcClient jdbc;
     private final TokenHasher hasher;
@@ -39,34 +41,36 @@ public class AuthService {
         this.properties = properties;
     }
 
-    public CodeRequest requestCode(String fullName, String city, String rawPhone) {
+    @Transactional(noRollbackFor = ApiException.class)
+    public CodeRequest requestCode(String fullName, String city, String rawPhone, String remoteAddress) {
         String phone = normalizePhone(rawPhone);
-        enforceOtpRateLimit(phone);
+        String normalizedName = normalizeFullName(fullName);
+        String normalizedCity = normalizeCity(city);
+        String fingerprint = hasher.hash(remoteAddress == null ? "unknown" : remoteAddress);
+        lockRateLimitKey(phone);
+        lockRateLimitKey(fingerprint);
+        enforceOtpRateLimit(phone, fingerprint);
 
-        String code = "%06d".formatted(RANDOM.nextInt(1_000_000));
+        String code = properties.production()
+            ? "%06d".formatted(RANDOM.nextInt(1_000_000))
+            : properties.developmentOtpCode();
         UUID requestId = UUID.randomUUID();
         Instant expiresAt = Instant.now().plus(Duration.ofMinutes(5));
-        jdbc.sql("insert into otp_requests(id,full_name,city,phone,code_hash,expires_at) values(:id,:name,:city,:phone,:hash,:expires)")
+        jdbc.sql("insert into otp_requests(id,full_name,city,phone,code_hash,expires_at,request_fingerprint) values(:id,:name,:city,:phone,:hash,:expires,:fingerprint)")
             .param("id", requestId)
-            .param("name", fullName.trim())
-            .param("city", city.trim())
+            .param("name", normalizedName)
+            .param("city", normalizedCity)
             .param("phone", phone)
             .param("hash", hasher.hash(code))
             .param("expires", Timestamp.from(expiresAt))
+            .param("fingerprint", fingerprint)
             .update();
 
-        try {
-            telegramGateway.sendCode(phone, code, requestId);
-        } catch (RuntimeException error) {
-            jdbc.sql("delete from otp_requests where id=:id and used_at is null")
-                .param("id", requestId)
-                .update();
-            throw error;
-        }
+        telegramGateway.sendCode(phone, code, requestId);
         return new CodeRequest(requestId.toString(), expiresAt.toString(), 60);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = ApiException.class)
     public AuthResult verifyCode(String rawRequestId, String code) {
         UUID requestId = parseRequestId(rawRequestId);
         OtpRow otp = jdbc.sql("select id,full_name,city,phone,code_hash,attempts,expires_at,used_at from otp_requests where id=:id")
@@ -163,13 +167,32 @@ public class AuthService {
             .single();
     }
 
-    private void enforceOtpRateLimit(String phone) {
+    private void enforceOtpRateLimit(String phone, String fingerprint) {
         long recent = countOtpRequests(phone, "60 seconds");
         long hourly = countOtpRequests(phone, "1 hour");
         long daily = countOtpRequests(phone, "24 hours");
-        if (recent > 0 || hourly >= OTP_HOURLY_LIMIT || daily >= OTP_DAILY_LIMIT) {
+        long fingerprintHourly = countFingerprintRequests(fingerprint, "1 hour");
+        long fingerprintDaily = countFingerprintRequests(fingerprint, "24 hours");
+        if (recent > 0 || hourly >= OTP_HOURLY_LIMIT || daily >= OTP_DAILY_LIMIT
+            || fingerprintHourly >= FINGERPRINT_HOURLY_LIMIT
+            || fingerprintDaily >= FINGERPRINT_DAILY_LIMIT) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED");
         }
+    }
+
+    private long countFingerprintRequests(String fingerprint, String interval) {
+        return jdbc.sql("select count(*) from otp_requests where request_fingerprint=:fingerprint and created_at > now() - cast(:window as interval)")
+            .param("fingerprint", fingerprint)
+            .param("window", interval)
+            .query(Long.class)
+            .single();
+    }
+
+    private void lockRateLimitKey(String value) {
+        jdbc.sql("select 1 from pg_advisory_xact_lock(hashtextextended(:value, 0))")
+            .param("value", value)
+            .query(Integer.class)
+            .single();
     }
 
     private long countOtpRequests(String phone, String interval) {
@@ -198,6 +221,22 @@ public class AuthService {
         String normalized = phone.replaceAll("[\\s()-]", "");
         if (!normalized.matches("^\\+77\\d{9}$")) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_PHONE");
+        }
+        return normalized;
+    }
+
+    private static String normalizeFullName(String value) {
+        String normalized = value == null ? "" : value.trim().replaceAll("\\s+", " ");
+        if (normalized.length() < 5 || normalized.length() > 120 || normalized.split(" ").length < 2) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
+        }
+        return normalized;
+    }
+
+    private static String normalizeCity(String value) {
+        String normalized = value == null ? "" : value.trim().replaceAll("\\s+", " ");
+        if (normalized.length() < 2 || normalized.length() > 80) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
         }
         return normalized;
     }

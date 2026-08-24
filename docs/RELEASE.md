@@ -22,10 +22,18 @@ SESSION_COOKIE_SAME_SITE=Lax
 SESSION_TTL_DAYS=30
 TELEGRAM_GATEWAY_URL=<gateway-url>
 TELEGRAM_GATEWAY_TOKEN=<secret-token>
+DEVELOPMENT_OTP_CODE=
+TRUSTED_PROXY_SECRET=<same-random-secret-at-least-32-characters-on-api-and-netlify>
 SWAGGER_ENABLED=false
 ```
 
 The application refuses to start in production when critical security settings are missing or unsafe.
+The Gateway URL must be public HTTPS. Production also refuses to start if a deterministic development
+OTP is configured.
+
+For local end-to-end development, run `docker compose up --build`, open
+`http://localhost:4173`, and use OTP `111111`. The local code is never logged and is accepted only
+when `AUTH_MODE=development`; do not copy `DEVELOPMENT_OTP_CODE` into production.
 
 ## 2. Netlify
 
@@ -33,9 +41,12 @@ Configure the site environment variable:
 
 ```text
 BACKEND_API_URL=https://<backend-host>
+TRUSTED_PROXY_SECRET=<same-value-as-backend>
 ```
 
 The frontend is built with `VITE_API_BASE_URL=/api`. `netlify/functions/api.mjs` proxies browser API calls to the backend and forwards HttpOnly session cookies.
+`VITE_REQUIRE_AUTHENTICATION=true` is mandatory for release builds. Keep
+`VITE_AUTH_DEV_OTP_HINT=false` in every deployed environment.
 
 For GitHub Actions based Netlify deployment also configure repository secrets:
 

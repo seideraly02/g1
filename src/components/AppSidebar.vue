@@ -11,7 +11,7 @@ const router = useRouter()
 const auth = useAuthStore()
 
 async function signOut() {
-  await auth.signOut()
+  if (!(await auth.signOut())) return
   signOutAccount()
   await router.replace({ name: 'welcome' })
 }
@@ -53,6 +53,9 @@ async function signOut() {
     </nav>
 
     <div v-if="auth.isAuthenticated" class="mt-auto border-t border-[#e5eaf1] pt-3">
+      <p v-if="auth.error" role="alert" class="px-3 pb-2 text-xs text-[#c52835]">
+        {{ auth.error }}
+      </p>
       <button
         class="flex min-h-11 w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 text-left text-[14px] font-[650] text-[#c52835] transition-colors hover:bg-[#fff1f2] hover:text-[#a71927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c52835]"
         type="button"

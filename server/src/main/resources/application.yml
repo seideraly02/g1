@@ -1,7 +1,8 @@
 server:
   port: ${PORT:3000}
   shutdown: graceful
-  forward-headers-strategy: framework
+  # Client identity is accepted only through the authenticated Qadam proxy header.
+  forward-headers-strategy: none
   compression:
     enabled: true
   error:
@@ -37,6 +38,8 @@ qadam:
   security-pepper: ${SECURITY_PEPPER:}
   telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
   telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
+  development-otp-code: ${DEVELOPMENT_OTP_CODE:}
+  trusted-proxy-secret: ${TRUSTED_PROXY_SECRET:}
 
 management:
   endpoints:

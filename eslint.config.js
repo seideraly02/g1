@@ -13,6 +13,8 @@ export default tseslint.config(
       'dist/**',
       'node_modules/**',
       'qa-artifacts/**',
+      'server/.gradle/**',
+      'server/build/**',
     ],
   },
   eslint.configs.recommended,

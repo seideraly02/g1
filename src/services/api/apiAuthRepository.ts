@@ -16,7 +16,10 @@ function decodeRequest(value: unknown): CodeRequest | null {
   return data &&
     typeof data.requestId === 'string' &&
     typeof data.expiresAt === 'string' &&
-    typeof data.resendAfterSeconds === 'number'
+    typeof data.resendAfterSeconds === 'number' &&
+    Number.isFinite(Date.parse(data.expiresAt)) &&
+    data.resendAfterSeconds >= 0 &&
+    data.resendAfterSeconds <= 3600
     ? {
         requestId: data.requestId,
         expiresAt: data.expiresAt,
@@ -39,12 +42,16 @@ function apiError(status: number, value: unknown): AuthError {
   const code = record(value)?.code
   if (code === 'INVALID_CODE') return new AuthError('invalid-code', 'Код дұрыс емес')
   if (code === 'CODE_EXPIRED') return new AuthError('expired-code', 'Кодтың мерзімі аяқталды')
+  if (code === 'INVALID_PHONE' || code === 'VALIDATION_ERROR')
+    return new AuthError('validation', 'Енгізілген деректерді тексеріп, қайталап көр')
   if (code === 'TELEGRAM_NOT_LINKED')
     return new AuthError(
       'telegram-not-linked',
       'Бұл нөмірге Telegram тіркелгісі байланыстырылмаған',
     )
-  if (status === 429) return new AuthError('rate-limited', 'Әрекет тым көп. Біраздан кейін қайтала')
+  if (status === 429)
+    return new AuthError('rate-limited', 'Әрекет тым көп. Біраздан кейін қайталап көр')
+  if (status === 401) return new AuthError('server', 'Сессия аяқталды. Қайта кір')
   return new AuthError('server', 'Қызмет уақытша қолжетімсіз. Кейінірек қайтала')
 }
 
@@ -62,17 +69,32 @@ export class ApiAuthRepository implements AuthRepository {
   }
   async getSession() {
     if (!this.baseUrl.trim()) return null
-    const response = await this.client(`${this.url}/auth/session`, {
-      credentials: 'include',
-    }).catch(() => null)
-    if (!response || response.status === 401) return null
+    let response: Response
+    try {
+      response = await this.client(`${this.url}/auth/session`, { credentials: 'include' })
+    } catch {
+      throw new AuthError('offline', 'Интернет байланысын тексеріп, қайталап көр')
+    }
+    if (response.status === 401) return null
     const value: unknown = await response.json().catch(() => null)
     if (!response.ok) throw apiError(response.status, value)
     return decodeUser(value)
   }
   async signOut() {
     if (!this.baseUrl.trim()) return
-    await this.client(`${this.url}/auth/session`, { method: 'DELETE', credentials: 'include' })
+    let response: Response
+    try {
+      response = await this.client(`${this.url}/auth/session`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+    } catch {
+      throw new AuthError('offline', 'Интернет байланысын тексеріп, қайталап көр')
+    }
+    if (!response.ok) {
+      const value: unknown = await response.json().catch(() => null)
+      throw apiError(response.status, value)
+    }
   }
 
   private get url() {
@@ -95,7 +117,7 @@ export class ApiAuthRepository implements AuthRepository {
         body: JSON.stringify(body),
       })
     } catch {
-      throw new AuthError('offline', 'Интернет байланысын тексеріп, қайта көр')
+      throw new AuthError('offline', 'Интернет байланысын тексеріп, қайталап көр')
     }
     const value: unknown = await response.json().catch(() => null)
     if (!response.ok) throw apiError(response.status, value)

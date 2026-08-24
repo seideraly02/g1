@@ -4,7 +4,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.UUID;
 import kz.qadam.config.QadamProperties;
 import org.springframework.http.CacheControl;
@@ -33,8 +36,34 @@ public class AuthController {
     }
 
     @PostMapping("/telegram/request-code")
-    AuthService.CodeRequest requestCode(@Valid @RequestBody RegistrationRequest request) {
-        return authService.requestCode(request.fullName(), request.city(), request.phone());
+    ResponseEntity<AuthService.CodeRequest> requestCode(
+        @Valid @RequestBody RegistrationRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        var result = authService.requestCode(
+            request.fullName(), request.city(), request.phone(), clientAddress(httpRequest)
+        );
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(result);
+    }
+
+    private String clientAddress(HttpServletRequest request) {
+        String suppliedSecret = request.getHeader("X-Qadam-Proxy-Secret");
+        String clientAddress = request.getHeader("X-Qadam-Client-IP");
+        if (constantTimeEquals(suppliedSecret, properties.trustedProxySecret())
+            && clientAddress != null && clientAddress.matches("^[0-9a-fA-F:.]{3,45}$")) {
+            return clientAddress;
+        }
+        return request.getRemoteAddr();
+    }
+
+    private static boolean constantTimeEquals(String supplied, String configured) {
+        if (supplied == null || configured == null || configured.isBlank()) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+            supplied.getBytes(StandardCharsets.UTF_8),
+            configured.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     @PostMapping("/telegram/verify-code")
@@ -78,8 +107,8 @@ public class AuthController {
     }
 
     public record RegistrationRequest(
-        @NotBlank @Size(max = 120) String fullName,
-        @NotBlank @Size(max = 80) String city,
+        @NotBlank @Size(min = 5, max = 120) String fullName,
+        @NotBlank @Size(min = 2, max = 80) String city,
         @NotBlank @Size(max = 32) String phone
     ) {}
 

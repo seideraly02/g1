@@ -1,9 +1,6 @@
-/**
- * Temporary product switch. Set to true to restore the normal session gate.
- * The auth store and repositories remain intact while public learning access is enabled.
- */
+/** Authentication is release-safe by default; only an explicit local `false` bypasses it. */
 export function resolveAuthenticationRequirement(configuredValue: string | undefined): boolean {
-  return configuredValue === 'true'
+  return configuredValue !== 'false'
 }
 
 export const REQUIRE_AUTHENTICATION = resolveAuthenticationRequirement(

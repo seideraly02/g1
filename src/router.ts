@@ -102,7 +102,7 @@ router.beforeEach(async (to) => {
   await auth.ensureSession()
 
   if (!auth.isAuthenticated) {
-    return { name: 'welcome' }
+    return { name: 'register' }
   }
 
   return true

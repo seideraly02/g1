@@ -4,6 +4,8 @@ const SKIPPED_REQUEST_HEADERS = new Set([
   'origin',
   'connection',
   'transfer-encoding',
+  'x-qadam-client-ip',
+  'x-qadam-proxy-secret',
 ])
 
 const SKIPPED_RESPONSE_HEADERS = new Set([
@@ -54,6 +56,12 @@ export async function handler(event) {
   }
   headers.set('x-forwarded-host', event.headers?.host ?? '')
   headers.set('x-forwarded-proto', 'https')
+  const proxySecret = process.env.TRUSTED_PROXY_SECRET ?? ''
+  const clientIp = event.headers?.['x-nf-client-connection-ip'] ?? ''
+  if (proxySecret && clientIp) {
+    headers.set('x-qadam-proxy-secret', proxySecret)
+    headers.set('x-qadam-client-ip', clientIp)
+  }
 
   const method = event.httpMethod ?? 'GET'
   let body

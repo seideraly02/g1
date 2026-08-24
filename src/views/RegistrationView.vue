@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowLeft, MessageCircle } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BrandMark from '../components/BrandMark.vue'
 import {
@@ -19,6 +19,30 @@ const profile = ref<RegistrationProfile>({ fullName: '', city: '', phone: '' })
 const errors = ref<RegistrationErrors>({})
 const code = ref('')
 const codeStep = computed(() => auth.codeRequest !== null)
+const codeInput = ref<HTMLInputElement | null>(null)
+const profileForm = ref<HTMLFormElement | null>(null)
+const now = ref(Date.now())
+const resendAvailableAt = ref(0)
+let timer: ReturnType<typeof setInterval> | undefined
+const resendRemaining = computed(() =>
+  Math.max(0, Math.ceil((resendAvailableAt.value - now.value) / 1000)),
+)
+const expiresRemaining = computed(() => {
+  if (!auth.codeRequest) return 0
+  return Math.max(0, Math.ceil((Date.parse(auth.codeRequest.expiresAt) - now.value) / 1000))
+})
+const developmentCode = import.meta.env.VITE_AUTH_DEV_OTP_CODE
+const showDevelopmentCode =
+  import.meta.env.DEV &&
+  import.meta.env.VITE_AUTH_DEV_OTP_HINT === 'true' &&
+  /^\d{6}$/.test(developmentCode ?? '')
+
+onMounted(() => {
+  timer = setInterval(() => (now.value = Date.now()), 1000)
+})
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer)
+})
 
 function updatePhone(event: Event) {
   if (event.target instanceof HTMLInputElement) {
@@ -28,8 +52,18 @@ function updatePhone(event: Event) {
 
 async function sendCode() {
   errors.value = validateRegistration(profile.value)
-  if (Object.keys(errors.value).length) return
-  await auth.requestCode(normalizeRegistration(profile.value))
+  if (Object.keys(errors.value).length) {
+    await nextTick()
+    profileForm.value?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
+    return
+  }
+  if (await auth.requestCode(normalizeRegistration(profile.value))) {
+    code.value = ''
+    now.value = Date.now()
+    resendAvailableAt.value = now.value + (auth.codeRequest?.resendAfterSeconds ?? 60) * 1000
+    await nextTick()
+    codeInput.value?.focus()
+  }
 }
 
 async function confirmCode() {
@@ -58,8 +92,8 @@ async function confirmCode() {
           Оқу нәтижелерің бір жерде сақталады
         </h2>
         <p class="mt-4 text-[15px] leading-7 text-[#667085]">
-          Тіркелу міндетті емес. Аккаунт диагностика мен оқу мақсатын басқа құрылғыда жалғастыру
-          үшін қажет.
+          Тіркелу міндетті. Телефонды растағаннан кейін диагностика, жеке жоспар және оқу прогресі
+          бір аккаунтта сақталады.
         </p>
       </aside>
 
@@ -91,7 +125,13 @@ async function confirmCode() {
           }}
         </p>
 
-        <form v-if="!codeStep" class="mt-7 space-y-4" novalidate @submit.prevent="sendCode">
+        <form
+          v-if="!codeStep"
+          ref="profileForm"
+          class="mt-7 space-y-4"
+          novalidate
+          @submit.prevent="sendCode"
+        >
           <label
             v-for="field in ['fullName', 'city', 'phone'] as const"
             :key="field"
@@ -100,6 +140,7 @@ async function confirmCode() {
             {{ field === 'fullName' ? 'Аты-жөні' : field === 'city' ? 'Қала' : 'Телефон нөмірі' }}
             <input
               v-model="profile[field]"
+              :id="`registration-${field}`"
               class="mt-2 min-h-[52px] w-full rounded-[14px] border border-[#cbd5e1] px-4 text-[15px] transition focus:border-[#1f66d9]"
               :type="field === 'phone' ? 'tel' : 'text'"
               :inputmode="field === 'phone' ? 'tel' : 'text'"
@@ -109,11 +150,16 @@ async function confirmCode() {
               :placeholder="field === 'phone' ? '+7 (7XX) - XXX - XX - XX' : ''"
               :maxlength="field === 'phone' ? 24 : undefined"
               :aria-invalid="Boolean(errors[field])"
+              :aria-describedby="errors[field] ? `registration-${field}-error` : undefined"
               @input="field === 'phone' && updatePhone($event)"
             />
-            <span v-if="errors[field]" class="mt-1 block text-xs text-[#c52835]">{{
-              errors[field]
-            }}</span>
+            <span
+              v-if="errors[field]"
+              :id="`registration-${field}-error`"
+              class="mt-1 block text-xs text-[#c52835]"
+            >
+              {{ errors[field] }}
+            </span>
           </label>
           <p v-if="auth.error" role="alert" class="text-[13px] text-[#c52835]">{{ auth.error }}</p>
           <button class="primary-button min-h-[52px]" type="submit" :disabled="auth.loading">
@@ -125,16 +171,39 @@ async function confirmCode() {
           <label class="block text-[13px] font-bold">
             Растау коды
             <input
+              ref="codeInput"
               v-model="code"
+              id="registration-code"
               class="mt-2 min-h-14 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-center text-2xl font-bold tracking-[.3em] transition focus:border-[#1f66d9]"
               inputmode="numeric"
               autocomplete="one-time-code"
               maxlength="6"
+              :aria-invalid="Boolean(auth.error)"
+              :aria-describedby="auth.error ? 'registration-code-error' : undefined"
               @input="code = code.replace(/\D/g, '').slice(0, 6)"
             />
           </label>
-          <p v-if="auth.error" role="alert" class="mt-3 text-[13px] text-[#c52835]">
+          <p
+            v-if="auth.error"
+            id="registration-code-error"
+            role="alert"
+            class="mt-3 text-[13px] text-[#c52835]"
+          >
             {{ auth.error }}
+          </p>
+          <p class="mt-3 text-center text-xs text-[#667085]">
+            <template v-if="expiresRemaining > 0">
+              Кодтың жарамдылық уақыты: {{ Math.floor(expiresRemaining / 60) }}:{{
+                String(expiresRemaining % 60).padStart(2, '0')
+              }}
+            </template>
+            <template v-else>Кодтың мерзімі аяқталды. Жаңа код сұрат.</template>
+          </p>
+          <p
+            v-if="showDevelopmentCode"
+            class="mt-2 rounded-xl bg-[#edf4ff] px-3 py-2 text-center text-xs font-bold text-[#1f66d9]"
+          >
+            Жергілікті әзірлеу коды: {{ developmentCode }}
           </p>
           <button
             class="primary-button mt-5 min-h-[52px]"
@@ -144,12 +213,14 @@ async function confirmCode() {
             {{ auth.loading ? 'Тексеріліп жатыр…' : 'Растау және бастау' }}
           </button>
           <button
-            class="text-button mx-auto mt-3 flex"
+            class="text-button mx-auto mt-3 flex disabled:cursor-not-allowed disabled:text-[#98a2b3]"
             type="button"
-            :disabled="auth.loading"
+            :disabled="auth.loading || resendRemaining > 0"
             @click="sendCode"
           >
-            Кодты қайта жіберу
+            {{
+              resendRemaining > 0 ? `Қайта жіберу: ${resendRemaining} сек` : 'Кодты қайта жіберу'
+            }}
           </button>
         </form>
       </div>

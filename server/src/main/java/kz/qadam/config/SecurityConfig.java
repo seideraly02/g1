@@ -32,14 +32,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.POST,
                     "/auth/telegram/request-code",
-                    "/auth/telegram/verify-code",
-                    "/diagnostic/*/submit"
+                    "/auth/telegram/verify-code"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/health",
                     "/actuator/health",
-                    "/subjects",
-                    "/diagnostic/**",
                     "/swagger",
                     "/swagger/**",
                     "/v3/api-docs/**"

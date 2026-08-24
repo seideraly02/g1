@@ -13,7 +13,9 @@ public record QadamProperties(
     int sessionTtlDays,
     String securityPepper,
     String telegramGatewayUrl,
-    String telegramGatewayToken
+    String telegramGatewayToken,
+    String developmentOtpCode,
+    String trustedProxySecret
 ) {
     public boolean production() {
         return "production".equalsIgnoreCase(authMode);

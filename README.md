@@ -12,7 +12,7 @@ Frontend:
 
 Backend:
 - Java 21
-- Spring Boot 3.5
+- Spring Boot 4.1
 - Spring Security
 - Spring JDBC
 - PostgreSQL + Flyway
@@ -21,13 +21,15 @@ Backend:
 
 ## Локальный запуск
 
-Поднять PostgreSQL и Spring Boot API:
+Поднять PostgreSQL, Spring Boot API и frontend:
 
 ```bash
 docker compose up --build
 ```
 
-API будет доступен на `http://localhost:3000`, health-check — `http://localhost:3000/health`.
+Frontend будет доступен на `http://localhost:4173`, API — на `http://localhost:3000`,
+health-check — `http://localhost:3000/health`. В локальном development-режиме Telegram OTP
+равен `111111`; он не выводится в серверные логи и запрещён в production.
 
 Frontend:
 
