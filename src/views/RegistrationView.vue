@@ -1,229 +1,394 @@
 <script setup lang="ts">
-import { ArrowLeft, MessageCircle } from 'lucide-vue-next'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
+import { nextTick, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BrandMark from '../components/BrandMark.vue'
 import {
   formatKazakhstanPhone,
-  isVerificationCode,
+  normalizeLogin,
   normalizeRegistration,
+  validateLogin,
   validateRegistration,
+  type LoginErrors,
   type RegistrationErrors,
 } from '../features/auth/registrationValidation'
-import type { RegistrationProfile } from '../features/auth/types'
+import type { LoginInput, RegistrationInput } from '../features/auth/types'
+import {
+  postRegistrationRouteName,
+  resolvePostLoginDestination,
+} from '../features/auth/authNavigation'
 import { useAuthStore } from '../stores/authStore'
 
+type AuthMode = 'register' | 'login'
+
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const profile = ref<RegistrationProfile>({ fullName: '', city: '', phone: '' })
-const errors = ref<RegistrationErrors>({})
-const code = ref('')
-const codeStep = computed(() => auth.codeRequest !== null)
-const codeInput = ref<HTMLInputElement | null>(null)
-const profileForm = ref<HTMLFormElement | null>(null)
-const now = ref(Date.now())
-const resendAvailableAt = ref(0)
-let timer: ReturnType<typeof setInterval> | undefined
-const resendRemaining = computed(() =>
-  Math.max(0, Math.ceil((resendAvailableAt.value - now.value) / 1000)),
+const mode = ref<AuthMode>(route.query.mode === 'login' ? 'login' : 'register')
+const registration = ref<RegistrationInput>({
+  firstName: '',
+  lastName: '',
+  city: '',
+  phone: '',
+  password: '',
+  confirmPassword: '',
+})
+const login = ref<LoginInput>({ phone: '', password: '' })
+const registrationErrors = ref<RegistrationErrors>({})
+const loginErrors = ref<LoginErrors>({})
+const form = ref<HTMLFormElement | null>(null)
+const showRegistrationPassword = ref(false)
+const showConfirmPassword = ref(false)
+const showLoginPassword = ref(false)
+
+watch(
+  () => route.query.mode,
+  (queryMode) => {
+    if (!auth.loading) mode.value = queryMode === 'login' ? 'login' : 'register'
+  },
 )
-const expiresRemaining = computed(() => {
-  if (!auth.codeRequest) return 0
-  return Math.max(0, Math.ceil((Date.parse(auth.codeRequest.expiresAt) - now.value) / 1000))
-})
-const developmentCode = import.meta.env.VITE_AUTH_DEV_OTP_CODE
-const showDevelopmentCode =
-  import.meta.env.DEV &&
-  import.meta.env.VITE_AUTH_DEV_OTP_HINT === 'true' &&
-  /^\d{6}$/.test(developmentCode ?? '')
 
-onMounted(() => {
-  timer = setInterval(() => (now.value = Date.now()), 1000)
-})
-onBeforeUnmount(() => {
-  if (timer) clearInterval(timer)
-})
+function selectMode(nextMode: AuthMode) {
+  if (auth.loading) return
+  mode.value = nextMode
+  registrationErrors.value = {}
+  loginErrors.value = {}
+  auth.clearError()
+  void router.replace({
+    query: { ...route.query, mode: nextMode === 'login' ? 'login' : undefined },
+  })
+  void nextTick(() => form.value?.querySelector<HTMLInputElement>('input')?.focus())
+}
 
-function updatePhone(event: Event) {
-  if (event.target instanceof HTMLInputElement) {
-    profile.value.phone = formatKazakhstanPhone(event.target.value)
+function updatePhone(target: 'registration' | 'login', event: Event) {
+  if (!(event.target instanceof HTMLInputElement)) return
+  if (target === 'registration') {
+    registration.value.phone = formatKazakhstanPhone(event.target.value)
+  } else {
+    login.value.phone = formatKazakhstanPhone(event.target.value)
   }
 }
 
-async function sendCode() {
-  errors.value = validateRegistration(profile.value)
-  if (Object.keys(errors.value).length) {
-    await nextTick()
-    profileForm.value?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
+async function focusFirstError() {
+  await nextTick()
+  form.value?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
+}
+
+async function submitRegistration() {
+  registrationErrors.value = validateRegistration(registration.value)
+  if (Object.keys(registrationErrors.value).length) {
+    await focusFirstError()
     return
   }
-  if (await auth.requestCode(normalizeRegistration(profile.value))) {
-    code.value = ''
-    now.value = Date.now()
-    resendAvailableAt.value = now.value + (auth.codeRequest?.resendAfterSeconds ?? 60) * 1000
-    await nextTick()
-    codeInput.value?.focus()
+  if (await auth.register(normalizeRegistration(registration.value))) {
+    await router.replace({ name: postRegistrationRouteName })
   }
 }
 
-async function confirmCode() {
-  if (isVerificationCode(code.value) && (await auth.verifyCode(code.value))) {
-    await router.replace({ name: 'subjects-onboarding' })
+async function submitLogin() {
+  loginErrors.value = validateLogin(login.value)
+  if (Object.keys(loginErrors.value).length) {
+    await focusFirstError()
+    return
+  }
+  if (await auth.login(normalizeLogin(login.value))) {
+    await router.replace(resolvePostLoginDestination(route.query.redirect))
   }
 }
 </script>
 
 <template>
-  <section class="screen-page flex flex-col bg-[#f1f5fb] px-4 pb-6">
-    <header class="mx-auto flex min-h-20 w-full max-w-[1180px] items-center justify-between">
+  <section class="min-h-dvh bg-[#f4f7fb] px-4 pb-8 text-[#17223b]">
+    <header class="mx-auto flex min-h-20 w-full max-w-[1120px] items-center justify-between">
       <BrandMark />
       <button class="text-button min-h-11" type="button" @click="router.push({ name: 'welcome' })">
         <ArrowLeft :size="17" aria-hidden="true" /> Артқа
       </button>
     </header>
-    <main
-      class="mx-auto grid w-full max-w-[1180px] flex-1 items-center gap-10 py-5 lg:grid-cols-[minmax(300px,.8fr)_minmax(420px,1.2fr)] lg:py-10"
-    >
-      <aside class="hidden lg:block lg:max-w-[420px]">
-        <p class="eyebrow">Прогресті сақтау</p>
-        <h2
-          class="mt-3 text-[36px] font-extrabold leading-[1.12] tracking-[-.035em] text-[#17223b]"
-        >
-          Оқу нәтижелерің бір жерде сақталады
-        </h2>
-        <p class="mt-4 text-[15px] leading-7 text-[#667085]">
-          Тіркелу міндетті. Телефонды растағаннан кейін диагностика, жеке жоспар және оқу прогресі
-          бір аккаунтта сақталады.
-        </p>
-      </aside>
 
-      <div
-        class="mx-auto flex w-full max-w-[520px] flex-col justify-center rounded-[20px] border border-[#e2e8f0] bg-white px-5 py-7 shadow-[0_8px_28px_rgba(31,63,114,.07)] sm:px-8 lg:mx-0 lg:justify-self-end lg:px-10 lg:py-9"
+    <main class="mx-auto flex w-full max-w-[1120px] justify-center py-5 sm:py-10 lg:py-14">
+      <section
+        class="w-full max-w-[460px] rounded-[20px] border border-[#e2e8f0] bg-white px-5 py-7 shadow-[0_8px_28px_rgba(31,63,114,.06)] sm:px-9 sm:py-9"
+        aria-labelledby="auth-heading"
       >
-        <button
-          v-if="codeStep"
-          class="icon-button -ml-2 mb-4 min-h-11 min-w-11"
-          type="button"
-          aria-label="Артқа"
-          @click="auth.editProfile()"
+        <div
+          class="grid grid-cols-2 rounded-[12px] bg-[#f1f5f9] p-1"
+          role="group"
+          aria-label="Кіру тәсілі"
         >
-          <ArrowLeft :size="21" />
-        </button>
-        <span
-          class="mb-5 grid size-12 place-items-center rounded-[14px] bg-[#edf4ff] text-[#1f66d9]"
-        >
-          <MessageCircle :size="25" aria-hidden="true" />
-        </span>
-        <h1 class="text-[28px] font-extrabold tracking-[-.03em] text-[#17223b]">
-          {{ codeStep ? 'Телефонды раста' : 'Тіркелу' }}
+          <button
+            class="min-h-11 rounded-[9px] border-0 text-sm font-bold transition"
+            :class="
+              mode === 'register'
+                ? 'bg-white text-[#1f66d9] shadow-[0_1px_4px_rgba(31,63,114,.12)]'
+                : 'bg-transparent text-[#667085]'
+            "
+            type="button"
+            :disabled="auth.loading"
+            :aria-pressed="mode === 'register'"
+            @click="selectMode('register')"
+          >
+            Тіркелу
+          </button>
+          <button
+            class="min-h-11 rounded-[9px] border-0 text-sm font-bold transition"
+            :class="
+              mode === 'login'
+                ? 'bg-white text-[#1f66d9] shadow-[0_1px_4px_rgba(31,63,114,.12)]'
+                : 'bg-transparent text-[#667085]'
+            "
+            type="button"
+            :disabled="auth.loading"
+            :aria-pressed="mode === 'login'"
+            @click="selectMode('login')"
+          >
+            Кіру
+          </button>
+        </div>
+
+        <h1 id="auth-heading" class="mt-7 text-[28px] font-extrabold tracking-[-.03em]">
+          {{ mode === 'register' ? 'Тіркелгі ашу' : 'Тіркелгіге кіру' }}
         </h1>
-        <p class="mt-2 text-sm leading-6 text-[#6b768b]">
+        <p class="mt-2 text-sm leading-6 text-[#667085]">
           {{
-            codeStep
-              ? `Код ${profile.phone} нөміріне байланыстырылған Telegram-ға жіберілді.`
-              : 'Прогресті тіркелгіге сақтау үшін барлық жолды толтыр.'
+            mode === 'register'
+              ? 'Оқуды бастау үшін деректеріңді толтыр.'
+              : 'Телефон нөмірі мен құпиясөзіңді енгіз.'
           }}
         </p>
 
         <form
-          v-if="!codeStep"
-          ref="profileForm"
-          class="mt-7 space-y-4"
+          v-if="mode === 'register'"
+          ref="form"
+          class="mt-6 space-y-4"
           novalidate
-          @submit.prevent="sendCode"
+          @submit.prevent="submitRegistration"
         >
-          <label
-            v-for="field in ['fullName', 'city', 'phone'] as const"
-            :key="field"
-            class="block text-[13px] font-bold"
-          >
-            {{ field === 'fullName' ? 'Аты-жөні' : field === 'city' ? 'Қала' : 'Телефон нөмірі' }}
+          <label class="block text-[13px] font-bold" for="first-name">
+            Аты
             <input
-              v-model="profile[field]"
-              :id="`registration-${field}`"
-              class="mt-2 min-h-[52px] w-full rounded-[14px] border border-[#cbd5e1] px-4 text-[15px] transition focus:border-[#1f66d9]"
-              :type="field === 'phone' ? 'tel' : 'text'"
-              :inputmode="field === 'phone' ? 'tel' : 'text'"
-              :autocomplete="
-                field === 'fullName' ? 'name' : field === 'city' ? 'address-level2' : 'tel'
-              "
-              :placeholder="field === 'phone' ? '+7 (7XX) - XXX - XX - XX' : ''"
-              :maxlength="field === 'phone' ? 24 : undefined"
-              :aria-invalid="Boolean(errors[field])"
-              :aria-describedby="errors[field] ? `registration-${field}-error` : undefined"
-              @input="field === 'phone' && updatePhone($event)"
+              id="first-name"
+              v-model="registration.firstName"
+              class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
+              autocomplete="given-name"
+              maxlength="60"
+              :aria-invalid="Boolean(registrationErrors.firstName)"
+              :aria-describedby="registrationErrors.firstName ? 'first-name-error' : undefined"
             />
             <span
-              v-if="errors[field]"
-              :id="`registration-${field}-error`"
+              v-if="registrationErrors.firstName"
+              id="first-name-error"
               class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.firstName }}</span
             >
-              {{ errors[field] }}
-            </span>
           </label>
-          <p v-if="auth.error" role="alert" class="text-[13px] text-[#c52835]">{{ auth.error }}</p>
+
+          <label class="block text-[13px] font-bold" for="last-name">
+            Тегі
+            <input
+              id="last-name"
+              v-model="registration.lastName"
+              class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
+              autocomplete="family-name"
+              maxlength="60"
+              :aria-invalid="Boolean(registrationErrors.lastName)"
+              :aria-describedby="registrationErrors.lastName ? 'last-name-error' : undefined"
+            />
+            <span
+              v-if="registrationErrors.lastName"
+              id="last-name-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.lastName }}</span
+            >
+          </label>
+
+          <label class="block text-[13px] font-bold" for="registration-city">
+            Қала
+            <input
+              id="registration-city"
+              v-model="registration.city"
+              class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
+              autocomplete="address-level2"
+              maxlength="80"
+              :aria-invalid="Boolean(registrationErrors.city)"
+              :aria-describedby="registrationErrors.city ? 'city-error' : undefined"
+            />
+            <span
+              v-if="registrationErrors.city"
+              id="city-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.city }}</span
+            >
+          </label>
+
+          <label class="block text-[13px] font-bold" for="registration-phone">
+            Телефон нөмірі
+            <input
+              id="registration-phone"
+              v-model="registration.phone"
+              class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="+7 (7XX) - XXX - XX - XX"
+              maxlength="24"
+              :aria-invalid="Boolean(registrationErrors.phone)"
+              :aria-describedby="registrationErrors.phone ? 'registration-phone-error' : undefined"
+              @input="updatePhone('registration', $event)"
+            />
+            <span
+              v-if="registrationErrors.phone"
+              id="registration-phone-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.phone }}</span
+            >
+          </label>
+
+          <label class="block text-[13px] font-bold" for="registration-password">
+            Құпиясөз
+            <span class="relative mt-2 block">
+              <input
+                id="registration-password"
+                v-model="registration.password"
+                class="min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 pr-12 text-[15px] focus:border-[#1f66d9]"
+                :type="showRegistrationPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                maxlength="72"
+                :aria-invalid="Boolean(registrationErrors.password)"
+                :aria-describedby="
+                  registrationErrors.password
+                    ? 'registration-password-hint registration-password-error'
+                    : 'registration-password-hint'
+                "
+              />
+              <button
+                class="absolute inset-y-0 right-1 flex min-w-11 items-center justify-center text-[#667085]"
+                type="button"
+                :aria-label="showRegistrationPassword ? 'Құпиясөзді жасыру' : 'Құпиясөзді көрсету'"
+                @click="showRegistrationPassword = !showRegistrationPassword"
+              >
+                <EyeOff v-if="showRegistrationPassword" :size="18" aria-hidden="true" />
+                <Eye v-else :size="18" aria-hidden="true" />
+              </button>
+            </span>
+            <span
+              id="registration-password-hint"
+              class="mt-1 block text-xs font-normal text-[#667085]"
+            >
+              Кемінде 8 таңба.
+            </span>
+            <span
+              v-if="registrationErrors.password"
+              id="registration-password-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.password }}</span
+            >
+          </label>
+
+          <label class="block text-[13px] font-bold" for="confirm-password">
+            Құпиясөзді қайтала
+            <span class="relative mt-2 block">
+              <input
+                id="confirm-password"
+                v-model="registration.confirmPassword"
+                class="min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 pr-12 text-[15px] focus:border-[#1f66d9]"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                maxlength="72"
+                :aria-invalid="Boolean(registrationErrors.confirmPassword)"
+                :aria-describedby="
+                  registrationErrors.confirmPassword ? 'confirm-password-error' : undefined
+                "
+              />
+              <button
+                class="absolute inset-y-0 right-1 flex min-w-11 items-center justify-center text-[#667085]"
+                type="button"
+                :aria-label="showConfirmPassword ? 'Құпиясөзді жасыру' : 'Құпиясөзді көрсету'"
+                @click="showConfirmPassword = !showConfirmPassword"
+              >
+                <EyeOff v-if="showConfirmPassword" :size="18" aria-hidden="true" />
+                <Eye v-else :size="18" aria-hidden="true" />
+              </button>
+            </span>
+            <span
+              v-if="registrationErrors.confirmPassword"
+              id="confirm-password-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ registrationErrors.confirmPassword }}</span
+            >
+          </label>
+
+          <p v-if="auth.error" role="alert" class="text-[13px] leading-5 text-[#c52835]">
+            {{ auth.error }}
+          </p>
           <button class="primary-button min-h-[52px]" type="submit" :disabled="auth.loading">
-            {{ auth.loading ? 'Жіберіліп жатыр…' : 'Telegram-ға код жіберу' }}
+            {{ auth.loading ? 'Тіркеліп жатыр…' : 'Тіркелу және бастау' }}
           </button>
         </form>
 
-        <form v-else class="mt-7" novalidate @submit.prevent="confirmCode">
-          <label class="block text-[13px] font-bold">
-            Растау коды
+        <form v-else ref="form" class="mt-6 space-y-4" novalidate @submit.prevent="submitLogin">
+          <label class="block text-[13px] font-bold" for="login-phone">
+            Телефон нөмірі
             <input
-              ref="codeInput"
-              v-model="code"
-              id="registration-code"
-              class="mt-2 min-h-14 w-full rounded-[14px] border border-[#cbd5e1] px-3 text-center text-2xl font-bold tracking-[.3em] transition focus:border-[#1f66d9]"
-              inputmode="numeric"
-              autocomplete="one-time-code"
-              maxlength="6"
-              :aria-invalid="Boolean(auth.error)"
-              :aria-describedby="auth.error ? 'registration-code-error' : undefined"
-              @input="code = code.replace(/\D/g, '').slice(0, 6)"
+              id="login-phone"
+              v-model="login.phone"
+              class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="+7 (7XX) - XXX - XX - XX"
+              maxlength="24"
+              :aria-invalid="Boolean(loginErrors.phone)"
+              :aria-describedby="loginErrors.phone ? 'login-phone-error' : undefined"
+              @input="updatePhone('login', $event)"
             />
+            <span
+              v-if="loginErrors.phone"
+              id="login-phone-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ loginErrors.phone }}</span
+            >
           </label>
-          <p
-            v-if="auth.error"
-            id="registration-code-error"
-            role="alert"
-            class="mt-3 text-[13px] text-[#c52835]"
-          >
+
+          <label class="block text-[13px] font-bold" for="login-password">
+            Құпиясөз
+            <span class="relative mt-2 block">
+              <input
+                id="login-password"
+                v-model="login.password"
+                class="min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 pr-12 text-[15px] focus:border-[#1f66d9]"
+                :type="showLoginPassword ? 'text' : 'password'"
+                autocomplete="current-password"
+                maxlength="72"
+                :aria-invalid="Boolean(loginErrors.password)"
+                :aria-describedby="loginErrors.password ? 'login-password-error' : undefined"
+              />
+              <button
+                class="absolute inset-y-0 right-1 flex min-w-11 items-center justify-center text-[#667085]"
+                type="button"
+                :aria-label="showLoginPassword ? 'Құпиясөзді жасыру' : 'Құпиясөзді көрсету'"
+                @click="showLoginPassword = !showLoginPassword"
+              >
+                <EyeOff v-if="showLoginPassword" :size="18" aria-hidden="true" />
+                <Eye v-else :size="18" aria-hidden="true" />
+              </button>
+            </span>
+            <span
+              v-if="loginErrors.password"
+              id="login-password-error"
+              class="mt-1 block text-xs text-[#c52835]"
+              >{{ loginErrors.password }}</span
+            >
+          </label>
+
+          <p v-if="auth.error" role="alert" class="text-[13px] leading-5 text-[#c52835]">
             {{ auth.error }}
           </p>
-          <p class="mt-3 text-center text-xs text-[#667085]">
-            <template v-if="expiresRemaining > 0">
-              Кодтың жарамдылық уақыты: {{ Math.floor(expiresRemaining / 60) }}:{{
-                String(expiresRemaining % 60).padStart(2, '0')
-              }}
-            </template>
-            <template v-else>Кодтың мерзімі аяқталды. Жаңа код сұрат.</template>
-          </p>
-          <p
-            v-if="showDevelopmentCode"
-            class="mt-2 rounded-xl bg-[#edf4ff] px-3 py-2 text-center text-xs font-bold text-[#1f66d9]"
-          >
-            Жергілікті әзірлеу коды: {{ developmentCode }}
-          </p>
-          <button
-            class="primary-button mt-5 min-h-[52px]"
-            type="submit"
-            :disabled="auth.loading || !isVerificationCode(code)"
-          >
-            {{ auth.loading ? 'Тексеріліп жатыр…' : 'Растау және бастау' }}
-          </button>
-          <button
-            class="text-button mx-auto mt-3 flex disabled:cursor-not-allowed disabled:text-[#98a2b3]"
-            type="button"
-            :disabled="auth.loading || resendRemaining > 0"
-            @click="sendCode"
-          >
-            {{
-              resendRemaining > 0 ? `Қайта жіберу: ${resendRemaining} сек` : 'Кодты қайта жіберу'
-            }}
+          <button class="primary-button min-h-[52px]" type="submit" :disabled="auth.loading">
+            {{ auth.loading ? 'Кіріп жатыр…' : 'Кіру' }}
           </button>
         </form>
-      </div>
+      </section>
     </main>
   </section>
 </template>

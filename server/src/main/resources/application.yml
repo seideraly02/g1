@@ -36,9 +36,7 @@ qadam:
   session-cookie-same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
   session-ttl-days: ${SESSION_TTL_DAYS:30}
   security-pepper: ${SECURITY_PEPPER:}
-  telegram-gateway-url: ${TELEGRAM_GATEWAY_URL:}
-  telegram-gateway-token: ${TELEGRAM_GATEWAY_TOKEN:}
-  development-otp-code: ${DEVELOPMENT_OTP_CODE:}
+  password-bcrypt-strength: ${PASSWORD_BCRYPT_STRENGTH:12}
   trusted-proxy-secret: ${TRUSTED_PROXY_SECRET:}
 
 management:

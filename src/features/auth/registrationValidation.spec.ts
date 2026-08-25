@@ -1,57 +1,77 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatKazakhstanPhone,
-  isVerificationCode,
+  normalizeLogin,
   normalizeRegistration,
+  validateLogin,
   validateRegistration,
 } from './registrationValidation'
 
-describe('registration validation', () => {
-  it('requires every registration field', () => {
-    expect(validateRegistration({ fullName: '', city: '', phone: '' })).toEqual({
-      fullName: 'Аты-жөніңді енгіз',
-      city: 'Қалаңды енгіз',
+describe('password authentication validation', () => {
+  it('requires all registration fields and password confirmation', () => {
+    expect(
+      validateRegistration({
+        firstName: '',
+        lastName: '',
+        city: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+      }),
+    ).toEqual({
+      firstName: 'Атыңды толық енгіз',
+      lastName: 'Тегіңді толық енгіз',
+      city: 'Қалаңды дұрыс енгіз',
       phone: 'Нөмірді +7 (7XX) - XXX - XX - XX түрінде енгіз',
+      password: 'Құпиясөзді енгіз',
+      confirmPassword: 'Құпиясөзді қайтала',
     })
   })
 
-  it('normalizes a valid Kazakhstan phone and profile whitespace', () => {
+  it('normalizes registration data without sending confirmation', () => {
     expect(
       normalizeRegistration({
-        fullName: '  Аян   Серікұлы ',
+        firstName: '  Аян ',
+        lastName: ' Серікұлы ',
         city: ' Алматы ',
         phone: '8 701 123 45 67',
+        password: 'strong-pass',
+        confirmPassword: 'strong-pass',
       }),
-    ).toEqual({ fullName: 'Аян Серікұлы', city: 'Алматы', phone: '+77011234567' })
+    ).toEqual({
+      firstName: 'Аян',
+      lastName: 'Серікұлы',
+      city: 'Алматы',
+      phone: '+77011234567',
+      password: 'strong-pass',
+    })
   })
 
-  it('masks typed and pasted phones and truncates extra digits', () => {
-    expect(formatKazakhstanPhone('+7 701 123 45 67')).toBe('+7 (701) - 123 - 45 - 67')
-    expect(formatKazakhstanPhone('87011234567999')).toBe('+7 (701) - 123 - 45 - 67')
-    expect(
-      normalizeRegistration({
-        fullName: 'Аян Серікұлы',
-        city: 'Алматы',
-        phone: '+7 (701) - 123 - 45 - 67',
-      }).phone,
-    ).toBe('+77011234567')
-  })
-
-  it('keeps the generated country prefix out of sequential typing and deletion', () => {
-    let display = ''
-    for (const digit of '7011234567') {
-      display = formatKazakhstanPhone(display + digit)
+  it('validates matching passwords and the BCrypt byte boundary', () => {
+    const base = {
+      firstName: 'Аян',
+      lastName: 'Серікұлы',
+      city: 'Алматы',
+      phone: '+7 (701) - 123 - 45 - 67',
+      password: 'құпиясөз',
+      confirmPassword: 'басқа-сөз',
     }
-    expect(display).toBe('+7 (701) - 123 - 45 - 67')
-    expect(formatKazakhstanPhone(display.slice(0, -1))).toBe('+7 (701) - 123 - 45 - 6')
-    expect(formatKazakhstanPhone('+7 (')).toBe('')
+    expect(validateRegistration(base).confirmPassword).toBe('Құпиясөздер сәйкес емес')
+    expect(
+      validateRegistration({ ...base, password: 'ө'.repeat(40), confirmPassword: 'ө'.repeat(40) })
+        .password,
+    ).toBe('Құпиясөз 72 байттан аспауы керек')
   })
 
-  it('rejects incomplete profiles and accepts only a six-digit code', () => {
-    expect(validateRegistration({ fullName: 'Аян', city: 'А', phone: '+7 701 12' })).toHaveProperty(
-      'fullName',
-    )
-    expect(isVerificationCode('123456')).toBe(true)
-    expect(isVerificationCode('12345a')).toBe(false)
+  it('formats phones and validates login', () => {
+    expect(formatKazakhstanPhone('87011234567')).toBe('+7 (701) - 123 - 45 - 67')
+    expect(normalizeLogin({ phone: '8 701 123 45 67', password: 'secret' })).toEqual({
+      phone: '+77011234567',
+      password: 'secret',
+    })
+    expect(validateLogin({ phone: '+7 701', password: '' })).toEqual({
+      phone: 'Телефон нөмірін толық енгіз',
+      password: 'Құпиясөзді енгіз',
+    })
   })
 })

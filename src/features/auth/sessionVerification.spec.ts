@@ -20,18 +20,19 @@ class MemoryStorage implements StorageAdapter {
 
 const user: AuthenticatedUser = {
   id: 'user-1',
-  fullName: 'Аян Серікұлы',
+  firstName: 'Аян',
+  lastName: 'Серікұлы',
   city: 'Алматы',
   phone: '+77011234567',
-  verifiedAt: '2026-07-31T12:00:00.000Z',
+  createdAt: '2026-07-31T12:00:00.000Z',
 }
 
 function repository(session: AuthenticatedUser | null): AuthRepository {
   return {
-    requestTelegramCode: async () => {
+    register: async () => {
       throw new Error('unused')
     },
-    verifyTelegramCode: async () => {
+    login: async () => {
       throw new Error('unused')
     },
     getSession: async () => session,

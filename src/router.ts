@@ -102,7 +102,7 @@ router.beforeEach(async (to) => {
   await auth.ensureSession()
 
   if (!auth.isAuthenticated) {
-    return { name: 'register' }
+    return { name: 'register', query: { mode: 'login', redirect: to.fullPath } }
   }
 
   return true

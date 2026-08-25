@@ -18,8 +18,8 @@ const steps = [
   { icon: ChartNoAxesCombined, title: 'Күн сайын ілгеріле', text: 'Жаттығу, талдау және қайталау' },
 ] as const
 
-function openRegistration() {
-  void router.push({ name: 'register' })
+function openLogin() {
+  void router.push({ name: 'register', query: { mode: 'login' } })
 }
 
 function startPreparation() {
@@ -31,9 +31,7 @@ function startPreparation() {
   <section class="min-h-dvh bg-[#f1f5fb] text-[#17223b]">
     <header class="mx-auto flex min-h-20 w-full max-w-[1440px] items-center justify-between px-4">
       <BrandMark />
-      <button class="text-button min-h-11 text-sm" type="button" @click="openRegistration">
-        Тіркелу
-      </button>
+      <button class="text-button min-h-11 text-sm" type="button" @click="openLogin">Кіру</button>
     </header>
 
     <main class="mx-auto w-full max-w-[1440px] px-4 pb-8">

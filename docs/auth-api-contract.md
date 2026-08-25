@@ -1,23 +1,48 @@
-# Phone registration API contract
+# Password authentication API contract
 
-The browser calls the Qadam backend only. Telegram Gateway credentials and its API calls must remain on the server. Authentication uses a secure `HttpOnly`, `SameSite` cookie; no token is returned to or persisted by the frontend.
+Authentication uses a server-side session stored in a secure `HttpOnly`, `SameSite` cookie.
+No password, password hash, session token, or auth profile is persisted by the frontend.
 
 ## Endpoints
 
-`POST /auth/telegram/request-code`
+`POST /auth/register`
 
-Request: `{ "fullName": "...", "city": "...", "phone": "+77XXXXXXXXX" }`
+Request:
 
-Success: `{ "requestId": "...", "expiresAt": "ISO-8601", "resendAfterSeconds": 60 }`
+```json
+{
+  "firstName": "Аян",
+  "lastName": "Серікұлы",
+  "city": "Алматы",
+  "phone": "+77011234567",
+  "password": "..."
+}
+```
 
-The server validates and rate-limits the request, then sends the code with the official Telegram Gateway API. `requestId` must be opaque and single-purpose.
+`confirmPassword` is a UI-only validation field and must not be sent. On success the server sets
+the session cookie and returns `{ id, firstName, lastName, city, phone, createdAt }`.
+Duplicate phone numbers return `409 PHONE_ALREADY_REGISTERED`.
+Registration attempts are capped before BCrypt work by phone fingerprint and trusted client
+fingerprint; exceeding either window returns `429 RATE_LIMITED`.
 
-`POST /auth/telegram/verify-code`
+`POST /auth/login`
 
-Request: `{ "requestId": "...", "code": "123456" }`
+Request: `{ "phone": "+77011234567", "password": "..." }`
 
-Success sets the session cookie and returns `{ "id", "fullName", "city", "phone", "verifiedAt" }`. Verification is single-use and limited by attempts and expiry.
+Success sets the same session cookie and returns the user DTO. A missing user, wrong password, or
+legacy account without a password always returns the same `401 INVALID_CREDENTIALS`. Failed login
+attempts are rate-limited by phone fingerprint and trusted client fingerprint; rate limiting returns
+`429 RATE_LIMITED`.
 
-`GET /auth/session` returns the same user or `401`. `DELETE /auth/session` revokes the server session.
+`GET /auth/session` returns the user DTO or `401`. `DELETE /auth/session` revokes the server
+session and expires the cookie.
 
-Error bodies use `{ "code": "INVALID_CODE | CODE_EXPIRED | TELEGRAM_NOT_LINKED" }`; rate limiting returns `429`. Logs must not contain the code, phone in clear text, session cookie, or Telegram credentials.
+## Password and legacy policy
+
+- Passwords are accepted only over HTTPS in production and stored solely as adaptive BCrypt hashes.
+- Passwords, hashes, session cookies, and credentials must never appear in logs or API responses.
+- Existing legacy users keep a nullable `password_hash`.
+- A legacy number cannot set a password through registration because that would allow account
+  takeover. It receives `PHONE_ALREADY_REGISTERED`.
+- Password reset and legacy account recovery are intentionally unavailable until a separate
+  proof-of-ownership flow is implemented.

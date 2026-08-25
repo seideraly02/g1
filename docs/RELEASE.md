@@ -20,20 +20,14 @@ SECURITY_PEPPER=<random-secret-at-least-32-characters>
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAME_SITE=Lax
 SESSION_TTL_DAYS=30
-TELEGRAM_GATEWAY_URL=<gateway-url>
-TELEGRAM_GATEWAY_TOKEN=<secret-token>
-DEVELOPMENT_OTP_CODE=
+PASSWORD_BCRYPT_STRENGTH=12
 TRUSTED_PROXY_SECRET=<same-random-secret-at-least-32-characters-on-api-and-netlify>
 SWAGGER_ENABLED=false
 ```
 
-The application refuses to start in production when critical security settings are missing or unsafe.
-The Gateway URL must be public HTTPS. Production also refuses to start if a deterministic development
-OTP is configured.
-
-For local end-to-end development, run `docker compose up --build`, open
-`http://localhost:4173`, and use OTP `111111`. The local code is never logged and is accepted only
-when `AUTH_MODE=development`; do not copy `DEVELOPMENT_OTP_CODE` into production.
+The application refuses to start when critical security settings or BCrypt strength are unsafe.
+For local end-to-end development, run `docker compose up --build` and open
+`http://localhost:4173`.
 
 ## 2. Netlify
 
@@ -45,8 +39,7 @@ TRUSTED_PROXY_SECRET=<same-value-as-backend>
 ```
 
 The frontend is built with `VITE_API_BASE_URL=/api`. `netlify/functions/api.mjs` proxies browser API calls to the backend and forwards HttpOnly session cookies.
-`VITE_REQUIRE_AUTHENTICATION=true` is mandatory for release builds. Keep
-`VITE_AUTH_DEV_OTP_HINT=false` in every deployed environment.
+`VITE_REQUIRE_AUTHENTICATION=true` is mandatory for release builds.
 
 For GitHub Actions based Netlify deployment also configure repository secrets:
 
@@ -61,9 +54,11 @@ NETLIFY_SITE_ID
 - Backend CI is green.
 - Flyway migrations complete successfully on a clean PostgreSQL database.
 - Docker image builds successfully.
-- Registration request returns a Telegram OTP request id.
-- OTP verification creates an HttpOnly Secure session cookie.
-- `GET /auth/session` succeeds after verification and returns 401 without a valid session.
+- Registration stores only a BCrypt password hash and creates an HttpOnly Secure session cookie.
+- Login succeeds with the registered phone/password and uses a generic credentials error on failure.
+- Duplicate and legacy phone registration returns `PHONE_ALREADY_REGISTERED`; password reset is not
+  available in this release.
+- `GET /auth/session` succeeds after registration or login and returns 401 without a valid session.
 - Diagnostic returns exactly five questions.
 - Diagnostic submission stores both the attempt and five answer rows.
 - Logout revokes the server session.
@@ -75,6 +70,8 @@ NETLIFY_SITE_ID
 - Never run Flyway `clean` in production.
 - Before destructive schema changes, take a PostgreSQL backup.
 - Deploy database-compatible changes before removing old API fields used by the current frontend.
+- Keep the unused legacy authentication table through this rollback window; remove it only in a later
+  migration after the previous backend image has been retired.
 
 ## 5. Known release boundary
 

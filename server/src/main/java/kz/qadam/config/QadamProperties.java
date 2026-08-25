@@ -12,9 +12,7 @@ public record QadamProperties(
     String sessionCookieSameSite,
     int sessionTtlDays,
     String securityPepper,
-    String telegramGatewayUrl,
-    String telegramGatewayToken,
-    String developmentOtpCode,
+    int passwordBcryptStrength,
     String trustedProxySecret
 ) {
     public boolean production() {

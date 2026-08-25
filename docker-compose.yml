@@ -25,9 +25,9 @@ services:
       DATABASE_PASSWORD: qadam
       FRONTEND_ORIGINS: http://localhost:5173,http://localhost:4173
       AUTH_MODE: development
-      DEVELOPMENT_OTP_CODE: '111111'
       TRUSTED_PROXY_SECRET: ''
       SECURITY_PEPPER: local-development-pepper-change-before-production
+      PASSWORD_BCRYPT_STRENGTH: 10
       SESSION_COOKIE_SECURE: 'false'
       SESSION_COOKIE_SAME_SITE: Lax
       SWAGGER_ENABLED: 'true'
@@ -44,8 +44,6 @@ services:
     environment:
       VITE_API_BASE_URL: http://localhost:3000
       VITE_REQUIRE_AUTHENTICATION: 'true'
-      VITE_AUTH_DEV_OTP_HINT: 'true'
-      VITE_AUTH_DEV_OTP_CODE: '111111'
     ports:
       - '4173:4173'
     volumes:

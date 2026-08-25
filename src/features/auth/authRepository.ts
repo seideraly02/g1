@@ -1,8 +1,8 @@
-import type { AuthenticatedUser, CodeRequest, RegistrationProfile, VerifyCodeInput } from './types'
+import type { AuthenticatedUser, LoginInput, RegistrationRequest } from './types'
 
 export interface AuthRepository {
-  requestTelegramCode(profile: RegistrationProfile): Promise<CodeRequest>
-  verifyTelegramCode(input: VerifyCodeInput): Promise<AuthenticatedUser>
+  register(input: RegistrationRequest): Promise<AuthenticatedUser>
+  login(input: LoginInput): Promise<AuthenticatedUser>
   getSession(): Promise<AuthenticatedUser | null>
   signOut(): Promise<void>
 }

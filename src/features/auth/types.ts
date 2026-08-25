@@ -1,31 +1,33 @@
-export interface RegistrationProfile {
-  fullName: string
+export interface RegistrationInput {
+  firstName: string
+  lastName: string
   city: string
   phone: string
+  password: string
+  confirmPassword: string
 }
 
-export interface AuthenticatedUser extends RegistrationProfile {
+export type RegistrationRequest = Omit<RegistrationInput, 'confirmPassword'>
+
+export interface LoginInput {
+  phone: string
+  password: string
+}
+
+export interface AuthenticatedUser {
   id: string
-  verifiedAt: string
-}
-
-export interface CodeRequest {
-  requestId: string
-  expiresAt: string
-  resendAfterSeconds: number
-}
-
-export interface VerifyCodeInput {
-  requestId: string
-  code: string
+  firstName: string
+  lastName: string
+  city: string
+  phone: string
+  createdAt: string
 }
 
 export type AuthErrorCode =
   | 'configuration'
-  | 'invalid-code'
-  | 'expired-code'
+  | 'invalid-credentials'
+  | 'phone-already-registered'
   | 'rate-limited'
-  | 'telegram-not-linked'
   | 'validation'
   | 'offline'
   | 'server'

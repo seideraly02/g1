@@ -1,13 +1,12 @@
 package kz.qadam.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import jakarta.servlet.http.HttpServletRequest;
-import java.time.Duration;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.UUID;
 import kz.qadam.config.QadamProperties;
 import org.springframework.http.CacheControl;
@@ -35,15 +34,69 @@ public class AuthController {
         this.properties = properties;
     }
 
-    @PostMapping("/telegram/request-code")
-    ResponseEntity<AuthService.CodeRequest> requestCode(
+    @PostMapping("/register")
+    ResponseEntity<AuthService.UserDto> register(
         @Valid @RequestBody RegistrationRequest request,
         HttpServletRequest httpRequest
     ) {
-        var result = authService.requestCode(
-            request.fullName(), request.city(), request.phone(), clientAddress(httpRequest)
-        );
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(result);
+        return authenticatedResponse(authService.register(
+            request.firstName(),
+            request.lastName(),
+            request.city(),
+            request.phone(),
+            request.password(),
+            clientAddress(httpRequest)
+        ));
+    }
+
+    @PostMapping("/login")
+    ResponseEntity<AuthService.UserDto> login(
+        @Valid @RequestBody LoginRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        return authenticatedResponse(authService.login(
+            request.phone(),
+            request.password(),
+            clientAddress(httpRequest)
+        ));
+    }
+
+    @GetMapping("/session")
+    ResponseEntity<AuthService.UserDto> session(Authentication authentication) {
+        UUID userId = (UUID) authentication.getPrincipal();
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noStore())
+            .body(authService.findUser(userId));
+    }
+
+    @DeleteMapping("/session")
+    ResponseEntity<Void> signOut(
+        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
+    ) {
+        authService.revokeSession(sessionToken);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+            .header(HttpHeaders.SET_COOKIE, sessionCookie("", Duration.ZERO).toString())
+            .build();
+    }
+
+    private ResponseEntity<AuthService.UserDto> authenticatedResponse(AuthService.AuthResult result) {
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noStore())
+            .header(HttpHeaders.SET_COOKIE, sessionCookie(
+                result.sessionToken(),
+                Duration.ofDays(properties.sessionTtlDays())
+            ).toString())
+            .body(result.user());
+    }
+
+    private ResponseCookie sessionCookie(String value, Duration maxAge) {
+        return ResponseCookie.from(AuthService.SESSION_COOKIE, value)
+            .httpOnly(true)
+            .secure(properties.sessionCookieSecure())
+            .sameSite(properties.sessionCookieSameSite())
+            .path("/")
+            .maxAge(maxAge)
+            .build();
     }
 
     private String clientAddress(HttpServletRequest request) {
@@ -66,54 +119,16 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/telegram/verify-code")
-    ResponseEntity<AuthService.UserDto> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
-        AuthService.AuthResult result = authService.verifyCode(request.requestId(), request.code());
-        return ResponseEntity.ok()
-            .cacheControl(CacheControl.noStore())
-            .header(HttpHeaders.SET_COOKIE, sessionCookie(
-                result.sessionToken(),
-                Duration.ofDays(properties.sessionTtlDays())
-            ).toString())
-            .body(result.user());
-    }
-
-    @GetMapping("/session")
-    ResponseEntity<AuthService.UserDto> session(Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
-        return ResponseEntity.ok()
-            .cacheControl(CacheControl.noStore())
-            .body(authService.findUser(userId));
-    }
-
-    @DeleteMapping("/session")
-    ResponseEntity<Void> signOut(
-        @CookieValue(name = AuthService.SESSION_COOKIE, required = false) String sessionToken
-    ) {
-        authService.revokeSession(sessionToken);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-            .header(HttpHeaders.SET_COOKIE, sessionCookie("", Duration.ZERO).toString())
-            .build();
-    }
-
-    private ResponseCookie sessionCookie(String value, Duration maxAge) {
-        return ResponseCookie.from(AuthService.SESSION_COOKIE, value)
-            .httpOnly(true)
-            .secure(properties.sessionCookieSecure())
-            .sameSite(properties.sessionCookieSameSite())
-            .path("/")
-            .maxAge(maxAge)
-            .build();
-    }
-
     public record RegistrationRequest(
-        @NotBlank @Size(min = 5, max = 120) String fullName,
+        @NotBlank @Size(min = 2, max = 60) String firstName,
+        @NotBlank @Size(min = 2, max = 60) String lastName,
         @NotBlank @Size(min = 2, max = 80) String city,
-        @NotBlank @Size(max = 32) String phone
+        @NotBlank @Size(max = 32) String phone,
+        @NotBlank @Size(min = 8, max = 72) String password
     ) {}
 
-    public record VerifyCodeRequest(
-        @NotBlank @Size(max = 36) String requestId,
-        @NotBlank @Pattern(regexp = "\\d{6}") String code
+    public record LoginRequest(
+        String phone,
+        String password
     ) {}
 }

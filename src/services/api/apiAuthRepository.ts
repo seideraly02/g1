@@ -1,58 +1,42 @@
 import type { AuthRepository } from '../../features/auth/authRepository'
 import { AuthError } from '../../features/auth/types'
-import type {
-  AuthenticatedUser,
-  CodeRequest,
-  RegistrationProfile,
-  VerifyCodeInput,
-} from '../../features/auth/types'
+import type { AuthenticatedUser, LoginInput, RegistrationRequest } from '../../features/auth/types'
 
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : null
-}
-
-function decodeRequest(value: unknown): CodeRequest | null {
-  const data = record(value)
-  return data &&
-    typeof data.requestId === 'string' &&
-    typeof data.expiresAt === 'string' &&
-    typeof data.resendAfterSeconds === 'number' &&
-    Number.isFinite(Date.parse(data.expiresAt)) &&
-    data.resendAfterSeconds >= 0 &&
-    data.resendAfterSeconds <= 3600
-    ? {
-        requestId: data.requestId,
-        expiresAt: data.expiresAt,
-        resendAfterSeconds: data.resendAfterSeconds,
-      }
-    : null
 }
 
 function decodeUser(value: unknown): AuthenticatedUser | null {
   const data = record(value)
   if (
     !data ||
-    !['id', 'fullName', 'city', 'phone', 'verifiedAt'].every((key) => typeof data[key] === 'string')
-  )
+    !['id', 'firstName', 'lastName', 'city', 'phone', 'createdAt'].every(
+      (key) => typeof data[key] === 'string',
+    )
+  ) {
     return null
+  }
   return data as unknown as AuthenticatedUser
 }
 
 function apiError(status: number, value: unknown): AuthError {
   const code = record(value)?.code
-  if (code === 'INVALID_CODE') return new AuthError('invalid-code', 'Код дұрыс емес')
-  if (code === 'CODE_EXPIRED') return new AuthError('expired-code', 'Кодтың мерзімі аяқталды')
-  if (code === 'INVALID_PHONE' || code === 'VALIDATION_ERROR')
+  if (code === 'INVALID_CREDENTIALS') {
+    return new AuthError('invalid-credentials', 'Телефон нөмірі немесе құпиясөз қате')
+  }
+  if (code === 'PHONE_ALREADY_REGISTERED') {
+    return new AuthError('phone-already-registered', 'Бұл нөмір тіркелген. «Кіру» бөлімін таңда')
+  }
+  if (code === 'INVALID_PHONE' || code === 'VALIDATION_ERROR') {
     return new AuthError('validation', 'Енгізілген деректерді тексеріп, қайталап көр')
-  if (code === 'TELEGRAM_NOT_LINKED')
-    return new AuthError(
-      'telegram-not-linked',
-      'Бұл нөмірге Telegram тіркелгісі байланыстырылмаған',
-    )
-  if (status === 429)
-    return new AuthError('rate-limited', 'Әрекет тым көп. Біраздан кейін қайталап көр')
-  if (status === 401) return new AuthError('server', 'Сессия аяқталды. Қайта кір')
-  return new AuthError('server', 'Қызмет уақытша қолжетімсіз. Кейінірек қайтала')
+  }
+  if (status === 429) {
+    return new AuthError('rate-limited', 'Әрекет тым көп. 15 минуттан кейін қайталап көр')
+  }
+  if (status === 401) {
+    return new AuthError('invalid-credentials', 'Телефон нөмірі немесе құпиясөз қате')
+  }
+  return new AuthError('server', 'Қызмет уақытша қолжетімсіз. Кейінірек қайталап көр')
 }
 
 export class ApiAuthRepository implements AuthRepository {
@@ -61,12 +45,14 @@ export class ApiAuthRepository implements AuthRepository {
     private readonly client: typeof fetch = fetch,
   ) {}
 
-  requestTelegramCode(profile: RegistrationProfile) {
-    return this.request('/auth/telegram/request-code', 'POST', profile, decodeRequest)
+  register(input: RegistrationRequest) {
+    return this.request('/auth/register', input)
   }
-  verifyTelegramCode(input: VerifyCodeInput) {
-    return this.request('/auth/telegram/verify-code', 'POST', input, decodeUser)
+
+  login(input: LoginInput) {
+    return this.request('/auth/login', input)
   }
+
   async getSession() {
     if (!this.baseUrl.trim()) return null
     let response: Response
@@ -78,8 +64,11 @@ export class ApiAuthRepository implements AuthRepository {
     if (response.status === 401) return null
     const value: unknown = await response.json().catch(() => null)
     if (!response.ok) throw apiError(response.status, value)
-    return decodeUser(value)
+    const user = decodeUser(value)
+    if (!user) throw new AuthError('server', 'Серверден қате жауап алынды')
+    return user
   }
+
   async signOut() {
     if (!this.baseUrl.trim()) return
     let response: Response
@@ -100,18 +89,15 @@ export class ApiAuthRepository implements AuthRepository {
   private get url() {
     return this.baseUrl.replace(/\/$/, '')
   }
-  private async request<T>(
-    path: string,
-    method: 'POST',
-    body: unknown,
-    decode: (value: unknown) => T | null,
-  ): Promise<T> {
-    if (!this.baseUrl.trim())
-      throw new AuthError('configuration', 'Тіркелу қызметі әлі бапталмаған')
+
+  private async request(path: string, body: unknown): Promise<AuthenticatedUser> {
+    if (!this.baseUrl.trim()) {
+      throw new AuthError('configuration', 'Кіру қызметі әлі бапталмаған')
+    }
     let response: Response
     try {
       response = await this.client(`${this.url}${path}`, {
-        method,
+        method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -121,9 +107,9 @@ export class ApiAuthRepository implements AuthRepository {
     }
     const value: unknown = await response.json().catch(() => null)
     if (!response.ok) throw apiError(response.status, value)
-    const result = decode(value)
-    if (!result) throw new AuthError('server', 'Серверден қате жауап алынды')
-    return result
+    const user = decodeUser(value)
+    if (!user) throw new AuthError('server', 'Серверден қате жауап алынды')
+    return user
   }
 }
 

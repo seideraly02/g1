@@ -2,25 +2,17 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { clearAuthenticatedUser } from '../features/auth/authPersistence'
 import { verifyServerSession } from '../features/auth/sessionVerification'
-import {
-  AuthError,
-  type AuthenticatedUser,
-  type CodeRequest,
-  type RegistrationProfile,
-} from '../features/auth/types'
+import { AuthError, type AuthenticatedUser } from '../features/auth/types'
+import type { LoginInput, RegistrationRequest } from '../features/auth/types'
 import { authRepository } from '../services/api/apiAuthRepository'
 
 const message = (error: unknown) =>
   error instanceof AuthError ? error.message : 'Белгісіз қате болды. Қайталап көр'
 
 export const useAuthStore = defineStore('auth', () => {
-  // Authentication state is authoritative on the server via the HttpOnly session cookie.
-  // Remove any legacy persisted profile so PII is not retained in localStorage.
   clearAuthenticatedUser()
 
   const user = ref<AuthenticatedUser | null>(null)
-  const codeRequest = ref<CodeRequest | null>(null)
-  const pendingProfile = ref<RegistrationProfile | null>(null)
   const loading = ref(false)
   const error = ref('')
   const sessionChecked = ref(false)
@@ -48,33 +40,12 @@ export const useAuthStore = defineStore('auth', () => {
     return sessionCheck
   }
 
-  async function requestCode(profile: RegistrationProfile) {
+  async function authenticate(action: () => Promise<AuthenticatedUser>) {
     loading.value = true
     error.value = ''
     try {
-      codeRequest.value = await authRepository.requestTelegramCode(profile)
-      pendingProfile.value = profile
-      return true
-    } catch (cause) {
-      error.value = message(cause)
-      return false
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function verifyCode(code: string) {
-    if (!codeRequest.value) return false
-    loading.value = true
-    error.value = ''
-    try {
-      user.value = await authRepository.verifyTelegramCode({
-        requestId: codeRequest.value.requestId,
-        code,
-      })
+      user.value = await action()
       sessionChecked.value = true
-      codeRequest.value = null
-      pendingProfile.value = null
       return true
     } catch (cause) {
       error.value = message(cause)
@@ -84,8 +55,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function editProfile() {
-    codeRequest.value = null
+  function register(input: RegistrationRequest) {
+    return authenticate(() => authRepository.register(input))
+  }
+
+  function login(input: LoginInput) {
+    return authenticate(() => authRepository.login(input))
+  }
+
+  function clearError() {
     error.value = ''
   }
 
@@ -97,10 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = message(cause)
       return false
     }
-
     user.value = null
-    codeRequest.value = null
-    pendingProfile.value = null
     clearAuthenticatedUser()
     sessionChecked.value = true
     return true
@@ -108,15 +83,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
-    codeRequest,
-    pendingProfile,
     loading,
     error,
     isAuthenticated,
     ensureSession,
-    requestCode,
-    verifyCode,
-    editProfile,
+    register,
+    login,
+    clearError,
     signOut,
   }
 })

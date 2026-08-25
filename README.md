@@ -28,8 +28,8 @@ docker compose up --build
 ```
 
 Frontend будет доступен на `http://localhost:4173`, API — на `http://localhost:3000`,
-health-check — `http://localhost:3000/health`. В локальном development-режиме Telegram OTP
-равен `111111`; он не выводится в серверные логи и запрещён в production.
+health-check — `http://localhost:3000/health`. Регистрация сразу создаёт аккаунт и защищённую
+HttpOnly cookie-сессию; для входа используются телефон Казахстана и пароль.
 
 Frontend:
 
