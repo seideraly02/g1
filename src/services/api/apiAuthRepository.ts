@@ -40,10 +40,14 @@ function apiError(status: number, value: unknown): AuthError {
 }
 
 export class ApiAuthRepository implements AuthRepository {
+  private readonly client: typeof fetch
+
   constructor(
     private readonly baseUrl: string,
-    private readonly client: typeof fetch = fetch,
-  ) {}
+    client: typeof fetch = fetch,
+  ) {
+    this.client = (input, init) => client(input, init)
+  }
 
   register(input: RegistrationRequest) {
     return this.request('/auth/register', input)

@@ -70,10 +70,14 @@ function isAnswerResult(value: unknown): value is DiagnosticAnswerResult {
 }
 
 export class ApiDiagnosticRepository {
+  private readonly client: typeof fetch
+
   constructor(
     private readonly baseUrl: string,
-    private readonly client: typeof fetch = fetch,
-  ) {}
+    client: typeof fetch = fetch,
+  ) {
+    this.client = (input, init) => client(input, init)
+  }
 
   async getQuestions(subjectId: string): Promise<DiagnosticQuestionDto[]> {
     const response = await this.client(`${this.url}/diagnostic/${encodeURIComponent(subjectId)}`, {

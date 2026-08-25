@@ -13,10 +13,14 @@ function isSubject(value: unknown): value is SubjectDto {
 }
 
 export class ApiSubjectRepository {
+  private readonly client: typeof fetch
+
   constructor(
     private readonly baseUrl: string,
-    private readonly client: typeof fetch = fetch,
-  ) {}
+    client: typeof fetch = fetch,
+  ) {
+    this.client = (input, init) => client(input, init)
+  }
 
   async getSubjects(): Promise<SubjectDto[]> {
     const response = await this.client(`${this.baseUrl.replace(/\/$/, '')}/subjects`, {
