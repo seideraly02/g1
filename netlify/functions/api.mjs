@@ -82,6 +82,11 @@ export function createHandler({ getApi = getProductionApi, env = process.env } =
       return json(404, 'NOT_FOUND')
     } catch (error) {
       if (error instanceof ApiError) return json(error.statusCode, error.code)
+      console.error('QADAM_API_UNAVAILABLE', {
+        name: error?.name ?? 'Error',
+        code: error?.code ?? null,
+        message: error?.message ?? 'Unknown error',
+      })
       return json(503, 'SERVICE_UNAVAILABLE')
     }
   }
