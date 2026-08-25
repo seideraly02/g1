@@ -64,14 +64,13 @@ describe('Qadam mobile screens', () => {
     expect(welcome).toContain('@click="startPreparation"')
   })
 
-  it('keeps phone inputs controlled by the formatter without competing v-model handlers', () => {
+  it('formats phone inputs on blur without competing input handlers', () => {
     const registration = readFileSync(resolve(viewsDirectory, 'RegistrationView.vue'), 'utf8')
 
-    expect(registration).toContain(':value="registration.phone"')
-    expect(registration).toContain('@input="updatePhone(\'registration\', $event)"')
-    expect(registration).toContain(':value="login.phone"')
-    expect(registration).toContain('@input="updatePhone(\'login\', $event)"')
-    expect(registration).not.toContain('v-model="registration.phone"')
-    expect(registration).not.toContain('v-model="login.phone"')
+    expect(registration).toContain('v-model="registration.phone"')
+    expect(registration).toContain('@blur="formatPhone(\'registration\')"')
+    expect(registration).toContain('v-model="login.phone"')
+    expect(registration).toContain('@blur="formatPhone(\'login\')"')
+    expect(registration).not.toContain('@input="updatePhone')
   })
 })

@@ -60,13 +60,11 @@ function selectMode(nextMode: AuthMode) {
   void nextTick(() => form.value?.querySelector<HTMLInputElement>('input')?.focus())
 }
 
-function updatePhone(target: 'registration' | 'login', event: Event) {
-  const input = event.currentTarget as HTMLInputElement | null
-  if (!input) return
+function formatPhone(target: 'registration' | 'login') {
   if (target === 'registration') {
-    registration.value.phone = formatKazakhstanPhone(input.value)
+    registration.value.phone = formatKazakhstanPhone(registration.value.phone)
   } else {
-    login.value.phone = formatKazakhstanPhone(input.value)
+    login.value.phone = formatKazakhstanPhone(login.value.phone)
   }
 }
 
@@ -226,7 +224,7 @@ async function submitLogin() {
             Телефон нөмірі
             <input
               id="registration-phone"
-              :value="registration.phone"
+              v-model="registration.phone"
               class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
               type="tel"
               inputmode="tel"
@@ -235,7 +233,7 @@ async function submitLogin() {
               maxlength="24"
               :aria-invalid="Boolean(registrationErrors.phone)"
               :aria-describedby="registrationErrors.phone ? 'registration-phone-error' : undefined"
-              @input="updatePhone('registration', $event)"
+              @blur="formatPhone('registration')"
             />
             <span
               v-if="registrationErrors.phone"
@@ -332,7 +330,7 @@ async function submitLogin() {
             Телефон нөмірі
             <input
               id="login-phone"
-              :value="login.phone"
+              v-model="login.phone"
               class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
               type="tel"
               inputmode="tel"
@@ -341,7 +339,7 @@ async function submitLogin() {
               maxlength="24"
               :aria-invalid="Boolean(loginErrors.phone)"
               :aria-describedby="loginErrors.phone ? 'login-phone-error' : undefined"
-              @input="updatePhone('login', $event)"
+              @blur="formatPhone('login')"
             />
             <span
               v-if="loginErrors.phone"
