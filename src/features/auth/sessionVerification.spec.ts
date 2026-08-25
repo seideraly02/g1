@@ -24,6 +24,7 @@ const user: AuthenticatedUser = {
   lastName: 'Серікұлы',
   city: 'Алматы',
   phone: '+77011234567',
+  role: 'student',
   createdAt: '2026-07-31T12:00:00.000Z',
 }
 

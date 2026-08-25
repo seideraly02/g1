@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 const viewsDirectory = resolve(process.cwd(), 'src/views')
 const referenceViews = [
+  'AdminView.vue',
   'DiagnosticResultView.vue',
   'DiagnosticView.vue',
   'ForecastView.vue',
@@ -86,5 +87,17 @@ describe('Qadam mobile screens', () => {
     expect(profile).toContain('Тіркелгіден шығу')
     expect(profile).not.toContain('Авторизация уақытша өшірулі')
     expect(profile).not.toContain('Қонақ оқушы')
+  })
+
+  it('keeps admin access role-gated and admin APIs outside the view', () => {
+    const profile = readFileSync(resolve(viewsDirectory, 'ProfileView.vue'), 'utf8')
+    const admin = readFileSync(resolve(viewsDirectory, 'AdminView.vue'), 'utf8')
+
+    expect(profile).toContain("auth.user?.role === 'admin'")
+    expect(profile).toContain("router.push({ name: 'admin' })")
+    expect(admin).toContain('adminRepository.getOverview()')
+    expect(admin).toContain('adminRepository.createQuestion')
+    expect(admin).toContain('Кіруге рұқсат жоқ')
+    expect(admin).not.toContain('fetch(')
   })
 })

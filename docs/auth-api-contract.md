@@ -22,7 +22,7 @@ Request:
 ```
 
 `confirmPassword` is a UI-only validation field and must not be sent. On success the server sets
-the session cookie and returns `{ id, firstName, lastName, city, phone, createdAt }`.
+the session cookie and returns `{ id, firstName, lastName, city, phone, role, createdAt }`.
 Duplicate phone numbers return `409 PHONE_ALREADY_REGISTERED`.
 Registration attempts are capped before BCrypt work by phone fingerprint and trusted client
 fingerprint; exceeding either window returns `429 RATE_LIMITED`.
@@ -38,6 +38,20 @@ attempts are rate-limited by phone fingerprint and trusted client fingerprint; r
 
 `GET /auth/session` returns the user DTO or `401`. `DELETE /auth/session` revokes the server
 session and expires the cookie.
+
+## Admin endpoints
+
+Every `/admin/*` endpoint requires an authenticated user whose effective role is `admin`; otherwise
+it returns `403 FORBIDDEN`. Role checks are performed server-side on every request.
+
+- `GET /admin/overview` returns total, online/offline, seven-day registrations, and diagnostic
+  activity counts. Online means an unexpired, non-revoked session active within five minutes;
+  authenticated requests touch `last_seen_at` at most once per minute.
+- `GET /admin/users?query=&page=1&limit=20` returns recent/searchable safe user DTOs. Page is capped
+  at 1000 and limit at 50. Password and session hashes are never selected or returned.
+- `POST /admin/questions` creates one active question. It accepts `subjectId`, `topic`, `text`, two
+  to six unique `options`, `correctIndex`, and `explanation`; the server generates the ID. Editing
+  and deletion are intentionally unavailable in this MVP.
 
 Diagnostic submission includes a stable client `operationId`. The database enforces uniqueness per
 user and returns the original stored response when the same operation is retried.

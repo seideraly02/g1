@@ -80,6 +80,19 @@ PASSWORD_BCRYPT_STRENGTH=12
 SESSION_TTL_DAYS=30
 ```
 
+### Admin bootstrap
+
+Admin access is checked on every API request. Because registration currently does not verify phone
+ownership, a phone allowlist would be unsafe. Bootstrap only an already registered, owner-verified
+account with an audited database update:
+
+```sql
+update users set role = 'admin' where phone = '+77XXXXXXXXX';
+```
+
+Do not promote an unregistered phone or a user-supplied ID alone. Revoke with the inverse audited
+update. The admin API never returns password or session hashes.
+
 `@netlify/database` автоматически provision-ит database для deploy, а Netlify применяет SQL из
 `netlify/database/migrations/` перед публикацией production deploy. `NETLIFY_DB_URL` выдаётся
 платформой автоматически и не должен храниться в git или задаваться как публичная build variable.

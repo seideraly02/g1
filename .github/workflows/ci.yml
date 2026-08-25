@@ -47,12 +47,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply Netlify Database baseline
+      - name: Apply Netlify Database migrations
         env:
           PGPASSWORD: postgres
-        run: >-
-          psql -h 127.0.0.1 -U postgres -d qadam_test -v ON_ERROR_STOP=1
-          -f netlify/database/migrations/20260825190000_qadam_api_baseline.sql
+        run: |
+          psql -h 127.0.0.1 -U postgres -d qadam_test -v ON_ERROR_STOP=1 -f netlify/database/migrations/20260825190000_qadam_api_baseline.sql
+          psql -h 127.0.0.1 -U postgres -d qadam_test -v ON_ERROR_STOP=1 -f netlify/database/migrations/20260825223000_admin_mvp.sql
 
       - name: Audit dependencies
         run: npm run audit

@@ -7,6 +7,7 @@ const REGISTRATION_PHONE_LIMIT = 3
 const REGISTRATION_CLIENT_LIMIT = 10
 const RATE_WINDOW_MINUTES = 15
 const QUESTION_COUNT = 5
+const ADMIN_USER_PAGE_LIMIT = 50
 
 export class ApiError extends Error {
   constructor(statusCode, code) {
@@ -91,7 +92,7 @@ export class QadamApi {
       const inserted = await client.query(
         `insert into users(id,full_name,first_name,last_name,city,phone,password_hash)
          values($1,$2,$3,$4,$5,$6,$7)
-         returning id,first_name,last_name,city,phone,created_at`,
+         returning id,first_name,last_name,city,phone,role,created_at`,
         [userId, `${firstName} ${lastName}`, firstName, lastName, city, phone, passwordHash],
       )
       const result = await this.createSession(client, inserted.rows[0])
@@ -147,7 +148,7 @@ export class QadamApi {
         [attemptId, phoneFingerprint, requestFingerprint],
       )
       const found = await client.query(
-        `select id,first_name,last_name,city,phone,password_hash,created_at
+        `select id,first_name,last_name,city,phone,password_hash,role,created_at
          from users where phone=$1`,
         [phone],
       )
@@ -177,11 +178,18 @@ export class QadamApi {
 
   async session(token) {
     if (!token) return null
+    const tokenHash = this.hash(token)
+    await this.pool.query(
+      `update sessions set last_seen_at=now()
+       where token_hash=$1 and revoked_at is null and expires_at>now()
+         and last_seen_at < now() - interval '1 minute'`,
+      [tokenHash],
+    )
     const result = await this.pool.query(
-      `select u.id,u.first_name,u.last_name,u.city,u.phone,u.created_at
+      `select u.id,u.first_name,u.last_name,u.city,u.phone,u.role,u.created_at
        from sessions s join users u on u.id=s.user_id
        where s.token_hash=$1 and s.revoked_at is null and s.expires_at>now()`,
-      [this.hash(token)],
+      [tokenHash],
     )
     return result.rows[0] ? userDto(result.rows[0]) : null
   }
@@ -197,6 +205,112 @@ export class QadamApi {
   async subjects() {
     const result = await this.pool.query('select id,name from subjects order by sort_order')
     return result.rows
+  }
+
+  async adminOverview(user) {
+    requireAdmin(user)
+    const result = await this.pool.query(
+      `select
+         (select count(*)::int from users) as total_users,
+         (select count(distinct user_id)::int from sessions
+          where revoked_at is null and expires_at>now()
+            and last_seen_at>now()-interval '5 minutes') as online_users,
+         (select count(*)::int from users
+          where created_at>now()-interval '7 days') as recent_registrations,
+         (select count(*)::int from diagnostic_attempts) as diagnostic_attempts,
+         (select count(*)::int from diagnostic_attempts
+          where completed_at>now()-interval '7 days') as recent_diagnostic_attempts`,
+    )
+    const row = result.rows[0]
+    return {
+      totalUsers: row.total_users,
+      onlineUsers: row.online_users,
+      offlineUsers: row.total_users - row.online_users,
+      recentRegistrations: row.recent_registrations,
+      diagnosticAttempts: row.diagnostic_attempts,
+      recentDiagnosticAttempts: row.recent_diagnostic_attempts,
+    }
+  }
+
+  async adminUsers(user, input = {}) {
+    requireAdmin(user)
+    const page = boundedInteger(input.page, 1, 1000, 1)
+    const limit = boundedInteger(input.limit, 1, ADMIN_USER_PAGE_LIMIT, 20)
+    const query = normalizeSearch(input.query)
+    const pattern = `%${escapeLike(query)}%`
+    const where = query
+      ? `where first_name ilike $1 escape '\\'
+          or last_name ilike $1 escape '\\'
+          or city ilike $1 escape '\\'
+          or phone ilike $1 escape '\\'`
+      : ''
+    const values = query ? [pattern] : []
+    const count = await this.pool.query(`select count(*)::int as count from users ${where}`, values)
+    const result = await this.pool.query(
+      `select id,first_name,last_name,city,phone,role,created_at
+       from users ${where}
+       order by created_at desc,id desc
+       limit $${values.length + 1} offset $${values.length + 2}`,
+      [...values, limit, (page - 1) * limit],
+    )
+    return {
+      users: result.rows.map(adminUserDto),
+      page,
+      limit,
+      total: count.rows[0].count,
+    }
+  }
+
+  async createAdminQuestion(user, input) {
+    requireAdmin(user)
+    const subjectId = normalizeSubjectId(input?.subjectId)
+    const topic = normalizeText(input?.topic, 2, 120)
+    const text = normalizeText(input?.text, 10, 1000)
+    const explanation = normalizeText(input?.explanation, 5, 2000)
+    const options = normalizeOptions(input?.options)
+    if (
+      !Number.isInteger(input?.correctIndex) ||
+      input.correctIndex < 0 ||
+      input.correctIndex >= options.length
+    ) {
+      throw new ApiError(400, 'VALIDATION_ERROR')
+    }
+    const client = await this.pool.connect()
+    try {
+      await client.query('begin')
+      await this.lock(client, `admin-question:${subjectId}`)
+      const subject = await client.query('select 1 from subjects where id=$1', [subjectId])
+      if (!subject.rows[0]) throw new ApiError(400, 'INVALID_SUBJECT')
+      const sort = await client.query(
+        'select coalesce(min(sort_order),1)-1 as next_sort from questions where subject_id=$1',
+        [subjectId],
+      )
+      const id = `question-${randomUUID()}`
+      const inserted = await client.query(
+        `insert into questions(
+           id,subject_id,topic,prompt,options,correct_option,explanation,sort_order,created_by
+         ) values($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9)
+         returning id,subject_id,topic,prompt,options,correct_option,explanation,created_at`,
+        [
+          id,
+          subjectId,
+          topic,
+          text,
+          JSON.stringify(options),
+          input.correctIndex,
+          explanation,
+          sort.rows[0].next_sort,
+          user.id,
+        ],
+      )
+      await client.query('commit')
+      return adminQuestionDto(inserted.rows[0])
+    } catch (error) {
+      await rollbackQuietly(client)
+      throw error
+    } finally {
+      client.release()
+    }
   }
 
   async questions(subjectId) {
@@ -454,6 +568,67 @@ function userDto(row) {
     lastName: row.last_name,
     city: row.city,
     phone: row.phone,
+    role: row.role === 'admin' ? 'admin' : 'student',
+    createdAt: new Date(row.created_at).toISOString(),
+  }
+}
+
+function adminUserDto(row) {
+  return userDto(row)
+}
+
+function requireAdmin(user) {
+  if (user?.role !== 'admin') throw new ApiError(403, 'FORBIDDEN')
+}
+
+function boundedInteger(value, min, max, fallback) {
+  if (value === undefined || value === null || value === '') return fallback
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new ApiError(400, 'VALIDATION_ERROR')
+  }
+  return parsed
+}
+
+function normalizeSearch(value) {
+  if (value === undefined || value === null) return ''
+  if (typeof value !== 'string') throw new ApiError(400, 'VALIDATION_ERROR')
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  if (normalized.length > 80) throw new ApiError(400, 'VALIDATION_ERROR')
+  return normalized
+}
+
+function escapeLike(value) {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`)
+}
+
+function normalizeSubjectId(value) {
+  if (typeof value !== 'string' || !/^[a-z0-9-]{1,50}$/.test(value)) {
+    throw new ApiError(400, 'VALIDATION_ERROR')
+  }
+  return value
+}
+
+function normalizeOptions(value) {
+  if (!Array.isArray(value) || value.length < 2 || value.length > 6) {
+    throw new ApiError(400, 'VALIDATION_ERROR')
+  }
+  const options = value.map((option) => normalizeText(option, 1, 300))
+  if (new Set(options.map((option) => option.toLocaleLowerCase('kk-KZ'))).size !== options.length) {
+    throw new ApiError(400, 'VALIDATION_ERROR')
+  }
+  return options
+}
+
+function adminQuestionDto(row) {
+  return {
+    id: row.id,
+    subjectId: row.subject_id,
+    topic: row.topic,
+    text: row.prompt,
+    options: row.options,
+    correctIndex: row.correct_option,
+    explanation: row.explanation,
     createdAt: new Date(row.created_at).toISOString(),
   }
 }

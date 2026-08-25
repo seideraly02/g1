@@ -19,8 +19,10 @@ describeDatabase('Qadam Netlify PostgreSQL API', () => {
 
   beforeAll(async () => {
     await pool.query(
-      'truncate diagnostic_answers,diagnostic_attempts,diagnostic_answer_checks,sessions,login_attempts,registration_attempts,users cascade',
+      'truncate diagnostic_answers,diagnostic_attempts,diagnostic_answer_checks,sessions,login_attempts,registration_attempts',
     )
+    await pool.query('delete from users')
+    await pool.query("delete from questions where id like 'question-%'")
   })
 
   afterAll(async () => {
@@ -41,6 +43,7 @@ describeDatabase('Qadam Netlify PostgreSQL API', () => {
       lastName: 'Серікұлы',
       city: 'Алматы',
       phone: '+77015550901',
+      role: 'student',
     })
     expect(await api.session(registered.sessionToken)).toEqual(registered.user)
     const stored = await pool.query('select password_hash from users where phone=$1', [
@@ -191,6 +194,64 @@ describeDatabase('Qadam Netlify PostgreSQL API', () => {
       [registered.user.id],
     )
     expect(attempts.rows[0].count).toBe(1)
+
+    await expect(api.adminOverview({ ...registered.user, role: 'student' })).rejects.toMatchObject({
+      statusCode: 403,
+      code: 'FORBIDDEN',
+    })
+    await pool.query('update users set role=$1 where id=$2', ['admin', registered.user.id])
+    await pool.query(
+      `update sessions set last_seen_at=now()-interval '10 minutes'
+       where user_id=$1`,
+      [registered.user.id],
+    )
+    const adminUser = await api.session(registered.sessionToken)
+    expect(adminUser).toMatchObject({ id: registered.user.id, role: 'admin' })
+    const overview = await api.adminOverview(adminUser)
+    expect(overview).toMatchObject({
+      totalUsers: 2,
+      onlineUsers: 1,
+      offlineUsers: 1,
+      recentRegistrations: 2,
+      diagnosticAttempts: 1,
+      recentDiagnosticAttempts: 1,
+    })
+    const users = await api.adminUsers(adminUser, {
+      query: 'Алматы',
+      page: '1',
+      limit: '10',
+    })
+    expect(users).toMatchObject({ page: 1, limit: 10, total: 1 })
+    expect(users.users[0]).toMatchObject({
+      id: registered.user.id,
+      role: 'admin',
+      phone: registration.phone,
+    })
+    expect(users.users[0]).not.toHaveProperty('passwordHash')
+    await expect(
+      api.createAdminQuestion(adminUser, {
+        subjectId: 'history-kz',
+        topic: 'Тәуелсіз Қазақстан',
+        text: 'Қазақстан Республикасының мемлекеттік рәміздері қашан бекітілді?',
+        options: ['1991 жылы', '1992 жылы', '1993 жылы'],
+        correctIndex: 1,
+        explanation: 'Қазақстанның мемлекеттік рәміздері 1992 жылы бекітілді.',
+      }),
+    ).resolves.toMatchObject({
+      subjectId: 'history-kz',
+      topic: 'Тәуелсіз Қазақстан',
+      correctIndex: 1,
+    })
+    await expect(
+      api.createAdminQuestion(adminUser, {
+        subjectId: 'history-kz',
+        topic: 'Қате',
+        text: 'Қысқа мәтін',
+        options: ['Бірдей', 'Бірдей'],
+        correctIndex: 0,
+        explanation: 'Түсіндірме',
+      }),
+    ).rejects.toMatchObject({ statusCode: 400, code: 'VALIDATION_ERROR' })
 
     await api.logout(loggedIn.sessionToken)
     expect(await api.session(loggedIn.sessionToken)).toBeNull()

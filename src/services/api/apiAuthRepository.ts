@@ -8,15 +8,17 @@ function record(value: unknown): Record<string, unknown> | null {
 
 function decodeUser(value: unknown): AuthenticatedUser | null {
   const data = record(value)
+  const role = data?.role ?? 'student'
   if (
     !data ||
     !['id', 'firstName', 'lastName', 'city', 'phone', 'createdAt'].every(
       (key) => typeof data[key] === 'string',
-    )
+    ) ||
+    (role !== 'student' && role !== 'admin')
   ) {
     return null
   }
-  return data as unknown as AuthenticatedUser
+  return { ...(data as unknown as Omit<AuthenticatedUser, 'role'>), role }
 }
 
 function apiError(status: number, value: unknown): AuthError {

@@ -10,3 +10,7 @@ export const REQUIRE_AUTHENTICATION = resolveAuthenticationRequirement(
 export function shouldCheckAuthentication(isPublicRoute: boolean): boolean {
   return REQUIRE_AUTHENTICATION && !isPublicRoute
 }
+
+export function canAccessAdmin(role: string | undefined): boolean {
+  return role === 'admin'
+}

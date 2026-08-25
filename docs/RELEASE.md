@@ -55,6 +55,11 @@ NETLIFY_SITE_ID
   available in this release.
 - `GET /auth/session` succeeds after registration or login and returns 401 without a valid session.
 - Diagnostic returns exactly five questions.
+- Admin endpoints reject non-admin sessions, cap user pagination, and never expose credential or
+  session hashes. Online activity uses a five-minute window with at most one session touch write per
+  minute.
+- Admin question creation validates the subject, 2–6 unique options, correct index, and explanation;
+  edit/delete actions are not part of this release.
 - Every first diagnostic selection is locked per user/operation/question; final submission accepts
   only those five selections and stores both the attempt and five answer rows.
 - Logout revokes the server session.

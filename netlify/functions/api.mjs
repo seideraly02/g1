@@ -63,6 +63,26 @@ export function createHandler({ getApi = getProductionApi, env = process.env } =
         return response(200, await api.subjects())
       }
 
+      if (method === 'GET' && path === 'admin/overview') {
+        return response(200, await api.adminOverview(user), { 'cache-control': 'no-store' })
+      }
+      if (method === 'GET' && path === 'admin/users') {
+        return response(
+          200,
+          await api.adminUsers(user, {
+            query: event.queryStringParameters?.query,
+            page: event.queryStringParameters?.page,
+            limit: event.queryStringParameters?.limit,
+          }),
+          { 'cache-control': 'no-store' },
+        )
+      }
+      if (method === 'POST' && path === 'admin/questions') {
+        return response(201, await api.createAdminQuestion(user, parseBody(event)), {
+          'cache-control': 'no-store',
+        })
+      }
+
       const diagnosticMatch = /^diagnostic\/([a-z0-9-]{1,50})(\/(?:check|submit))?$/.exec(path)
       if (diagnosticMatch && method === 'GET' && !diagnosticMatch[2]) {
         return response(200, await api.questions(diagnosticMatch[1]))

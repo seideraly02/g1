@@ -14,12 +14,15 @@ export interface LoginInput {
   password: string
 }
 
+export type UserRole = 'student' | 'admin'
+
 export interface AuthenticatedUser {
   id: string
   firstName: string
   lastName: string
   city: string
   phone: string
+  role: UserRole
   createdAt: string
 }
 

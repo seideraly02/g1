@@ -47,6 +47,8 @@ export const primaryNavigationItems: readonly PrimaryNavigationItem[] = [
 export function isWorkspaceRoute(routeName: unknown): boolean {
   if (typeof routeName !== 'string') return false
 
+  if (routeName === 'admin') return true
+
   return primaryNavigationItems.some((item) => item.matches.includes(routeName as AppRouteName))
 }
 

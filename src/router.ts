@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { shouldCheckAuthentication } from './config/authAccess'
+import { canAccessAdmin, shouldCheckAuthentication } from './config/authAccess'
 import { useAuthStore } from './stores/authStore'
 import { pinia } from './stores/pinia'
 
@@ -24,6 +24,7 @@ export type AppRouteName =
   | 'streak'
   | 'profile'
   | 'notifications'
+  | 'admin'
 
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'welcome', component: () => import('./views/WelcomeView.vue') },
@@ -77,6 +78,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/rating', name: 'rating', component: () => import('./views/RatingView.vue') },
   { path: '/streak', name: 'streak', component: () => import('./views/StreakView.vue') },
   { path: '/profile', name: 'profile', component: () => import('./views/ProfileView.vue') },
+  { path: '/admin', name: 'admin', component: () => import('./views/AdminView.vue') },
   {
     path: '/notifications',
     name: 'notifications',
@@ -103,6 +105,10 @@ router.beforeEach(async (to) => {
 
   if (!auth.isAuthenticated) {
     return { name: 'register', query: { mode: 'login', redirect: to.fullPath } }
+  }
+
+  if (to.name === 'admin' && !canAccessAdmin(auth.user?.role)) {
+    return { name: 'profile' }
   }
 
   return true

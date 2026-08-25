@@ -8,6 +8,7 @@ const user = {
   lastName: 'Серікұлы',
   city: 'Алматы',
   phone: '+77015550101',
+  role: 'student',
   createdAt: '2026-08-25T12:00:00.000Z',
 }
 
@@ -28,6 +29,18 @@ function fakeApi() {
     session: vi.fn(async (token: string | null) => (token === 'valid-token' ? user : null)),
     logout: vi.fn(async () => undefined),
     subjects: vi.fn(async () => [{ id: 'history-kz', name: 'Қазақстан тарихы' }]),
+    adminOverview: vi.fn(async (currentUser: typeof user) => {
+      if (currentUser.role !== 'admin') throw new ApiError(403, 'FORBIDDEN')
+      return { totalUsers: 1, onlineUsers: 1, offlineUsers: 0 }
+    }),
+    adminUsers: vi.fn(async (currentUser: typeof user) => {
+      if (currentUser.role !== 'admin') throw new ApiError(403, 'FORBIDDEN')
+      return { users: [], page: 1, limit: 20, total: 0 }
+    }),
+    createAdminQuestion: vi.fn(async (currentUser: typeof user) => {
+      if (currentUser.role !== 'admin') throw new ApiError(403, 'FORBIDDEN')
+      return { id: 'question-1' }
+    }),
     questions: vi.fn(async () => [{ id: 'history-1' }]),
     checkDiagnosticAnswer: vi.fn(async () => ({
       questionId: 'history-1',
@@ -143,6 +156,29 @@ describe('Netlify API function', () => {
 
     const repeated = await handler(event('auth/session', { httpMethod: 'DELETE' }))
     expect(repeated.statusCode).toBe(204)
+  })
+
+  it('enforces admin role for overview and question creation routes', async () => {
+    const api = fakeApi()
+    const handler = createHandler({ getApi: () => api })
+    const headers = { host: 'qadam.netlify.app', cookie: 'qadam_session=valid-token' }
+    expect((await handler(event('admin/overview', { headers }))).statusCode).toBe(403)
+
+    api.session.mockResolvedValue({ ...user, role: 'admin' })
+    const overview = await handler(event('admin/overview', { headers }))
+    expect(overview.statusCode).toBe(200)
+    const created = await handler(
+      event('admin/questions', {
+        httpMethod: 'POST',
+        headers,
+        body: JSON.stringify({ subjectId: 'history-kz' }),
+      }),
+    )
+    expect(created.statusCode).toBe(201)
+    expect(api.createAdminQuestion).toHaveBeenCalledWith(
+      { ...user, role: 'admin' },
+      { subjectId: 'history-kz' },
+    )
   })
 })
 

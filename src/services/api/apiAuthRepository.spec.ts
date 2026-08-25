@@ -7,6 +7,7 @@ const user = {
   lastName: 'Серікұлы',
   city: 'Алматы',
   phone: '+77011234567',
+  role: 'student',
   createdAt: '2026-08-25T10:00:00Z',
 }
 

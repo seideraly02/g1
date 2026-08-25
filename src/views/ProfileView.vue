@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, BookOpen, ChevronRight, LogOut, MapPin, Phone } from 'lucide-vue-next'
+import { Bell, BookOpen, ChevronRight, LogOut, MapPin, Phone, ShieldCheck } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
@@ -22,6 +22,9 @@ const initials = computed(() => {
 })
 const phone = computed(() =>
   auth.user?.phone ? formatKazakhstanPhone(auth.user.phone) : 'Көрсетілмеген',
+)
+const accountLabel = computed(() =>
+  auth.user?.role === 'admin' ? 'Qadam әкімшісі' : 'Qadam оқушысы',
 )
 
 async function signOut() {
@@ -56,7 +59,7 @@ async function signOut() {
             <h1 id="profile-name" class="truncate text-[20px] font-[900] leading-tight">
               {{ fullName }}
             </h1>
-            <p class="mt-1 text-[13px] text-[#536178]">Qadam оқушысы</p>
+            <p class="mt-1 text-[13px] text-[#536178]">{{ accountLabel }}</p>
           </div>
         </div>
 
@@ -90,7 +93,22 @@ async function signOut() {
 
       <nav class="card overflow-hidden xl:col-span-5" aria-label="Тіркелгі бөлімдері">
         <button
+          v-if="auth.user?.role === 'admin'"
           class="flex min-h-[58px] w-full items-center gap-3 border-0 bg-white px-4 text-left"
+          type="button"
+          @click="router.push({ name: 'admin' })"
+        >
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#edf4ff] text-[#1f66d9]"
+          >
+            <ShieldCheck :size="20" aria-hidden="true" />
+          </span>
+          <strong class="min-w-0 flex-1 text-[13px]">Әкімшілік</strong>
+          <ChevronRight class="shrink-0 text-[#98a6b9]" :size="20" aria-hidden="true" />
+        </button>
+        <button
+          class="flex min-h-[58px] w-full items-center gap-3 border-x-0 border-b-0 bg-white px-4 text-left"
+          :class="auth.user?.role === 'admin' ? 'border-t border-[#e6ebf2]' : 'border-t-0'"
           type="button"
           @click="router.push({ name: 'subjects' })"
         >
