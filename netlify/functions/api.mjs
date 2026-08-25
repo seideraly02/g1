@@ -92,7 +92,30 @@ export function createHandler({ getApi = getProductionApi, env = process.env } =
   }
 }
 
-export const handler = createHandler()
+const legacyHandler = createHandler()
+
+// A default Request-based export keeps the function on Netlify's modern runtime,
+// where NETLIFY_DB_URL is injected automatically for the matching database branch.
+export default async function handler(request, context) {
+  const url = new URL(request.url)
+  const headers = Object.fromEntries(request.headers.entries())
+  const result = await legacyHandler({
+    httpMethod: request.method,
+    headers,
+    body: ['GET', 'HEAD'].includes(request.method) ? '' : await request.text(),
+    isBase64Encoded: false,
+    queryStringParameters: Object.fromEntries(url.searchParams.entries()),
+    requestContext: { http: { sourceIp: context.ip ?? 'unknown' } },
+  })
+  const responseHeaders = new Headers(result.headers)
+  for (const cookie of result.multiValueHeaders?.['set-cookie'] ?? []) {
+    responseHeaders.append('set-cookie', cookie)
+  }
+  return new Response(result.statusCode === 204 ? null : result.body, {
+    status: result.statusCode,
+    headers: responseHeaders,
+  })
+}
 
 function authenticated(result, options) {
   return {
