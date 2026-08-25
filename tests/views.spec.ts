@@ -73,4 +73,18 @@ describe('Qadam mobile screens', () => {
     expect(registration).toContain('@blur="formatPhone(\'login\')"')
     expect(registration).not.toContain('@input="updatePhone')
   })
+
+  it('renders the authenticated profile and exposes a real logout action', () => {
+    const profile = readFileSync(resolve(viewsDirectory, 'ProfileView.vue'), 'utf8')
+
+    expect(profile).toContain('auth.user.firstName')
+    expect(profile).toContain('auth.user.lastName')
+    expect(profile).toContain('auth.user?.city')
+    expect(profile).toContain('auth.user?.phone')
+    expect(profile).toContain('await auth.signOut()')
+    expect(profile).toContain("router.replace({ name: 'register', query: { mode: 'login' } })")
+    expect(profile).toContain('Тіркелгіден шығу')
+    expect(profile).not.toContain('Авторизация уақытша өшірулі')
+    expect(profile).not.toContain('Қонақ оқушы')
+  })
 })
