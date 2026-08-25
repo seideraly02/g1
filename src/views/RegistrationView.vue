@@ -61,11 +61,12 @@ function selectMode(nextMode: AuthMode) {
 }
 
 function updatePhone(target: 'registration' | 'login', event: Event) {
-  if (!(event.target instanceof HTMLInputElement)) return
+  const input = event.currentTarget as HTMLInputElement | null
+  if (!input) return
   if (target === 'registration') {
-    registration.value.phone = formatKazakhstanPhone(event.target.value)
+    registration.value.phone = formatKazakhstanPhone(input.value)
   } else {
-    login.value.phone = formatKazakhstanPhone(event.target.value)
+    login.value.phone = formatKazakhstanPhone(input.value)
   }
 }
 
