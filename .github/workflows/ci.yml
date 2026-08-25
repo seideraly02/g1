@@ -19,6 +19,20 @@ jobs:
     name: Quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: qadam_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d qadam_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout repository
@@ -32,6 +46,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply Netlify Database baseline
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          psql -h 127.0.0.1 -U postgres -d qadam_test -v ON_ERROR_STOP=1
+          -f netlify/database/migrations/20260825190000_qadam_api_baseline.sql
 
       - name: Audit dependencies
         run: npm run audit
@@ -47,11 +68,13 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          QADAM_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/qadam_test
 
-      - name: Check Netlify proxy syntax
-        run: node --check netlify/functions/api.mjs
+      - name: Check Netlify Functions syntax
+        run: npm run check:functions
 
-      - name: Build production frontend
+      - name: Build production frontend and Function bundle
         run: npm run build
         env:
           VITE_API_BASE_URL: /api

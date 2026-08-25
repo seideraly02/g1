@@ -25,7 +25,14 @@
 - Pinia;
 - Vue Router.
 
-Первая версия работает на mock-данных и `localStorage`, но логика должна быть готова к подключению backend API.
+Auth, session, subjects и diagnostic работают через same-origin Netlify Function API и Netlify
+Database PostgreSQL. Остальные незавершённые учебные модули могут временно использовать локальные
+репозитории, пока для них не определены серверные контракты.
+
+Текущая диагностика получает вопросы через `GET /diagnostic/:subjectId` без правильных ответов,
+проверяет и неизменно фиксирует первый выбранный вариант пользователя и `operationId` через
+`POST /diagnostic/:subjectId/check` для немедленной обратной связи и сохраняет завершённую попытку идемпотентным
+`POST /diagnostic/:subjectId/submit` со стабильным `operationId`.
 
 ### 1.1. Язык и аудитория
 
@@ -825,7 +832,8 @@ interface SessionRepository {
 
 Для MVP используются `MockSessionRepository` и `LocalSessionRepository`.
 
-При подключении backend они заменяются на `ApiSessionRepository` без переписывания компонентов и бизнес-логики.
+Для server-backed модулей используются API repositories; локальные реализации заменяются без
+переписывания компонентов и бизнес-логики.
 
 Основные будущие API:
 

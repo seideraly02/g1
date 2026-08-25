@@ -1,44 +1,37 @@
 # Qadam ENT release checklist
 
-## 1. Backend infrastructure
+## 1. Netlify Database
 
-- Provision PostgreSQL.
-- Deploy the image built from `server/Dockerfile`.
-- Configure HTTPS on the public backend URL.
-- Confirm `GET /health` returns HTTP 200.
-- Confirm `GET /actuator/health` returns `UP`.
+- The Netlify site must use a credit-based plan; migrate from Legacy Free before enabling Database.
+- Confirm Database is enabled for the site. Installing `@netlify/database` lets Netlify provision it
+  automatically on deploy.
+- Keep all schema changes in `netlify/database/migrations/`. Production and preview migrations are
+  applied automatically before a deploy is published.
+- Do not edit an already-applied migration. Add a new backwards-compatible migration instead.
+- Never expose or commit `NETLIFY_DB_URL`; Netlify injects the branch-specific connection securely.
+- This cutover is approved only as an empty-data launch: the previous production proxy had no
+  `BACKEND_API_URL`, so it had no authoritative backend data. If an external production database is
+  discovered, stop the release and run a separately reviewed import before switching traffic.
+- The baseline keeps `password_hash` nullable so a future controlled legacy import can preserve
+  unclaimable accounts without weakening registration or login.
 
-Required backend environment:
+Required Netlify environment:
 
 ```text
-AUTH_MODE=production
-DATABASE_URL=jdbc:postgresql://<host>:5432/<database>
-DATABASE_USER=<user>
-DATABASE_PASSWORD=<strong-password>
-FRONTEND_ORIGINS=https://<netlify-site-or-custom-domain>
-SECURITY_PEPPER=<random-secret-at-least-32-characters>
-SESSION_COOKIE_SECURE=true
-SESSION_COOKIE_SAME_SITE=Lax
+QADAM_SECURITY_PEPPER=<random-secret-at-least-32-bytes>
 SESSION_TTL_DAYS=30
 PASSWORD_BCRYPT_STRENGTH=12
-TRUSTED_PROXY_SECRET=<same-random-secret-at-least-32-characters-on-api-and-netlify>
-SWAGGER_ENABLED=false
 ```
 
-The application refuses to start when critical security settings or BCrypt strength are unsafe.
-For local end-to-end development, run `docker compose up --build` and open
-`http://localhost:4173`.
+The Function fails closed when the security pepper, BCrypt cost or session TTL is unsafe.
+For first local end-to-end setup run `npx netlify-cli database init --yes`, then
+`npx netlify-cli database migrations apply`, and finally `npx netlify-cli dev`. Local migrations are
+explicit; production and preview deploy migrations are automatic.
 
 ## 2. Netlify
 
-Configure the site environment variable:
-
-```text
-BACKEND_API_URL=https://<backend-host>
-TRUSTED_PROXY_SECRET=<same-value-as-backend>
-```
-
-The frontend is built with `VITE_API_BASE_URL=/api`. `netlify/functions/api.mjs` proxies browser API calls to the backend and forwards HttpOnly session cookies.
+The frontend is built with `VITE_API_BASE_URL=/api`. `netlify/functions/api.mjs` is the production
+backend and talks directly to the deploy's Netlify Database branch; no external proxy URL is used.
 `VITE_REQUIRE_AUTHENTICATION=true` is mandatory for release builds.
 
 For GitHub Actions based Netlify deployment also configure repository secrets:
@@ -51,27 +44,30 @@ NETLIFY_SITE_ID
 ## 3. Release verification
 
 - Frontend CI is green.
-- Backend CI is green.
-- Flyway migrations complete successfully on a clean PostgreSQL database.
-- Docker image builds successfully.
+- Function tests and frontend CI are green.
+- Native Netlify migrations complete successfully before Netlify publishes the production deploy;
+  a migration failure must block publication.
+- The deploy workflow verifies `GET /api/health` against the published deploy and requires database
+  `ok`. Pull requests should additionally use Netlify's isolated deploy-preview database branch.
 - Registration stores only a BCrypt password hash and creates an HttpOnly Secure session cookie.
 - Login succeeds with the registered phone/password and uses a generic credentials error on failure.
 - Duplicate and legacy phone registration returns `PHONE_ALREADY_REGISTERED`; password reset is not
   available in this release.
 - `GET /auth/session` succeeds after registration or login and returns 401 without a valid session.
 - Diagnostic returns exactly five questions.
-- Diagnostic submission stores both the attempt and five answer rows.
+- Every first diagnostic selection is locked per user/operation/question; final submission accepts
+  only those five selections and stores both the attempt and five answer rows.
 - Logout revokes the server session.
 - Refreshing a deep Vue route does not return 404 on Netlify.
 
 ## 4. Rollback
 
-- Keep the previously deployed backend image tag available.
-- Never run Flyway `clean` in production.
-- Before destructive schema changes, take a PostgreSQL backup.
-- Deploy database-compatible changes before removing old API fields used by the current frontend.
-- Keep the unused legacy authentication table through this rollback window; remove it only in a later
-  migration after the previous backend image has been retired.
+- Roll back the Netlify site to the previous known-good deploy if the Function fails.
+- Restore from a Netlify Database snapshot only when data recovery is required; a code rollback does
+  not roll schema changes back automatically.
+- Use expand-and-contract migrations so both the previous and new Functions tolerate the schema
+  during deploy and rollback windows.
+- Validate migrations on the isolated deploy-preview database branch before publishing production.
 
 ## 5. Known release boundary
 

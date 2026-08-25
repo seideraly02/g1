@@ -10,6 +10,23 @@ export interface DiagnosticAnswerInput {
   selectedIndex: number
 }
 
+export interface DiagnosticSubmissionInput {
+  operationId: string
+  answers: DiagnosticAnswerInput[]
+}
+
+export interface DiagnosticAnswerCheckInput extends DiagnosticAnswerInput {
+  operationId: string
+}
+
+export interface DiagnosticAnswerResult {
+  questionId: string
+  selectedIndex: number
+  isCorrect: boolean
+  correctIndex: number
+  explanation: string
+}
+
 export interface DiagnosticResultDto {
   attemptId: string
   total: number
@@ -17,6 +34,7 @@ export interface DiagnosticResultDto {
   insufficientData: boolean
   answers: Array<{
     questionId: string
+    selectedIndex: number
     isCorrect: boolean
     correctIndex: number
     explanation: string
@@ -40,6 +58,17 @@ function decodeQuestion(value: unknown): DiagnosticQuestionDto | null {
   return { id: value.id, topic: value.topic, text: value.text, options: value.options }
 }
 
+function isAnswerResult(value: unknown): value is DiagnosticAnswerResult {
+  return (
+    isRecord(value) &&
+    typeof value.questionId === 'string' &&
+    Number.isInteger(value.selectedIndex) &&
+    typeof value.isCorrect === 'boolean' &&
+    typeof value.correctIndex === 'number' &&
+    typeof value.explanation === 'string'
+  )
+}
+
 export class ApiDiagnosticRepository {
   constructor(
     private readonly baseUrl: string,
@@ -59,18 +88,49 @@ export class ApiDiagnosticRepository {
     return questions as DiagnosticQuestionDto[]
   }
 
-  async submit(subjectId: string, answers: DiagnosticAnswerInput[]): Promise<DiagnosticResultDto> {
+  async checkAnswer(
+    subjectId: string,
+    answer: DiagnosticAnswerCheckInput,
+  ): Promise<DiagnosticAnswerResult> {
+    const response = await this.client(
+      `${this.url}/diagnostic/${encodeURIComponent(subjectId)}/check`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(answer),
+      },
+    )
+    const value: unknown = await response.json().catch(() => null)
+    if (!response.ok || !isAnswerResult(value)) {
+      throw new Error('Жауапты тексеру мүмкін болмады')
+    }
+    return value as unknown as DiagnosticAnswerResult
+  }
+
+  async submit(subjectId: string, input: DiagnosticSubmissionInput): Promise<DiagnosticResultDto> {
     const response = await this.client(
       `${this.url}/diagnostic/${encodeURIComponent(subjectId)}/submit`,
       {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify(input),
       },
     )
     const value: unknown = await response.json().catch(() => null)
-    if (!response.ok || !isRecord(value)) throw new Error('Нәтижені сақтау мүмкін болмады')
+    if (
+      !response.ok ||
+      !isRecord(value) ||
+      typeof value.attemptId !== 'string' ||
+      !Number.isInteger(value.total) ||
+      !Number.isInteger(value.correct) ||
+      typeof value.insufficientData !== 'boolean' ||
+      !Array.isArray(value.answers) ||
+      !value.answers.every(isAnswerResult)
+    ) {
+      throw new Error('Нәтижені сақтау мүмкін болмады')
+    }
     return value as unknown as DiagnosticResultDto
   }
 

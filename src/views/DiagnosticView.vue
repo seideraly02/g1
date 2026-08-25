@@ -1,321 +1,186 @@
 <script setup lang="ts">
 import { ArrowRight, Check, X } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
 import {
   completeGuestDiagnostic,
   getGuestDiagnosticSession,
   saveGuestDiagnosticAnswer,
   setGuestDiagnosticQuestion,
 } from '../features/session/sessionApplication'
-
-interface DiagnosticQuestion {
-  id: string
-  topic: string
-  prompt: string
-  options: string[]
-  correct: number
-  explanation: string
-}
-
-const historyQuestions: DiagnosticQuestion[] = [
-  {
-    id: guestDiagnosticQuestionIds[0],
-    topic: 'Қазақ хандығы',
-    prompt: 'Қазақ хандығының негізін қалаған хандар кімдер?',
-    options: ['Керей мен Жәнібек', 'Абылай мен Әбілқайыр', 'Қасым мен Есім', 'Тәуке мен Хақназар'],
-    correct: 0,
-    explanation: 'Керей мен Жәнібек қазақ руларының басын қосып, дербес хандықтың негізін қалады.',
-  },
-  {
-    id: guestDiagnosticQuestionIds[1],
-    topic: 'Қазақ хандығы',
-    prompt: 'Қазақ хандығы қай жылы құрылды?',
-    options: ['1456 жылы', '1466 жылы', '1465 жылы', '1470 жылы'],
-    correct: 2,
-    explanation:
-      'Керей мен Жәнібек 1465 жылы Батыс Жетісуда хандықтың негізін қалады. Бұл дербес мемлекеттіліктің бастауына айналды.',
-  },
-  {
-    id: guestDiagnosticQuestionIds[2],
-    topic: 'Қазақ хандығы',
-    prompt: 'Қазақ хандығы алғаш құрылған өңірді белгіле.',
-    options: ['Сарыарқа', 'Батыс Жетісу', 'Маңғыстау', 'Ертіс бойы'],
-    correct: 1,
-    explanation:
-      'Хандықтың алғашқы аумағы Шу мен Талас өзендері аралығындағы Батыс Жетісуда болды.',
-  },
-  {
-    id: guestDiagnosticQuestionIds[3],
-    topic: 'XX ғасыр',
-    prompt: 'Алаш автономиясы қай жылы жарияланды?',
-    options: ['1905 жылы', '1916 жылы', '1917 жылы', '1920 жылы'],
-    correct: 2,
-    explanation:
-      'Алаш автономиясы 1917 жылғы желтоқсанда өткен Екінші жалпықазақ съезінде жарияланды.',
-  },
-  {
-    id: guestDiagnosticQuestionIds[4],
-    topic: 'XX ғасыр',
-    prompt: 'Қазақстан тәуелсіздігін қай жылы жариялады?',
-    options: ['1986 жылы', '1990 жылы', '1991 жылы', '1993 жылы'],
-    correct: 2,
-    explanation: 'Қазақстан 1991 жылғы 16 желтоқсанда мемлекеттік тәуелсіздігін жариялады.',
-  },
-]
-
-const questionBanks: Record<string, DiagnosticQuestion[]> = {
-  history: historyQuestions,
-  reading: [
-    {
-      id: guestDiagnosticQuestionIds[0],
-      topic: 'Мәтін құрылымы',
-      prompt: 'Мәтіннің негізгі ойын анықтайтын бөлік қайсы?',
-      options: ['Тақырып пен түйін', 'Тек бірінші сөйлем', 'Тыныс белгілері', 'Сөз саны'],
-      correct: 0,
-      explanation: 'Негізгі ой тақырып пен автор қорытындысы арқылы анықталады.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[1],
-      topic: 'Сөз мағынасы',
-      prompt: '«Ұқыпты» сөзіне мағыналас сөзді тап.',
-      options: ['Салғырт', 'Жинақы', 'Асығыс', 'Кездейсоқ'],
-      correct: 1,
-      explanation: '«Жинақы» сөзі ұқыпты әрекет пен тәртіпті білдіреді.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[2],
-      topic: 'Қорытынды',
-      prompt: 'Мәтіннен қорытынды жасау үшін неге сүйену керек?',
-      options: ['Жеке пікірге', 'Мәтіндегі дерекке', 'Тек тақырыпқа', 'Сөйлем санына'],
-      correct: 1,
-      explanation: 'Дұрыс қорытынды мәтінде берілген деректер мен байланыстарға сүйенеді.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[3],
-      topic: 'Автор ұстанымы',
-      prompt: 'Автордың көзқарасын не арқылы тануға болады?',
-      options: ['Бағалауыш сөздерден', 'Абзац санынан', 'Қаріп өлшемінен', 'Мәтін ұзындығынан'],
-      correct: 0,
-      explanation: 'Бағалауыш сөздер автордың оқиғаға немесе мәселеге қатынасын білдіреді.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[4],
-      topic: 'Логикалық байланыс',
-      prompt: 'Себеп-салдар байланысын білдіретін сөзді таңда.',
-      options: ['Сондықтан', 'Алайда', 'Мысалы', 'Немесе'],
-      correct: 0,
-      explanation: '«Сондықтан» алдыңғы ойдың салдарын көрсетеді.',
-    },
-  ],
-  'math-literacy': [
-    {
-      id: guestDiagnosticQuestionIds[0],
-      topic: 'Пайыз',
-      prompt: '10 000 теңгенің 20%-ы қанша?',
-      options: ['1 000', '2 000', '5 000', '8 000'],
-      correct: 1,
-      explanation: '10 000 × 0,2 = 2 000.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[1],
-      topic: 'Пропорция',
-      prompt: '3 дәптер 900 теңге тұрса, 5 дәптер қанша тұрады?',
-      options: ['1 200', '1 500', '1 800', '2 000'],
-      correct: 1,
-      explanation: 'Бір дәптер 300 теңге, сондықтан 5 дәптер 1 500 теңге.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[2],
-      topic: 'Уақыт',
-      prompt: 'Сабақ 14:20-да басталып, 45 минутқа созылды. Қашан аяқталды?',
-      options: ['14:55', '15:05', '15:15', '15:25'],
-      correct: 1,
-      explanation: '14:20-ға 45 минут қоссақ, 15:05 болады.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[3],
-      topic: 'Орташа мән',
-      prompt: '4, 6 және 8 сандарының орташа мәнін тап.',
-      options: ['5', '6', '7', '18'],
-      correct: 1,
-      explanation: '(4 + 6 + 8) ÷ 3 = 6.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[4],
-      topic: 'Аудан',
-      prompt: 'Ұзындығы 5 м, ені 3 м бөлменің ауданы қанша?',
-      options: ['8 м²', '15 м²', '16 м²', '30 м²'],
-      correct: 1,
-      explanation: 'Тіктөртбұрыш ауданы: 5 × 3 = 15 м².',
-    },
-  ],
-  math: [
-    {
-      id: guestDiagnosticQuestionIds[0],
-      topic: 'Теңдеу',
-      prompt: '2x + 6 = 14 теңдеуінің түбірін тап.',
-      options: ['2', '4', '6', '10'],
-      correct: 1,
-      explanation: '2x = 8, сондықтан x = 4.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[1],
-      topic: 'Дәреже',
-      prompt: '2³ · 2² өрнегінің мәні қандай?',
-      options: ['16', '32', '64', '128'],
-      correct: 1,
-      explanation: 'Бірдей негіздер көбейтілгенде дәреже көрсеткіштері қосылады: 2⁵ = 32.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[2],
-      topic: 'Функция',
-      prompt: 'y = 3x − 1 болса, x = 2 кезіндегі y мәнін тап.',
-      options: ['3', '5', '6', '7'],
-      correct: 1,
-      explanation: 'y = 3 × 2 − 1 = 5.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[3],
-      topic: 'Геометрия',
-      prompt: 'Үшбұрыш бұрыштарының қосындысы неше градус?',
-      options: ['90°', '180°', '270°', '360°'],
-      correct: 1,
-      explanation: 'Кез келген үшбұрыштың ішкі бұрыштарының қосындысы 180°.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[4],
-      topic: 'Түбір',
-      prompt: '√81 мәнін тап.',
-      options: ['7', '8', '9', '10'],
-      correct: 2,
-      explanation: '9 × 9 = 81, сондықтан √81 = 9.',
-    },
-  ],
-  physics: [
-    {
-      id: guestDiagnosticQuestionIds[0],
-      topic: 'Жылдамдық',
-      prompt: 'Жылдамдықтың негізгі формуласы қайсы?',
-      options: ['v = s/t', 'v = st', 'v = t/s', 'v = s + t'],
-      correct: 0,
-      explanation: 'Жылдамдық жүрілген жолды уақытқа бөлу арқылы табылады.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[1],
-      topic: 'Күш',
-      prompt: 'Күштің SI жүйесіндегі өлшем бірлігі қандай?',
-      options: ['Джоуль', 'Ньютон', 'Ватт', 'Паскаль'],
-      correct: 1,
-      explanation: 'Күш ньютонмен өлшенеді.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[2],
-      topic: 'Тығыздық',
-      prompt: 'Тығыздық формуласы қайсы?',
-      options: ['ρ = m/V', 'ρ = mV', 'ρ = V/m', 'ρ = m + V'],
-      correct: 0,
-      explanation: 'Тығыздық масса мен көлемнің қатынасына тең.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[3],
-      topic: 'Электр тогы',
-      prompt: 'Ток күшінің өлшем бірлігін таңда.',
-      options: ['Вольт', 'Ом', 'Ампер', 'Кулон'],
-      correct: 2,
-      explanation: 'Ток күші ампермен өлшенеді.',
-    },
-    {
-      id: guestDiagnosticQuestionIds[4],
-      topic: 'Энергия',
-      prompt: 'Механикалық энергияның өлшем бірлігі қандай?',
-      options: ['Ньютон', 'Джоуль', 'Ватт', 'Тесла'],
-      correct: 1,
-      explanation: 'Энергияның SI жүйесіндегі өлшем бірлігі — джоуль.',
-    },
-  ],
-}
+import type { SessionAnswerAttempt } from '../features/session/types'
+import {
+  diagnosticRepository,
+  type DiagnosticAnswerResult,
+  type DiagnosticQuestionDto,
+} from '../services/api/apiDiagnosticRepository'
 
 const router = useRouter()
 const route = useRoute()
 const requestedSessionId = typeof route.query.session === 'string' ? route.query.session : undefined
 const diagnosticSession = ref(getGuestDiagnosticSession(requestedSessionId))
-const selectedSubjectId = computed(
-  () => diagnosticSession.value?.selectedSubjectIds[0] ?? 'history',
-)
-const subjectNames: Record<string, string> = {
-  history: 'Қазақстан тарихы',
-  reading: 'Оқу сауаттылығы',
-  'math-literacy': 'Математикалық сауаттылық',
-  math: 'Математика',
-  physics: 'Физика',
-}
-const subjectName = computed(() => subjectNames[selectedSubjectId.value] ?? 'Диагностика')
-const questions = computed(() => questionBanks[selectedSubjectId.value] ?? historyQuestions)
+const questions = ref<DiagnosticQuestionDto[]>([])
+const evaluations = ref<Record<string, DiagnosticAnswerResult>>({})
 const questionIndex = ref(diagnosticSession.value?.currentQuestionIndex ?? 0)
-const detailsOpen = ref(false)
+const loading = ref(false)
+const evaluating = ref(false)
+const submitting = ref(false)
+const loadError = ref('')
+const answerError = ref('')
+const submitError = ref('')
 
-const question = computed(() => questions.value[questionIndex.value] ?? historyQuestions[0])
+const subjectId = computed(() => diagnosticSession.value?.selectedSubjectIds[0] ?? '')
+const question = computed(() => questions.value[questionIndex.value] ?? null)
 const savedAnswer = computed(() =>
-  diagnosticSession.value?.answers.find((answer) => answer.questionId === question.value.id),
+  question.value
+    ? diagnosticSession.value?.answers.find((answer) => answer.questionId === question.value?.id)
+    : undefined,
 )
 const selectedAnswer = computed(() => {
-  const selectedOptionId = savedAnswer.value?.selectedOptionId
-  if (selectedOptionId === undefined) {
-    return null
-  }
-
-  const optionIndex = Number(selectedOptionId)
-  return Number.isInteger(optionIndex) ? optionIndex : null
+  const value = savedAnswer.value?.selectedOptionId
+  return value === undefined ? null : Number(value)
 })
-const answered = computed(() => savedAnswer.value !== undefined)
-const sessionUnavailable = computed(() => diagnosticSession.value === null)
-const progress = computed(() => ((questionIndex.value + 1) / questions.value.length) * 100)
+const evaluation = computed(() =>
+  question.value ? evaluations.value[question.value.id] : undefined,
+)
+const progress = computed(() =>
+  questions.value.length ? ((questionIndex.value + 1) / questions.value.length) * 100 : 0,
+)
+const subjectName = computed(() =>
+  subjectId.value === 'history-kz' ? 'Қазақстан тарихы' : 'Диагностика',
+)
 
-function selectAnswer(index: number) {
-  if (answered.value || !diagnosticSession.value) {
-    return
-  }
-
-  const subjectId = diagnosticSession.value.selectedSubjectIds[0]
-  if (!subjectId) {
-    return
-  }
-
-  const updatedSession = saveGuestDiagnosticAnswer({
-    sessionId: diagnosticSession.value.id,
-    questionId: question.value.id,
-    subjectId,
-    selectedOptionId: String(index),
-    isCorrect: index === question.value.correct,
-    isSkipped: false,
-    answeredAt: new Date().toISOString(),
+async function restoreCurrentEvaluation() {
+  const session = diagnosticSession.value
+  const currentQuestion = questions.value[questionIndex.value]
+  const existing = session?.answers.find((answer) => answer.questionId === currentQuestion?.id)
+  if (!session || !currentQuestion || existing?.selectedOptionId === undefined) return
+  const checked = await diagnosticRepository.checkAnswer(subjectId.value, {
+    operationId: session.id,
+    questionId: currentQuestion.id,
+    selectedIndex: Number(existing.selectedOptionId),
   })
+  evaluations.value = { ...evaluations.value, [checked.questionId]: checked }
+}
 
-  if (updatedSession) {
-    diagnosticSession.value = updatedSession
+async function loadQuestions() {
+  if (!diagnosticSession.value || !subjectId.value) return
+  loading.value = true
+  loadError.value = ''
+  try {
+    const loaded = await diagnosticRepository.getQuestions(subjectId.value)
+    const expectedIds = diagnosticSession.value.questionIds
+    if (
+      loaded.length !== expectedIds.length ||
+      loaded.some((candidate, index) => candidate.id !== expectedIds[index])
+    ) {
+      throw new Error('Диагностика сұрақтары өзгерді. Пәнді қайта таңда.')
+    }
+    questions.value = loaded
+    await restoreCurrentEvaluation()
+  } catch (cause) {
+    loadError.value = cause instanceof Error ? cause.message : 'Сұрақтарды жүктеу мүмкін болмады'
+  } finally {
+    loading.value = false
   }
 }
 
-function nextQuestion() {
-  if (!answered.value || !diagnosticSession.value) return
+onMounted(loadQuestions)
 
-  if (questionIndex.value === questions.value.length - 1) {
-    const completedSession = completeGuestDiagnostic(diagnosticSession.value.id)
-    if (completedSession) {
-      diagnosticSession.value = completedSession
-      router.push({ name: 'diagnostic-result', query: { session: completedSession.id } })
+async function selectAnswer(index: number) {
+  if (!question.value || savedAnswer.value || evaluating.value || !diagnosticSession.value) return
+  evaluating.value = true
+  answerError.value = ''
+  try {
+    const checked = await diagnosticRepository.checkAnswer(subjectId.value, {
+      operationId: diagnosticSession.value.id,
+      questionId: question.value.id,
+      selectedIndex: index,
+    })
+    evaluations.value = { ...evaluations.value, [checked.questionId]: checked }
+    diagnosticSession.value =
+      saveGuestDiagnosticAnswer({
+        sessionId: diagnosticSession.value.id,
+        questionId: question.value.id,
+        subjectId: subjectId.value,
+        selectedOptionId: String(checked.selectedIndex),
+        isCorrect: checked.isCorrect,
+        isSkipped: false,
+        answeredAt: new Date().toISOString(),
+      }) ?? diagnosticSession.value
+  } catch (cause) {
+    answerError.value = cause instanceof Error ? cause.message : 'Жауапты тексеру мүмкін болмады'
+  } finally {
+    evaluating.value = false
+  }
+}
+
+async function retryCurrentEvaluation() {
+  if (evaluating.value) return
+  evaluating.value = true
+  answerError.value = ''
+  try {
+    await restoreCurrentEvaluation()
+  } catch (cause) {
+    answerError.value =
+      cause instanceof Error ? cause.message : 'Жауапты қайта жүктеу мүмкін болмады'
+  } finally {
+    evaluating.value = false
+  }
+}
+
+async function nextQuestion() {
+  if (!savedAnswer.value || !evaluation.value || !diagnosticSession.value || submitting.value)
+    return
+  if (questionIndex.value < questions.value.length - 1) {
+    const nextIndex = questionIndex.value + 1
+    diagnosticSession.value =
+      setGuestDiagnosticQuestion(diagnosticSession.value.id, nextIndex) ?? diagnosticSession.value
+    questionIndex.value = nextIndex
+    answerError.value = ''
+    try {
+      await restoreCurrentEvaluation()
+    } catch (cause) {
+      answerError.value =
+        cause instanceof Error ? cause.message : 'Жауапты қайта жүктеу мүмкін болмады'
     }
     return
   }
 
-  const nextQuestionIndex = questionIndex.value + 1
-  const updatedSession = setGuestDiagnosticQuestion(diagnosticSession.value.id, nextQuestionIndex)
-  if (updatedSession) {
-    diagnosticSession.value = updatedSession
-    questionIndex.value = nextQuestionIndex
-    detailsOpen.value = false
+  submitting.value = true
+  submitError.value = ''
+  try {
+    const result = await diagnosticRepository.submit(subjectId.value, {
+      operationId: diagnosticSession.value.id,
+      answers: diagnosticSession.value.answers.map((answer) => ({
+        questionId: answer.questionId,
+        selectedIndex: Number(answer.selectedOptionId),
+      })),
+    })
+    for (const checked of result.answers) {
+      const existing: SessionAnswerAttempt | undefined = diagnosticSession.value.answers.find(
+        (answer) => answer.questionId === checked.questionId,
+      )
+      if (!existing) continue
+      diagnosticSession.value =
+        saveGuestDiagnosticAnswer({
+          sessionId: diagnosticSession.value.id,
+          questionId: existing.questionId,
+          subjectId: subjectId.value,
+          selectedOptionId: existing.selectedOptionId,
+          isCorrect: checked.isCorrect,
+          isSkipped: false,
+          answeredAt: existing.answeredAt ?? new Date().toISOString(),
+        }) ?? diagnosticSession.value
+    }
+    const completed = completeGuestDiagnostic(diagnosticSession.value.id)
+    if (completed) {
+      await router.push({ name: 'diagnostic-result', query: { session: completed.id } })
+    }
+  } catch (cause) {
+    submitError.value = cause instanceof Error ? cause.message : 'Нәтижені сақтау мүмкін болмады'
+  } finally {
+    submitting.value = false
   }
 }
 </script>
@@ -329,138 +194,141 @@ function nextQuestion() {
         aria-label="Жабу"
         @click="router.push({ name: 'subjects-onboarding' })"
       >
-        <X :size="21" :stroke-width="2" />
+        <X :size="21" aria-hidden="true" />
       </button>
       <div class="px-1 pt-1.5">
         <h1 class="truncate text-[13px] font-[850] text-[#111b34]">{{ subjectName }}</h1>
-        <div class="progress-track mt-2 h-[8px]">
-          <div
-            class="h-full rounded-full bg-[#1f66d9] transition-[width]"
-            :style="{ width: `${progress}%` }"
-          />
+        <div class="progress-track mt-2 h-2">
+          <div class="h-full rounded-full bg-[#1f66d9]" :style="{ width: `${progress}%` }" />
         </div>
       </div>
-      <div class="flex items-start justify-end">
-        <span class="whitespace-nowrap pt-2 text-[12px] font-[600] text-[#536178]">
-          {{ questionIndex + 1 }} / {{ questions.length }}
-        </span>
-      </div>
+      <span class="text-right text-[12px] font-[600] text-[#536178]">
+        {{ questions.length ? questionIndex + 1 : 0 }} / {{ questions.length }}
+      </span>
     </header>
 
-    <p
-      v-if="sessionUnavailable"
-      class="mt-3 rounded-[12px] bg-[#fff0f1] px-3 py-2 text-[13px] leading-[1.4] text-[#b4232a]"
-      role="alert"
-    >
-      Диагностиканы бастау үшін алдымен пән таңда.
-    </p>
-
     <main
-      class="mx-auto min-h-0 w-full max-w-[1280px] flex-1 overflow-y-auto pb-3 lg:grid lg:grid-cols-[minmax(300px,.82fr)_minmax(520px,1.18fr)] lg:content-center lg:gap-x-[clamp(40px,5vw,72px)] lg:gap-y-4 lg:overflow-visible"
+      v-if="!diagnosticSession"
+      class="mx-auto flex max-w-md flex-1 flex-col items-center justify-center text-center"
     >
-      <div class="mt-4 flex items-center gap-2 lg:col-start-1 lg:mt-0">
-        <span class="rounded-[9px] bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#1f66d9]">
+      <p class="text-[14px] text-[#b4232a]" role="alert">
+        Диагностиканы бастау үшін алдымен пән таңда.
+      </p>
+    </main>
+    <main
+      v-else-if="loading"
+      class="mx-auto flex max-w-md flex-1 items-center justify-center text-[14px] text-[#667085]"
+      role="status"
+      aria-live="polite"
+    >
+      Сұрақтар жүктеліп жатыр…
+    </main>
+    <main
+      v-else-if="loadError"
+      class="mx-auto flex max-w-md flex-1 flex-col items-center justify-center text-center"
+    >
+      <p class="text-[14px] text-[#b4232a]" role="alert">{{ loadError }}</p>
+      <button class="text-button mt-4 min-h-11" type="button" @click="loadQuestions">
+        Қайталап көру
+      </button>
+    </main>
+    <main
+      v-else-if="question"
+      class="mx-auto min-h-0 w-full max-w-[1120px] flex-1 overflow-y-auto pb-3 lg:grid lg:grid-cols-2 lg:content-center lg:gap-12"
+    >
+      <div class="mt-4 lg:mt-0">
+        <span class="rounded-lg bg-[#dfecff] px-2 py-1 text-[11px] font-[800] text-[#1f66d9]">
           {{ question.topic }}
         </span>
-        <span class="rounded-[9px] bg-[#f1f4f8] px-2 py-1 text-[11px] font-[750] text-[#536178]">
-          ≈ 45 сек.
-        </span>
+        <h2 class="mt-4 text-[20px] font-[900] leading-[1.4] text-[#0d1730] lg:text-[28px]">
+          {{ question.text }}
+        </h2>
       </div>
 
-      <h2
-        class="mt-3 text-[19px] font-[900] leading-[1.38] tracking-[-.018em] text-[#0d1730] lg:col-start-1 lg:text-[28px]"
-      >
-        {{ question.prompt }}
-      </h2>
-
-      <div class="mt-3 space-y-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:mt-0">
+      <div class="mt-4 space-y-2 lg:mt-0">
         <button
           v-for="(option, index) in question.options"
           :key="option"
-          type="button"
-          class="flex min-h-[54px] w-full items-center rounded-[17px] border px-3 text-left transition-colors"
-          :class="[
-            answered && index === question.correct
+          class="flex min-h-[54px] w-full items-center rounded-[17px] border px-3 text-left"
+          :class="
+            evaluation && index === evaluation.correctIndex
               ? 'border-[#66e6a0] bg-[#effcf5]'
-              : answered && index === selectedAnswer && index !== question.correct
+              : evaluation && index === selectedAnswer
                 ? 'border-[#ff9299] bg-[#fff2f2]'
-                : 'border-[#dfe5ee] bg-white',
-            answered && index !== question.correct && index !== selectedAnswer
-              ? 'text-[#6f7a90]'
-              : 'text-[#111b34]',
-          ]"
-          :disabled="answered || sessionUnavailable"
+                : savedAnswer && index === selectedAnswer
+                  ? 'border-[#1f66d9] bg-[#edf4ff]'
+                  : 'border-[#dfe5ee] bg-white'
+          "
+          type="button"
+          :disabled="Boolean(savedAnswer) || evaluating"
           @click="selectAnswer(index)"
         >
-          <span
-            class="grid size-7 shrink-0 place-items-center rounded-[9px] text-[13px] font-[850]"
-            :class="
-              answered && index === question.correct
-                ? 'bg-[#16a757] text-white'
-                : answered && index === selectedAnswer && index !== question.correct
-                  ? 'bg-[#e9272f] text-white'
-                  : 'bg-[#f1f4f8] text-[#111b34]'
-            "
-          >
-            <Check v-if="answered && index === question.correct" :size="18" :stroke-width="2.5" />
-            <X
-              v-else-if="answered && index === selectedAnswer && index !== question.correct"
-              :size="18"
-              :stroke-width="2.5"
-            />
+          <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f1f4f8] font-bold">
+            <Check v-if="evaluation && index === evaluation.correctIndex" :size="18" />
+            <X v-else-if="evaluation && index === selectedAnswer" :size="18" />
             <template v-else>{{ String.fromCharCode(65 + index) }}</template>
           </span>
-          <span class="ml-3 min-w-0 flex-1">
-            <span class="block text-[15px] font-[750] leading-[1.2]">{{ option }}</span>
-            <span
-              v-if="answered && index === selectedAnswer && index !== question.correct"
-              class="mt-1 block text-[11px] font-[600] text-[#cc2027]"
-            >
-              Сенің жауабың
-            </span>
-            <span
-              v-else-if="answered && index === question.correct"
-              class="mt-1 block text-[11px] font-[600] text-[#158d4b]"
-            >
-              Дұрыс жауап
-            </span>
+          <span class="ml-3 text-[15px] font-[750]">{{ option }}</span>
+          <span v-if="evaluation && index === evaluation.correctIndex" class="sr-only">
+            Дұрыс жауап
+          </span>
+          <span
+            v-if="evaluation && index === selectedAnswer && !evaluation.isCorrect"
+            class="sr-only"
+          >
+            Сенің жауабың, қате
           </span>
         </button>
-      </div>
 
-      <div
-        v-if="answered"
-        class="mt-2.5 rounded-[18px] border border-[#afd6ff] bg-[#edf5ff] p-3 lg:col-span-2 lg:mt-2"
-      >
-        <div class="border-l-[3px] border-[#1f66d9] pl-3">
-          <h3 class="text-[13px] font-[850] text-[#111b34]">Неліктен?</h3>
-          <p class="mt-1 text-[12px] leading-[1.45] text-[#536178]">{{ question.explanation }}</p>
-          <p v-if="detailsOpen" class="mt-1 text-[11px] leading-[1.4] text-[#536178]">
-            Бұл тақырыпты қысқа конспект пен қосымша сұрақтар арқылы бекіте аласың.
+        <p v-if="evaluating" class="text-[13px] text-[#667085]" aria-live="polite">
+          Жауап тексеріліп жатыр…
+        </p>
+        <div v-if="answerError" class="flex items-center justify-between gap-3" role="alert">
+          <p class="text-[13px] text-[#b4232a]">
+            {{ answerError }}
+            <template v-if="!savedAnswer">Тағы бір рет таңда.</template>
           </p>
-        </div>
-        <div class="mt-2 flex items-center justify-between">
-          <span class="text-[11px] text-[#536178]">Тақырып түсіндірмесі</span>
           <button
+            v-if="savedAnswer && !evaluation"
+            class="text-button min-h-11 shrink-0"
             type="button"
-            class="text-[12px] font-[800] text-[#1f66d9]"
-            @click="detailsOpen = !detailsOpen"
+            @click="retryCurrentEvaluation"
           >
-            Толығырақ
+            Қайталап көру
           </button>
+        </div>
+        <div
+          v-if="evaluation"
+          class="rounded-[18px] border border-[#afd6ff] bg-[#edf5ff] p-4"
+          role="status"
+          aria-live="polite"
+        >
+          <h3 class="text-[13px] font-[850]">
+            {{ evaluation.isCorrect ? 'Дұрыс жауап' : 'Дұрыс жауабы көрсетілді' }}
+          </h3>
+          <p class="mt-1 text-[12px] leading-5 text-[#536178]">{{ evaluation.explanation }}</p>
         </div>
       </div>
     </main>
 
-    <div class="mx-auto flex w-full max-w-[1280px] justify-end">
+    <div v-if="question && !loading && !loadError" class="mx-auto w-full max-w-[1120px]">
+      <p v-if="submitError" class="mb-2 text-[13px] text-[#b4232a]" role="alert">
+        {{ submitError }}
+      </p>
       <button
-        class="primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:w-[min(100%,520px)]"
+        class="primary-button ml-auto min-h-[52px] lg:max-w-[520px]"
         type="button"
-        :disabled="!answered || sessionUnavailable"
+        :disabled="!evaluation || submitting"
         @click="nextQuestion"
       >
-        {{ questionIndex === questions.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ' }}
-        <ArrowRight :size="20" :stroke-width="2" aria-hidden="true" />
+        {{
+          submitting
+            ? 'Сақталып жатыр…'
+            : questionIndex === questions.length - 1
+              ? 'Нәтижені көру'
+              : 'Келесі сұрақ'
+        }}
+        <ArrowRight :size="20" aria-hidden="true" />
       </button>
     </div>
   </section>

@@ -304,7 +304,9 @@ export class LocalSessionRepository implements SessionRepository {
     }
 
     const existingAnswer = session.answers.find((answer) => answer.questionId === input.questionId)
-    if (existingAnswer && session.type !== 'trial') {
+    const isServerReconciliation =
+      existingAnswer?.isCorrect === undefined && typeof input.isCorrect === 'boolean'
+    if (existingAnswer && session.type !== 'trial' && !isServerReconciliation) {
       return session
     }
 

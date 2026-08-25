@@ -2,6 +2,8 @@
 
 Authentication uses a server-side session stored in a secure `HttpOnly`, `SameSite` cookie.
 No password, password hash, session token, or auth profile is persisted by the frontend.
+In production the same contract is implemented by `netlify/functions/api.mjs` against the
+branch-specific Netlify Database PostgreSQL connection; no external backend URL is involved.
 
 ## Endpoints
 
@@ -36,6 +38,15 @@ attempts are rate-limited by phone fingerprint and trusted client fingerprint; r
 
 `GET /auth/session` returns the user DTO or `401`. `DELETE /auth/session` revokes the server
 session and expires the cookie.
+
+Diagnostic submission includes a stable client `operationId`. The database enforces uniqueness per
+user and returns the original stored response when the same operation is retried.
+`POST /diagnostic/{subjectId}/check` accepts the stable diagnostic `operationId`, validates one
+selected answer server-side, and returns that answer's selected index, correctness, and explanation.
+The first selection is persisted per user, operation, and question; retries replay it and cannot
+change it. This allows immediate feedback without exposing the full answer key in the question
+response. The final `/submit` accepts only the five persisted selections and remains the idempotent
+persistence operation.
 
 ## Password and legacy policy
 

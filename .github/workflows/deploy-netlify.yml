@@ -18,6 +18,20 @@ jobs:
     name: Deploy production
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: qadam_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d qadam_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout repository
@@ -32,10 +46,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend
-        run: npm run build
+      - name: Apply Netlify Database baseline
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          psql -h 127.0.0.1 -U postgres -d qadam_test -v ON_ERROR_STOP=1
+          -f netlify/database/migrations/20260825190000_qadam_api_baseline.sql
+
+      - name: Verify frontend and Functions
+        run: npm test && npm run check:functions && npm run build
         env:
           VITE_API_BASE_URL: /api
+          QADAM_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/qadam_test
 
       - name: Verify Netlify credentials
         shell: bash
@@ -64,3 +86,5 @@ jobs:
       - name: Deployment URL
         run: |
           echo "Netlify production URL: ${{ steps.netlify.outputs.url }}"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 \
+            "${{ steps.netlify.outputs.url }}/api/health"

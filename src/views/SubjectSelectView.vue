@@ -1,22 +1,11 @@
 <script setup lang="ts">
-import {
-  ArrowLeft,
-  ArrowRight,
-  Atom,
-  BookOpen,
-  Calculator,
-  Check,
-  Landmark,
-  Radical,
-  Search,
-} from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, Check, Landmark, Search } from 'lucide-vue-next'
 import type { Component } from 'vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { guestDiagnosticQuestionIds } from '../features/diagnostic/diagnosticSession'
 import { startGuestDiagnostic } from '../features/session/sessionApplication'
-
-type SubjectTab = 'required' | 'profile'
+import { diagnosticRepository } from '../services/api/apiDiagnosticRepository'
+import { subjectRepository } from '../services/api/apiSubjectRepository'
 
 interface Subject {
   id: string
@@ -25,71 +14,61 @@ interface Subject {
   color: string
   soft: string
   icon: Component
-  tabs: SubjectTab[]
 }
 
 const router = useRouter()
 const search = ref('')
-const activeTab = ref<SubjectTab>('required')
-const selected = ref(new Set<string>(['history']))
+const selected = ref(new Set<string>())
+const subjects = ref<Subject[]>([])
+const loading = ref(true)
+const submitting = ref(false)
+const error = ref('')
+const failedAction = ref<'subjects' | 'diagnostic'>('subjects')
 
-const subjects: Subject[] = [
-  {
-    id: 'history',
-    name: 'Қазақстан тарихы',
+const subjectMetadata: Record<string, Pick<Subject, 'description' | 'color' | 'soft' | 'icon'>> = {
+  'history-kz': {
     description: 'Қазақ хандығы, XX ғасыр',
     color: '#2468f2',
     soft: '#edf4ff',
     icon: Landmark,
-    tabs: ['required'],
   },
-  {
-    id: 'reading',
-    name: 'Оқу сауаттылығы',
-    description: 'Мәтіндер мен логика',
-    color: '#8247ec',
-    soft: '#f4efff',
-    icon: BookOpen,
-    tabs: ['required'],
-  },
-  {
-    id: 'math-literacy',
-    name: 'Математикалық сауаттылық',
-    description: 'Практикалық есептер',
-    color: '#18a95a',
-    soft: '#edfbf3',
-    icon: Calculator,
-    tabs: ['required'],
-  },
-  {
-    id: 'math',
-    name: 'Математика',
-    description: 'Алгебра және геометрия',
-    color: '#d17a00',
-    soft: '#fff9e9',
-    icon: Radical,
-    tabs: ['required', 'profile'],
-  },
-  {
-    id: 'physics',
-    name: 'Физика',
-    description: 'Механика және электр құбылыстары',
-    color: '#e02632',
-    soft: '#fff0f1',
-    icon: Atom,
-    tabs: ['required', 'profile'],
-  },
-]
+}
+
+async function loadSubjects() {
+  loading.value = true
+  error.value = ''
+  failedAction.value = 'subjects'
+  try {
+    const available = await subjectRepository.getSubjects()
+    subjects.value = available.map((subject) => ({
+      ...subject,
+      ...(subjectMetadata[subject.id] ?? {
+        description: 'Диагностикалық тест',
+        color: '#2468f2',
+        soft: '#edf4ff',
+        icon: Landmark,
+      }),
+    }))
+    if (!subjects.value.some((subject) => selected.value.has(subject.id))) {
+      selected.value = subjects.value[0] ? new Set([subjects.value[0].id]) : new Set()
+    }
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Пәндерді жүктеу мүмкін болмады'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadSubjects)
 
 const filteredSubjects = computed(() => {
   const term = search.value.trim().toLocaleLowerCase('kk-KZ')
-  return subjects.filter((subject) => {
-    const matchesTab = subject.tabs.includes(activeTab.value)
-    const matchesSearch =
+  return subjects.value.filter((subject) => {
+    return (
       !term ||
       subject.name.toLocaleLowerCase('kk-KZ').includes(term) ||
       subject.description.toLocaleLowerCase('kk-KZ').includes(term)
-    return matchesTab && matchesSearch
+    )
   })
 })
 
@@ -97,11 +76,29 @@ function toggleSubject(id: string) {
   selected.value = new Set([id])
 }
 
-function continueToDiagnostic() {
-  if (selected.value.size > 0) {
-    const session = startGuestDiagnostic([...selected.value], guestDiagnosticQuestionIds)
-    router.push({ name: 'diagnostic', query: { session: session.id } })
+async function continueToDiagnostic() {
+  const subjectId = [...selected.value][0]
+  if (!subjectId || submitting.value) return
+  submitting.value = true
+  error.value = ''
+  failedAction.value = 'diagnostic'
+  try {
+    const questions = await diagnosticRepository.getQuestions(subjectId)
+    const session = startGuestDiagnostic(
+      [subjectId],
+      questions.map((question) => question.id),
+    )
+    await router.push({ name: 'diagnostic', query: { session: session.id } })
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Диагностиканы бастау мүмкін болмады'
+  } finally {
+    submitting.value = false
   }
+}
+
+function retryFailedAction() {
+  if (failedAction.value === 'diagnostic') void continueToDiagnostic()
+  else void loadSubjects()
 }
 </script>
 
@@ -130,7 +127,7 @@ function continueToDiagnostic() {
           Кейін өзгертуге болады. Бастау үшін бір пән жеткілікті.
         </p>
 
-        <label class="relative mt-3 block">
+        <label v-if="subjects.length > 1" class="relative mt-3 block">
           <Search
             class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8ea0b8]"
             :size="20"
@@ -145,38 +142,19 @@ function continueToDiagnostic() {
             aria-label="Пәнді іздеу"
           />
         </label>
-
-        <div class="mt-3 grid h-[44px] shrink-0 grid-cols-2 rounded-[16px] bg-[#e2e8f0] p-1">
-          <button
-            type="button"
-            class="rounded-[12px] text-[13px] font-[800] transition-all"
-            :class="
-              activeTab === 'required'
-                ? 'bg-white text-[#111b34] shadow-[0_2px_7px_rgba(25,42,71,.08)]'
-                : 'text-[#536178]'
-            "
-            @click="activeTab = 'required'"
-          >
-            Міндетті
-          </button>
-          <button
-            type="button"
-            class="rounded-[12px] text-[13px] font-[800] transition-all"
-            :class="
-              activeTab === 'profile'
-                ? 'bg-white text-[#111b34] shadow-[0_2px_7px_rgba(25,42,71,.08)]'
-                : 'text-[#536178]'
-            "
-            @click="activeTab = 'profile'"
-          >
-            Бейіндік
-          </button>
-        </div>
       </div>
 
       <div
         class="subject-select-list mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pb-2 lg:mt-0"
       >
+        <p
+          v-if="loading"
+          class="mt-8 text-center text-[14px] text-[#6f7a90]"
+          role="status"
+          aria-live="polite"
+        >
+          Пәндер жүктеліп жатыр…
+        </p>
         <button
           v-for="subject in filteredSubjects"
           :key="subject.id"
@@ -217,18 +195,28 @@ function continueToDiagnostic() {
           </span>
         </button>
 
-        <p v-if="filteredSubjects.length === 0" class="mt-8 text-center text-[14px] text-[#6f7a90]">
+        <p
+          v-if="!loading && !error && filteredSubjects.length === 0"
+          class="mt-8 text-center text-[14px] text-[#6f7a90]"
+        >
           Пән табылмады
         </p>
+      </div>
+
+      <div v-if="error" class="mt-2 flex items-center justify-between gap-3" role="alert">
+        <p class="text-[13px] text-[#b4232a]">{{ error }}</p>
+        <button class="text-button min-h-11 shrink-0" type="button" @click="retryFailedAction">
+          Қайталап көру
+        </button>
       </div>
 
       <button
         class="subject-select-action primary-button mt-2 min-h-[52px] shrink-0 rounded-[16px] text-[16px] lg:mt-0"
         type="button"
-        :disabled="selected.size === 0"
+        :disabled="selected.size === 0 || loading || submitting"
         @click="continueToDiagnostic"
       >
-        Жалғастыру
+        {{ submitting ? 'Жүктеліп жатыр…' : 'Жалғастыру' }}
         <ArrowRight :size="20" :stroke-width="2" aria-hidden="true" />
       </button>
     </div>
