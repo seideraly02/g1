@@ -99,12 +99,15 @@ const legacyHandler = createHandler()
 export default async function handler(request, context) {
   const url = new URL(request.url)
   const headers = Object.fromEntries(request.headers.entries())
+  const queryStringParameters = Object.fromEntries(url.searchParams.entries())
+  queryStringParameters.path ??=
+    context.params?.splat ?? url.pathname.match(/^\/api\/(.*)$/)?.[1] ?? ''
   const result = await legacyHandler({
     httpMethod: request.method,
     headers,
     body: ['GET', 'HEAD'].includes(request.method) ? '' : await request.text(),
     isBase64Encoded: false,
-    queryStringParameters: Object.fromEntries(url.searchParams.entries()),
+    queryStringParameters,
     requestContext: { http: { sourceIp: context.ip ?? 'unknown' } },
   })
   const responseHeaders = new Headers(result.headers)
