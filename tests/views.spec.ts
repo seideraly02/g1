@@ -63,4 +63,15 @@ describe('Qadam mobile screens', () => {
     expect(welcome).toContain("router.push({ name: 'register' })")
     expect(welcome).toContain('@click="startPreparation"')
   })
+
+  it('keeps phone inputs controlled by the formatter without competing v-model handlers', () => {
+    const registration = readFileSync(resolve(viewsDirectory, 'RegistrationView.vue'), 'utf8')
+
+    expect(registration).toContain(':value="registration.phone"')
+    expect(registration).toContain('@input="updatePhone(\'registration\', $event)"')
+    expect(registration).toContain(':value="login.phone"')
+    expect(registration).toContain('@input="updatePhone(\'login\', $event)"')
+    expect(registration).not.toContain('v-model="registration.phone"')
+    expect(registration).not.toContain('v-model="login.phone"')
+  })
 })

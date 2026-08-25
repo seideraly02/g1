@@ -225,7 +225,7 @@ async function submitLogin() {
             Телефон нөмірі
             <input
               id="registration-phone"
-              v-model="registration.phone"
+              :value="registration.phone"
               class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
               type="tel"
               inputmode="tel"
@@ -331,7 +331,7 @@ async function submitLogin() {
             Телефон нөмірі
             <input
               id="login-phone"
-              v-model="login.phone"
+              :value="login.phone"
               class="mt-2 min-h-[52px] w-full rounded-[13px] border border-[#cbd5e1] px-4 text-[15px] focus:border-[#1f66d9]"
               type="tel"
               inputmode="tel"
